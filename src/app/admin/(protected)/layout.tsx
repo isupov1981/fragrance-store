@@ -5,6 +5,7 @@ const navigation = [
   ["Обзор", "/admin"],
   ["Товары", "/admin/products"],
   ["Категории", "/admin/categories"],
+  ["Бренды", "/admin/brands"],
   ["Заказы", "/admin/orders"],
   ["Клиенты", "/admin/customers"],
   ["Контент", "/admin/content"],

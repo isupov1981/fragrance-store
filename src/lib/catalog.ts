@@ -1,3 +1,5 @@
+import { formatMoney as formatCurrency, isCurrency } from "@/lib/currency";
+
 export type StoreVariant = {
   id: string;
   name: string;
@@ -133,8 +135,6 @@ export function getCategory(slug: string) {
 }
 
 export function formatMoney(amount: number, currency = "USD") {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-  }).format(amount / 100);
+  const normalized = currency.toUpperCase();
+  return formatCurrency(amount, isCurrency(normalized) ? normalized : "USD");
 }

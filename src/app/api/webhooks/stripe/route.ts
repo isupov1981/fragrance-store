@@ -7,6 +7,7 @@ import {
   updateOrder,
 } from "@/lib/checkout/orders";
 import { getOrderMailer } from "@/lib/email/mailer";
+import { applyStripeWebhookAction, interpretStripeEvent } from "@/lib/payments/stripe-event";
 
 export const runtime = "nodejs";
 
@@ -34,32 +35,37 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid Stripe signature" }, { status: 400 });
   }
 
-  if (await hasProcessedWebhookEvent(event.id)) {
-    return Response.json({ received: true, duplicate: true });
-  }
-
   try {
-    if (
-      event.type === "checkout.session.completed" ||
-      event.type === "checkout.session.async_payment_succeeded"
-    ) {
-      const session = event.data.object;
-      const orderId = session.metadata?.orderId ?? session.client_reference_id;
-      const order = orderId ? await findOrder(orderId) : undefined;
-      if (order && order.status !== "paid") {
-        await updateOrder(order.id, {
-          status: "paid",
-          paymentReference: session.id,
-        });
-        await getOrderMailer().sendConfirmation(order);
-      }
-    } else if (event.type === "checkout.session.async_payment_failed") {
-      const session = event.data.object;
-      const orderId = session.metadata?.orderId ?? session.client_reference_id;
-      if (orderId) await updateOrder(orderId, { status: "payment_failed" });
-    }
-    await markWebhookEventProcessed(event.id);
-    return Response.json({ received: true });
+    const session = "object" in event.data ? event.data.object : undefined;
+    const stripeSession =
+      session && typeof session === "object"
+        ? {
+            id: "id" in session && typeof session.id === "string" ? session.id : undefined,
+            metadata:
+              "metadata" in session && session.metadata && typeof session.metadata === "object"
+                ? { orderId: (session.metadata as { orderId?: string }).orderId }
+                : null,
+            client_reference_id:
+              "client_reference_id" in session && typeof session.client_reference_id === "string"
+                ? session.client_reference_id
+                : null,
+          }
+        : {};
+
+    const action = interpretStripeEvent(
+      { id: event.id, type: event.type, data: { object: stripeSession } },
+      await hasProcessedWebhookEvent(event.id),
+    );
+    const result = await applyStripeWebhookAction(action, event.id, {
+      findOrder,
+      updateOrder,
+      markProcessed: markWebhookEventProcessed,
+      sendConfirmation: async (order) => {
+        const record = await findOrder(order.id);
+        if (record) await getOrderMailer().sendConfirmation(record);
+      },
+    });
+    return Response.json(result);
   } catch (error) {
     console.error(error);
     return Response.json({ error: "Webhook processing failed" }, { status: 500 });

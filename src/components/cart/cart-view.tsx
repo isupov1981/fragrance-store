@@ -1,24 +1,32 @@
 "use client";
 
-import Link from "next/link";
-
 import { calculateCartTotals } from "@/lib/cart/cart";
 import { useCartStore } from "@/lib/cart/store";
-import { formatMoney } from "@/lib/catalog";
+import { useHydratedCart } from "@/lib/cart/use-hydrated-cart";
+import { LocaleLink } from "@/components/i18n/locale-link";
+import { useCurrency } from "@/components/i18n/currency-provider";
+import { useI18n } from "@/components/i18n/i18n-provider";
+import { interpolate } from "@/lib/i18n/interpolate";
 
 export function CartView() {
-  const items = useCartStore((state) => state.items);
+  const { items, hydrated } = useHydratedCart();
   const removeItem = useCartStore((state) => state.removeItem);
   const setQuantity = useCartStore((state) => state.setQuantity);
   const totals = calculateCartTotals(items);
+  const { dict } = useI18n();
+  const { format } = useCurrency();
+
+  if (!hydrated) {
+    return <p className="py-20 text-center text-zinc-600">{dict.checkout.loading}</p>;
+  }
 
   if (items.length === 0) {
     return (
       <div className="py-20 text-center">
-        <p className="mb-6 text-zinc-600">Your cart is empty.</p>
-        <Link className="underline" href="/products">
-          Browse fragrances
-        </Link>
+        <p className="mb-6 text-zinc-600">{dict.cart.empty}</p>
+        <LocaleLink className="underline" href="/collections/all">
+          {dict.cart.browse}
+        </LocaleLink>
       </div>
     );
   }
@@ -38,14 +46,14 @@ export function CartView() {
               />
             ) : null}
             <div className="min-w-0 flex-1">
-              <Link className="font-medium" href={`/products/${item.slug}`}>
+              <LocaleLink className="font-medium" href={`/products/${item.slug}`}>
                 {item.productName}
-              </Link>
-              <p className="text-sm text-zinc-500">{item.variantName}</p>
-              <p className="mt-2">{formatMoney(item.unitPrice)}</p>
+              </LocaleLink>
+              <p className="text-sm text-zinc-500">{dict.variants[item.variantName as keyof typeof dict.variants] ?? item.variantName}</p>
+              <p className="mt-2">{format(item.unitPrice)}</p>
               <div className="mt-4 flex items-center gap-4">
                 <input
-                  aria-label={`Quantity for ${item.productName}`}
+                  aria-label={interpolate(dict.cart.quantity, { name: item.productName })}
                   className="w-20 rounded border border-zinc-300 px-3 py-2"
                   min={0}
                   max={99}
@@ -60,30 +68,30 @@ export function CartView() {
                   type="button"
                   onClick={() => removeItem(item.variantId)}
                 >
-                  Remove
+                  {dict.cart.remove}
                 </button>
               </div>
             </div>
             <p className="font-medium">
-              {formatMoney(item.unitPrice * item.quantity)}
+              {format(item.unitPrice * item.quantity)}
             </p>
           </li>
         ))}
       </ul>
       <aside className="h-fit rounded-xl bg-zinc-50 p-6">
         <div className="flex justify-between text-lg font-medium">
-          <span>Subtotal ({totals.itemCount})</span>
-          <span>{formatMoney(totals.subtotal)}</span>
+          <span>{interpolate(dict.cart.subtotal, { count: totals.itemCount })}</span>
+          <span>{format(totals.subtotal)}</span>
         </div>
         <p className="mt-2 text-sm text-zinc-500">
-          Shipping and taxes are calculated at checkout.
+          {dict.cart.shippingNote}
         </p>
-        <Link
+        <LocaleLink
           href="/checkout"
           className="mt-6 block rounded-full bg-zinc-950 px-5 py-3 text-center text-white"
         >
-          Checkout
-        </Link>
+          {dict.cart.checkout}
+        </LocaleLink>
       </aside>
     </div>
   );

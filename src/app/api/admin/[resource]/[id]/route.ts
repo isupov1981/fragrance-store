@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { hasSameOrigin, requireAdminRequest } from "@/lib/auth/server";
 
-const resourceSchema = z.enum(["products", "categories", "orders", "customers", "content", "shipping"]);
+const resourceSchema = z.enum(["products", "categories", "brands", "orders", "customers", "content", "shipping"]);
 
 export async function PATCH(
   request: Request,
@@ -28,6 +28,10 @@ export async function PATCH(
       case "categories": {
         const data = z.object({ name: z.string().min(2).optional(), description: z.string().nullable().optional(), seoTitle: z.string().nullable().optional(), seoDescription: z.string().nullable().optional() }).parse(input);
         return NextResponse.json({ data: await prisma.category.update({ where: { id: route.id }, data }) });
+      }
+      case "brands": {
+        const data = z.object({ name: z.string().min(2).optional(), description: z.string().nullable().optional() }).parse(input);
+        return NextResponse.json({ data: await prisma.brand.update({ where: { id: route.id }, data }) });
       }
       case "orders": {
         const data = z.object({ status: z.enum(["PENDING", "PAID", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED", "REFUNDED"]) }).parse(input);
@@ -71,6 +75,7 @@ export async function DELETE(
   switch (resource.data) {
     case "products": await prisma.product.delete({ where: { id: route.id } }); break;
     case "categories": await prisma.category.delete({ where: { id: route.id } }); break;
+    case "brands": await prisma.brand.delete({ where: { id: route.id } }); break;
     case "customers": await prisma.customer.delete({ where: { id: route.id } }); break;
     case "content": await prisma.contentPage.delete({ where: { id: route.id } }); break;
     case "shipping": await prisma.shippingMethod.delete({ where: { id: route.id } }); break;

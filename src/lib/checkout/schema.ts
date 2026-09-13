@@ -22,6 +22,8 @@ export const checkoutSchema = z.object({
     country: z.string().trim().length(2).transform((value) => value.toUpperCase()),
   }),
   shippingMethod: z.enum(["standard", "express"]),
+  currency: z.enum(["USD", "EUR", "ILS"]).default("USD"),
+  locale: z.enum(["en", "he"]).default("en"),
   acceptsTerms: z.literal(true),
 });
 

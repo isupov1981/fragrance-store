@@ -7,10 +7,13 @@ import type { CartItem } from "@/lib/cart/cart";
 
 type CartState = {
   items: CartItem[];
+  drawerOpen: boolean;
   addItem: (item: CartItem) => void;
   removeItem: (variantId: string) => void;
   setQuantity: (variantId: string, quantity: number) => void;
   clear: () => void;
+  openDrawer: () => void;
+  closeDrawer: () => void;
 };
 
 const clampQuantity = (quantity: number) =>
@@ -20,6 +23,7 @@ export const useCartStore = create<CartState>()(
   persist(
     (set) => ({
       items: [],
+      drawerOpen: false,
       addItem: (item) =>
         set((state) => {
           const existing = state.items.find(
@@ -27,6 +31,7 @@ export const useCartStore = create<CartState>()(
           );
           if (!existing) {
             return {
+              drawerOpen: true,
               items: [
                 ...state.items,
                 { ...item, quantity: clampQuantity(item.quantity) },
@@ -34,6 +39,7 @@ export const useCartStore = create<CartState>()(
             };
           }
           return {
+            drawerOpen: true,
             items: state.items.map((current) =>
               current.variantId === item.variantId
                 ? {
@@ -59,7 +65,9 @@ export const useCartStore = create<CartState>()(
                     : item,
                 ),
         })),
-      clear: () => set({ items: [] }),
+      clear: () => set({ items: [], drawerOpen: false }),
+      openDrawer: () => set({ drawerOpen: true }),
+      closeDrawer: () => set({ drawerOpen: false }),
     }),
     {
       name: "fragrance-store-cart",

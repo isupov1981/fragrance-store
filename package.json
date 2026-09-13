@@ -13,6 +13,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
+    "test:lighthouse": "lighthouse http://localhost:3000/en --budget-path=./lighthouse-budget.json --chrome-flags=\"--headless --no-sandbox\" --output=json --output-path=./lighthouse-report.json --quiet",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",

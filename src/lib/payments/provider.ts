@@ -18,10 +18,11 @@ class DemoPaymentProvider implements PaymentProvider {
   readonly name = "demo";
 
   async createSession(order: Order, origin: string): Promise<PaymentSession> {
+    const locale = order.locale ?? "en";
     return {
       provider: this.name,
       reference: `demo_${order.id}`,
-      redirectUrl: `${origin}/checkout/success?order=${encodeURIComponent(order.id)}&demo=1`,
+      redirectUrl: `${origin}/${locale}/checkout/success?order=${encodeURIComponent(order.id)}&demo=1`,
       paid: true,
     };
   }
@@ -63,8 +64,8 @@ class StripePaymentProvider implements PaymentProvider {
               }]
             : []),
         ],
-        success_url: `${origin}/checkout/success?order=${encodeURIComponent(order.id)}`,
-        cancel_url: `${origin}/checkout?cancelled=1`,
+        success_url: `${origin}/${order.locale ?? "en"}/checkout/success?order=${encodeURIComponent(order.id)}`,
+        cancel_url: `${origin}/${order.locale ?? "en"}/checkout/cancel`,
       },
       { idempotencyKey: order.idempotencyKey },
     );

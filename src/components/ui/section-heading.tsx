@@ -1,4 +1,6 @@
-import Link from "next/link";
+"use client";
+
+import { LocaleLink } from "@/components/i18n/locale-link";
 
 type SectionHeadingProps = {
   eyebrow?: string;
@@ -13,7 +15,7 @@ export function SectionHeading({
   title,
   description,
   href,
-  linkLabel = "View all",
+  linkLabel,
 }: SectionHeadingProps) {
   return (
     <div className="mb-8 flex flex-col gap-5 sm:mb-12 sm:flex-row sm:items-end sm:justify-between">
@@ -23,9 +25,9 @@ export function SectionHeading({
         {description && <p className="mt-4 max-w-xl text-sm leading-6 text-ink/65">{description}</p>}
       </div>
       {href && (
-        <Link className="text-link shrink-0" href={href}>
+        <LocaleLink className="text-link shrink-0" href={href}>
           {linkLabel} <span aria-hidden="true">↗</span>
-        </Link>
+        </LocaleLink>
       )}
     </div>
   );

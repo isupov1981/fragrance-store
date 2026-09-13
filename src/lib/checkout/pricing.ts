@@ -1,4 +1,11 @@
 import { products } from "@/lib/catalog";
+import {
+  convertUsdCents,
+  EXPRESS_SHIPPING_USD_CENTS,
+  FREE_SHIPPING_USD_CENTS,
+  STANDARD_SHIPPING_USD_CENTS,
+  type Currency,
+} from "@/lib/currency";
 
 import type { CheckoutInput } from "./schema";
 
@@ -17,7 +24,8 @@ export type PricedCart = {
   subtotal: number;
   shippingTotal: number;
   total: number;
-  currency: "usd";
+  currency: "usd" | "eur" | "ils";
+  shippingMethod: CheckoutInput["shippingMethod"];
 };
 
 export class CheckoutPricingError extends Error {}
@@ -25,6 +33,7 @@ export class CheckoutPricingError extends Error {}
 export function priceCheckoutItems(
   items: CheckoutInput["items"],
   shippingMethod: CheckoutInput["shippingMethod"],
+  currency: Currency = "USD",
 ): PricedCart {
   const quantities = new Map<string, number>();
   for (const item of items) {
@@ -60,17 +69,26 @@ export function priceCheckoutItems(
     };
   });
 
-  const subtotal = lines.reduce(
+  const subtotalUsd = lines.reduce(
     (total, line) => total + line.unitPrice * line.quantity,
     0,
   );
-  const shippingTotal = shippingMethod === "express" ? 2500 : subtotal >= 25000 ? 0 : 1200;
+  const shippingUsd =
+    shippingMethod === "express"
+      ? EXPRESS_SHIPPING_USD_CENTS
+      : subtotalUsd >= FREE_SHIPPING_USD_CENTS
+        ? 0
+        : STANDARD_SHIPPING_USD_CENTS;
 
   return {
-    lines,
-    subtotal,
-    shippingTotal,
-    total: subtotal + shippingTotal,
-    currency: "usd",
+    lines: lines.map((line) => ({
+      ...line,
+      unitPrice: convertUsdCents(line.unitPrice, currency),
+    })),
+    subtotal: convertUsdCents(subtotalUsd, currency),
+    shippingTotal: convertUsdCents(shippingUsd, currency),
+    total: convertUsdCents(subtotalUsd + shippingUsd, currency),
+    currency: currency.toLowerCase() as PricedCart["currency"],
+    shippingMethod,
   };
 }

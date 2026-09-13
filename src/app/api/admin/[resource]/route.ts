@@ -4,7 +4,7 @@ import { hasSameOrigin } from "@/lib/auth/server";
 
 export const runtime = "nodejs";
 
-const resourceSchema = z.enum(["products", "categories", "orders", "customers", "content", "shipping"]);
+const resourceSchema = z.enum(["products", "categories", "brands", "orders", "customers", "content", "shipping"]);
 
 export async function GET(
   _request: Request,
@@ -50,6 +50,7 @@ function listResource(db: Database, resource: z.infer<typeof resourceSchema>) {
   switch (resource) {
     case "products": return db.product.findMany({ include: { variants: true, brand: true }, orderBy: { updatedAt: "desc" }, take: 100 });
     case "categories": return db.category.findMany({ orderBy: { name: "asc" }, take: 100 });
+    case "brands": return db.brand.findMany({ orderBy: { name: "asc" }, take: 100 });
     case "orders": return db.order.findMany({ include: { items: true }, orderBy: { createdAt: "desc" }, take: 100 });
     case "customers": return db.customer.findMany({ include: { _count: { select: { orders: true } } }, orderBy: { createdAt: "desc" }, take: 100 });
     case "content": return db.contentPage.findMany({ orderBy: { updatedAt: "desc" }, take: 100 });
@@ -82,6 +83,10 @@ async function createResource(db: Database, resource: z.infer<typeof resourceSch
     case "categories": {
       const data = z.object({ name: z.string().min(2), slug: z.string().regex(/^[a-z0-9-]+$/), description: z.string().optional() }).parse(input);
       return db.category.create({ data });
+    }
+    case "brands": {
+      const data = z.object({ name: z.string().min(2), slug: z.string().regex(/^[a-z0-9-]+$/), description: z.string().optional() }).parse(input);
+      return db.brand.create({ data });
     }
     case "customers": {
       const data = z.object({ name: z.string().min(2), email: z.email(), phone: z.string().optional() }).parse(input);

@@ -1,39 +1,40 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useState } from "react";
+import { LocaleLink } from "@/components/i18n/locale-link";
+import { useI18n } from "@/components/i18n/i18n-provider";
 import { usePrefersReducedMotion } from "./reveal";
 
-const perfumers = [
-  {
-    id: "voss",
-    name: "Clara Voss",
-    role: "Maison Sol",
-    copy: "She writes in amber, vanilla absolute and dry cedar — compositions meant to be worn close, never announced.",
-    stats: ["Amber Veil", "Cedar After Rain", "Warm resins"],
-    href: "/products/amber-veil",
-    cta: "Wear Amber Veil",
-    image: "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=1400&q=88",
-    alt: "Amber Veil bottle in warm light",
-  },
-  {
-    id: "ellery",
-    name: "Jonah Ellery",
-    role: "Atelier Nox",
-    copy: "Green fig, mineral musk and night air. A modern line with the courage to stay quiet until the dry-down.",
-    stats: ["Fig Nocturne", "Iris Paper", "Skin musks"],
-    href: "/products/fig-nocturne",
-    cta: "Wear Fig Nocturne",
-    image: "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=1400&q=88",
-    alt: "Fig Nocturne bottle against dark botanicals",
-  },
-];
-
 export function PerfumerSpotlight() {
+  const { dict } = useI18n();
   const reduced = usePrefersReducedMotion();
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const perfumers = [
+    {
+      id: "voss",
+      name: "Clara Voss",
+      role: "Maison Sol",
+      copy: dict.home.vossCopy,
+      stats: ["Amber Veil", "Cedar After Rain", dict.categories.amber.name],
+      href: "/products/amber-veil",
+      cta: dict.home.wearAmber,
+      image: "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=1400&q=88",
+      alt: "Amber Veil",
+    },
+    {
+      id: "ellery",
+      name: "Jonah Ellery",
+      role: "Atelier Nox",
+      copy: dict.home.elleryCopy,
+      stats: ["Fig Nocturne", "Iris Paper", dict.categories.woody.name],
+      href: "/products/fig-nocturne",
+      cta: dict.home.wearFig,
+      image: "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=1400&q=88",
+      alt: "Fig Nocturne",
+    },
+  ];
   const active = perfumers[index];
 
   useEffect(() => {
@@ -42,16 +43,16 @@ export function PerfumerSpotlight() {
       setIndex((current) => (current + 1) % perfumers.length);
     }, 5000);
     return () => window.clearInterval(timer);
-  }, [paused, reduced]);
+  }, [paused, reduced, perfumers.length]);
 
   return (
     <section className="shell py-16 sm:py-24" onPointerEnter={() => setPaused(true)} onPointerLeave={() => setPaused(false)}>
       <header className="mx-auto mb-10 max-w-2xl text-center sm:mb-14">
-        <p className="eyebrow">The hands behind the work</p>
-        <h2 className="mt-3 font-display text-4xl sm:text-5xl">Perfumer spotlight</h2>
-        <p className="mt-4 text-sm leading-6 text-ink/65">Meet the independent noses whose signatures shape the atelier.</p>
+        <p className="eyebrow">{dict.home.spotlightEyebrow}</p>
+        <h2 className="mt-3 font-display text-4xl sm:text-5xl">{dict.home.spotlightTitle}</h2>
+        <p className="mt-4 text-sm leading-6 text-ink/65">{dict.home.spotlightCopy}</p>
       </header>
-      <div className="mb-8 flex flex-wrap justify-center gap-2" role="tablist" aria-label="Choose a perfumer">
+      <div className="mb-8 flex flex-wrap justify-center gap-2" role="tablist" aria-label={dict.home.choosePerfumer}>
         {perfumers.map((person, personIndex) => (
           <button
             className={`px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.16em] transition ${
@@ -92,9 +93,9 @@ export function PerfumerSpotlight() {
                 </li>
               ))}
             </ul>
-            <Link className="text-link mt-9" href={active.href}>
+            <LocaleLink className="text-link mt-9" href={active.href}>
               {active.cta} <span aria-hidden="true">↗</span>
-            </Link>
+            </LocaleLink>
           </div>
         </div>
       </article>

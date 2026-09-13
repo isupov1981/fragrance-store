@@ -34,6 +34,7 @@ export async function POST(request: Request) {
     const cart = priceCheckoutItems(
       parsed.data.items,
       parsed.data.shippingMethod,
+      parsed.data.currency,
     );
     const provider = getPaymentProvider();
     const order: Order = {
@@ -44,6 +45,7 @@ export async function POST(request: Request) {
       paymentProvider: provider.name,
       status: "pending",
       createdAt: new Date().toISOString(),
+      locale: parsed.data.locale,
     };
     const configuredOrigin = process.env.APP_URL?.replace(/\/$/, "");
     const origin = configuredOrigin ?? new URL(request.url).origin;

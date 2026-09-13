@@ -172,10 +172,18 @@ summary::-webkit-details-marker {
   text-transform: uppercase;
 }
 
+html[lang="he"] body {
+  font-family: var(--font-hebrew-sans), var(--font-geist-sans), Arial, sans-serif;
+}
+
+html[lang="he"] .font-display {
+  font-family: var(--font-hebrew-display), var(--font-display), Georgia, serif;
+}
+
 .skip-link {
   position: fixed;
   top: 0;
-  left: 1rem;
+  inset-inline-start: 1rem;
   z-index: 100;
   background: var(--ivory);
   padding: 0.75rem 1rem;
@@ -199,9 +207,9 @@ summary::-webkit-details-marker {
 
 .consent-banner {
   position: fixed;
-  right: 1rem;
+  inset-inline-end: 1rem;
   bottom: 1rem;
-  left: 1rem;
+  inset-inline-start: 1rem;
   z-index: 80;
   display: flex;
   max-width: 40rem;
@@ -234,6 +242,30 @@ summary::-webkit-details-marker {
 .consent-actions .button-dark {
   background: var(--ink);
   color: var(--ivory);
+}
+
+.cart-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+}
+
+.cart-drawer-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgb(32 29 25 / 42%);
+}
+
+.cart-drawer-panel {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  display: flex;
+  width: min(26rem, 100%);
+  flex-direction: column;
+  background: var(--ivory);
+  box-shadow: -1.25rem 0 3rem rgb(32 29 25 / 16%);
 }
 
 .header-over-hero .nav-link::after {
@@ -375,9 +407,9 @@ summary::-webkit-details-marker {
   }
 
   .consent-banner {
-    right: 2rem;
+    inset-inline-end: 2rem;
     bottom: 2rem;
-    left: auto;
+    inset-inline-start: auto;
   }
 }
 

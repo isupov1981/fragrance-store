@@ -1,21 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, Minus, Plus } from "lucide-react";
+import { trackCommerceEvent } from "@/components/analytics/consent-manager";
 import { AddToCartButton } from "@/components/cart/add-to-cart-button";
-import { formatMoney, type StoreProduct } from "@/lib/catalog";
+import { useCurrency } from "@/components/i18n/currency-provider";
+import { useI18n } from "@/components/i18n/i18n-provider";
+import type { StoreProduct } from "@/lib/catalog";
 
 export function ProductPurchase({ product }: { product: StoreProduct }) {
+  const { dict } = useI18n();
+  const { format, currency, convert } = useCurrency();
   const { variants } = product;
   const [variantId, setVariantId] = useState(variants[0]?.id ?? "");
   const [quantity, setQuantity] = useState(1);
   const selected = variants.find((variant) => variant.id === variantId) ?? variants[0];
   const unavailable = !selected || selected.stock < 1;
 
+  useEffect(() => {
+    const variant = product.variants[0];
+    if (!variant) return;
+    trackCommerceEvent("view_item", {
+      currency,
+      value: convert(variant.price) / 100,
+      items: [{ item_id: variant.sku, item_name: product.name, quantity: 1 }],
+    });
+  }, [convert, currency, product]);
+
   return (
     <div className="mt-8">
       <fieldset>
-        <legend className="mb-3 text-xs font-semibold uppercase tracking-[0.16em]">Choose a size</legend>
+        <legend className="mb-3 text-xs font-semibold uppercase tracking-[0.16em]">{dict.product.size}</legend>
         <div className="grid grid-cols-2 gap-2">
           {variants.map((variant) => (
             <label
@@ -32,31 +47,31 @@ export function ProductPurchase({ product }: { product: StoreProduct }) {
                 onChange={() => setVariantId(variant.id)}
                 disabled={variant.stock < 1}
               />
-              <span className="block">{variant.name}</span>
-              <span className="mt-0.5 block text-[10px] opacity-70">{formatMoney(variant.price)}</span>
+              <span className="block">{dict.variants[variant.name as keyof typeof dict.variants] ?? variant.name}</span>
+              <span className="mt-0.5 block text-[10px] opacity-70">{format(variant.price)}</span>
             </label>
           ))}
         </div>
       </fieldset>
 
       <div className="mt-6 flex gap-3">
-        <div className="flex h-14 items-center border border-ink/20" aria-label="Quantity selector">
+        <div className="flex h-14 items-center border border-ink/20" aria-label={dict.product.quantity}>
           <button
             className="grid size-12 place-items-center disabled:opacity-30"
             type="button"
             onClick={() => setQuantity((current) => Math.max(1, current - 1))}
             disabled={quantity === 1}
-            aria-label="Decrease quantity"
+            aria-label={dict.product.decrease}
           >
             <Minus aria-hidden="true" size={15} />
           </button>
-          <input className="w-8 bg-transparent text-center text-sm outline-none" value={quantity} readOnly aria-label="Quantity" />
+          <input className="w-8 bg-transparent text-center text-sm outline-none" value={quantity} readOnly aria-label={dict.product.quantity} />
           <button
             className="grid size-12 place-items-center disabled:opacity-30"
             type="button"
             onClick={() => setQuantity((current) => Math.min(selected?.stock ?? 1, current + 1))}
             disabled={unavailable || quantity >= (selected?.stock ?? 0)}
-            aria-label="Increase quantity"
+            aria-label={dict.product.increase}
           >
             <Plus aria-hidden="true" size={15} />
           </button>
@@ -71,8 +86,8 @@ export function ProductPurchase({ product }: { product: StoreProduct }) {
         )}
       </div>
       <ul className="mt-6 grid gap-2 text-xs text-ink/65 sm:grid-cols-2">
-        <li className="flex items-center gap-2"><Check aria-hidden="true" size={14} /> Complimentary samples</li>
-        <li className="flex items-center gap-2"><Check aria-hidden="true" size={14} /> Gift wrapping available</li>
+        <li className="flex items-center gap-2"><Check aria-hidden="true" size={14} /> {dict.product.samples}</li>
+        <li className="flex items-center gap-2"><Check aria-hidden="true" size={14} /> {dict.product.wrapping}</li>
       </ul>
     </div>
   );

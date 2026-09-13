@@ -1,9 +1,10 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ProductCard } from "@/components/product/product-card";
+import { LocaleLink } from "@/components/i18n/locale-link";
+import { useI18n } from "@/components/i18n/i18n-provider";
 import type { StoreProduct } from "@/lib/catalog";
 import { usePrefersReducedMotion } from "./reveal";
 
@@ -17,6 +18,7 @@ type ProductCarouselProps = {
 };
 
 export function ProductCarousel({ eyebrow, title, description, href, linkLabel, products }: ProductCarouselProps) {
+  const { dict } = useI18n();
   const scrollerRef = useRef<HTMLDivElement>(null);
   const reduced = usePrefersReducedMotion();
   const [paused, setPaused] = useState(false);
@@ -78,15 +80,15 @@ export function ProductCarousel({ eyebrow, title, description, href, linkLabel, 
           <p className="eyebrow mb-3">{eyebrow}</p>
           <h2 className="font-display text-4xl leading-none sm:text-5xl">{title}</h2>
           <p className="mt-4 max-w-sm text-sm leading-6 text-ink/65">{description}</p>
-          <Link className="text-link mt-8" href={href}>
+          <LocaleLink className="text-link mt-8" href={href}>
             {linkLabel} <span aria-hidden="true">↗</span>
-          </Link>
+          </LocaleLink>
           {(canPrev || canNext) && (
             <div className="mt-8 hidden gap-2 sm:flex">
-              <button className="carousel-nav" type="button" onClick={() => scrollByCard(-1)} aria-label="Previous fragrances">
+              <button className="carousel-nav" type="button" onClick={() => scrollByCard(-1)} aria-label={dict.home.prev}>
                 <ChevronLeft size={18} />
               </button>
-              <button className="carousel-nav" type="button" onClick={() => scrollByCard(1)} aria-label="Next fragrances">
+              <button className="carousel-nav" type="button" onClick={() => scrollByCard(1)} aria-label={dict.home.next}>
                 <ChevronRight size={18} />
               </button>
             </div>

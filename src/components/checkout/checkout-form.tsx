@@ -1,12 +1,18 @@
 "use client";
 
-import Link from "next/link";
 import { FormEvent, useRef, useState } from "react";
 
 import { trackCommerceEvent } from "@/components/analytics/consent-manager";
+import { LocaleLink } from "@/components/i18n/locale-link";
+import { useCurrency } from "@/components/i18n/currency-provider";
+import { useI18n } from "@/components/i18n/i18n-provider";
 import { calculateCartTotals } from "@/lib/cart/cart";
-import { useCartStore } from "@/lib/cart/store";
-import { formatMoney } from "@/lib/catalog";
+import { useHydratedCart } from "@/lib/cart/use-hydrated-cart";
+import {
+  EXPRESS_SHIPPING_USD_CENTS,
+  FREE_SHIPPING_USD_CENTS,
+  STANDARD_SHIPPING_USD_CENTS,
+} from "@/lib/currency";
 
 type CheckoutResponse = {
   error?: string;
@@ -16,13 +22,20 @@ type CheckoutResponse = {
 const fieldClass = "rounded-lg border border-zinc-300 px-4 py-3";
 
 export function CheckoutForm() {
-  const items = useCartStore((state) => state.items);
+  const { items, hydrated } = useHydratedCart();
   const totals = calculateCartTotals(items);
   const idempotencyKey = useRef<string>(crypto.randomUUID());
   const [error, setError] = useState<string>();
   const [submitting, setSubmitting] = useState(false);
   const [shippingMethod, setShippingMethod] = useState<"standard" | "express">("standard");
-  const shippingTotal = shippingMethod === "express" ? 2500 : totals.subtotal >= 25000 ? 0 : 1200;
+  const { dict, locale } = useI18n();
+  const { currency, format } = useCurrency();
+  const shippingUsd =
+    shippingMethod === "express"
+      ? EXPRESS_SHIPPING_USD_CENTS
+      : totals.subtotal >= FREE_SHIPPING_USD_CENTS
+        ? 0
+        : STANDARD_SHIPPING_USD_CENTS;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -30,8 +43,8 @@ export function CheckoutForm() {
     setSubmitting(true);
     const form = new FormData(event.currentTarget);
     trackCommerceEvent("begin_checkout", {
-      currency: process.env.NEXT_PUBLIC_STORE_CURRENCY ?? "USD",
-      value: (totals.subtotal + shippingTotal) / 100,
+      currency,
+      value: (totals.subtotal + shippingUsd) / 100,
       items: items.map((item) => ({
         item_id: item.variantId,
         item_name: item.productName,
@@ -60,27 +73,33 @@ export function CheckoutForm() {
             country: form.get("country"),
           },
           shippingMethod,
+          currency,
+          locale,
           acceptsTerms: form.get("acceptsTerms") === "on",
         }),
       });
       const result = (await response.json()) as CheckoutResponse;
       if (!response.ok || !result.redirectUrl) {
-        throw new Error(result.error ?? "Checkout could not be started");
+        throw new Error(result.error ?? dict.checkout.failed);
       }
       window.location.assign(result.redirectUrl);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Checkout failed");
+      setError(caught instanceof Error ? caught.message : dict.checkout.error);
       setSubmitting(false);
     }
+  }
+
+  if (!hydrated) {
+    return <p className="py-20 text-center text-zinc-600">{dict.checkout.loading}</p>;
   }
 
   if (!items.length) {
     return (
       <div className="py-20 text-center">
-        <p className="mb-5 text-zinc-600">Add something to your cart first.</p>
-        <Link href="/collections/all" className="underline">
-          Browse fragrances
-        </Link>
+        <p className="mb-5 text-zinc-600">{dict.checkout.empty}</p>
+        <LocaleLink href="/collections/all" className="underline">
+          {dict.cart.browse}
+        </LocaleLink>
       </div>
     );
   }
@@ -91,48 +110,48 @@ export function CheckoutForm() {
       className="grid gap-10 lg:grid-cols-[1fr_360px]"
     >
       <section>
-        <h2 className="text-xl font-medium">Contact and shipping</h2>
+        <h2 className="text-xl font-medium">{dict.checkout.contact}</h2>
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <input className={`${fieldClass} sm:col-span-2`} name="name" placeholder="Full name" autoComplete="name" required />
-          <input className={fieldClass} name="email" type="email" placeholder="Email" autoComplete="email" required />
-          <input className={fieldClass} name="phone" type="tel" placeholder="Phone (optional)" autoComplete="tel" />
-          <input className={`${fieldClass} sm:col-span-2`} name="addressLine1" placeholder="Address" autoComplete="address-line1" required />
-          <input className={`${fieldClass} sm:col-span-2`} name="addressLine2" placeholder="Apartment, suite (optional)" autoComplete="address-line2" />
-          <input className={fieldClass} name="city" placeholder="City" autoComplete="address-level2" required />
-          <input className={fieldClass} name="postalCode" placeholder="Postal code" autoComplete="postal-code" required />
-          <input className={fieldClass} name="country" placeholder="Country code (US)" autoComplete="country" minLength={2} maxLength={2} required />
+          <input className={`${fieldClass} sm:col-span-2`} name="name" placeholder={dict.checkout.name} autoComplete="name" required />
+          <input className={fieldClass} name="email" type="email" placeholder={dict.checkout.email} autoComplete="email" required />
+          <input className={fieldClass} name="phone" type="tel" placeholder={dict.checkout.phone} autoComplete="tel" />
+          <input className={`${fieldClass} sm:col-span-2`} name="addressLine1" placeholder={dict.checkout.address} autoComplete="address-line1" required />
+          <input className={`${fieldClass} sm:col-span-2`} name="addressLine2" placeholder={dict.checkout.apartment} autoComplete="address-line2" />
+          <input className={fieldClass} name="city" placeholder={dict.checkout.city} autoComplete="address-level2" required />
+          <input className={fieldClass} name="postalCode" placeholder={dict.checkout.postal} autoComplete="postal-code" required />
+          <input className={fieldClass} name="country" placeholder={dict.checkout.country} autoComplete="country" minLength={2} maxLength={2} required />
         </div>
         <fieldset className="mt-8">
-          <legend className="text-xl font-medium">Delivery</legend>
+          <legend className="text-xl font-medium">{dict.checkout.delivery}</legend>
           <div className="mt-4 grid gap-3">
             <label className="flex items-center justify-between rounded-lg border border-zinc-300 p-4">
-              <span><input className="mr-3" type="radio" name="shippingMethod" value="standard" checked={shippingMethod === "standard"} onChange={() => setShippingMethod("standard")} />Standard delivery</span>
-              <span>{totals.subtotal >= 25000 ? "Free" : formatMoney(1200)}</span>
+              <span><input className="me-3" type="radio" name="shippingMethod" value="standard" checked={shippingMethod === "standard"} onChange={() => setShippingMethod("standard")} />{dict.checkout.standard}</span>
+              <span>{totals.subtotal >= FREE_SHIPPING_USD_CENTS ? dict.checkout.free : format(STANDARD_SHIPPING_USD_CENTS)}</span>
             </label>
             <label className="flex items-center justify-between rounded-lg border border-zinc-300 p-4">
-              <span><input className="mr-3" type="radio" name="shippingMethod" value="express" checked={shippingMethod === "express"} onChange={() => setShippingMethod("express")} />Express delivery</span>
-              <span>{formatMoney(2500)}</span>
+              <span><input className="me-3" type="radio" name="shippingMethod" value="express" checked={shippingMethod === "express"} onChange={() => setShippingMethod("express")} />{dict.checkout.express}</span>
+              <span>{format(EXPRESS_SHIPPING_USD_CENTS)}</span>
             </label>
           </div>
         </fieldset>
         <label className="mt-6 flex items-start gap-3 text-sm">
           <input className="mt-1" type="checkbox" name="acceptsTerms" required />
-          <span>I agree to the terms, shipping policy and returns policy.</span>
+          <span>{dict.checkout.terms}</span>
         </label>
       </section>
       <aside className="h-fit rounded-xl bg-zinc-50 p-6">
-        <h2 className="text-xl font-medium">Order summary</h2>
+        <h2 className="text-xl font-medium">{dict.checkout.summary}</h2>
         <ul className="mt-5 space-y-3 text-sm">
           {items.map((item) => (
             <li className="flex justify-between gap-4" key={item.variantId}>
-              <span>{item.productName}, {item.variantName} × {item.quantity}</span>
-              <span>{formatMoney(item.unitPrice * item.quantity)}</span>
+              <span>{item.productName}, {dict.variants[item.variantName as keyof typeof dict.variants] ?? item.variantName} × {item.quantity}</span>
+              <span>{format(item.unitPrice * item.quantity)}</span>
             </li>
           ))}
         </ul>
         <div className="mt-5 flex justify-between border-t border-zinc-200 pt-5 text-lg font-medium">
-          <span>Total</span>
-          <span>{formatMoney(totals.subtotal + shippingTotal)}</span>
+          <span>{dict.checkout.total}</span>
+          <span>{format(totals.subtotal + shippingUsd)}</span>
         </div>
         {error ? <p role="alert" className="mt-4 text-sm text-red-700">{error}</p> : null}
         <button
@@ -140,10 +159,10 @@ export function CheckoutForm() {
           disabled={submitting}
           type="submit"
         >
-          {submitting ? "Starting payment…" : "Continue to payment"}
+          {submitting ? dict.checkout.starting : dict.checkout.pay}
         </button>
         <p className="mt-3 text-xs text-zinc-500">
-          Without Stripe configuration, a safe demo payment is used.
+          {dict.checkout.demo}
         </p>
       </aside>
     </form>

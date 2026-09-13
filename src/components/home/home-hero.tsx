@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { LocaleLink } from "@/components/i18n/locale-link";
+import { useI18n } from "@/components/i18n/i18n-provider";
 import { usePrefersReducedMotion } from "./reveal";
 
 const frames = [
@@ -21,6 +22,7 @@ const frames = [
 ];
 
 export function HomeHero() {
+  const { dict } = useI18n();
   const mediaRef = useRef<HTMLDivElement>(null);
   const reduced = usePrefersReducedMotion();
   const [frame, setFrame] = useState(0);
@@ -66,25 +68,25 @@ export function HomeHero() {
       <div className="home-hero-grain pointer-events-none absolute inset-0" />
       <div className="relative flex min-h-svh items-end justify-center px-6 pb-16 text-center sm:pb-20 lg:pb-24">
         <div className="home-hero-copy max-w-3xl">
-          <p className="eyebrow mb-5 text-ivory/70">The private collection · 2026</p>
+          <p className="eyebrow mb-5 text-ivory/70">{dict.home.heroEyebrow}</p>
           <div className="hero-crop">
             <h1 className="hero-copy-line font-display text-[3.35rem] leading-[.88] tracking-[-0.035em] sm:text-7xl lg:text-[6.35rem]" id="home-hero-heading">
-              Rare fragrance, <em className="font-normal">intimately</em> chosen.
+              {dict.home.heroTitle} <em className="font-normal">{dict.home.heroEm}</em> {dict.home.heroRest}
             </h1>
           </div>
           <div className="hero-crop">
             <p className="hero-copy-line hero-copy-line-delay mx-auto mt-6 max-w-md text-sm leading-7 text-ivory/78 sm:text-base">
-              Singular compositions for those who prefer to be remembered, never announced.
+              {dict.home.heroCopy}
             </p>
           </div>
           <div className="hero-crop">
             <div className="hero-copy-line hero-copy-line-delay-2 mt-9 flex flex-wrap justify-center gap-3">
-              <Link className="inline-flex h-13 items-center bg-ivory px-7 text-[11px] font-semibold uppercase tracking-[0.17em] text-ink transition hover:bg-sand" href="/collections/all">
-                Explore the collection
-              </Link>
-              <Link className="inline-flex h-13 items-center border border-ivory/50 px-7 text-[11px] font-semibold uppercase tracking-[0.17em] transition hover:bg-ivory hover:text-ink" href="/about">
-                Find yours
-              </Link>
+              <LocaleLink className="inline-flex h-13 items-center bg-ivory px-7 text-[11px] font-semibold uppercase tracking-[0.17em] text-ink transition hover:bg-sand" href="/collections/all">
+                {dict.home.explore}
+              </LocaleLink>
+              <LocaleLink className="inline-flex h-13 items-center border border-ivory/50 px-7 text-[11px] font-semibold uppercase tracking-[0.17em] transition hover:bg-ivory hover:text-ink" href="/about">
+                {dict.home.findYours}
+              </LocaleLink>
             </div>
           </div>
         </div>

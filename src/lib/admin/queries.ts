@@ -66,6 +66,15 @@ export async function getAdminSectionRows(section: string) {
         "ACTIVE",
       ]);
     }
+    case "brands": {
+      const brands = await prisma.brand.findMany({ orderBy: { name: "asc" } });
+      return brands.map((brand) => [
+        brand.name,
+        brand.slug,
+        brand.description ?? "—",
+        "ACTIVE",
+      ]);
+    }
     case "orders": {
       const orders = await prisma.order.findMany({
         orderBy: { createdAt: "desc" },
@@ -76,6 +85,7 @@ export async function getAdminSectionRows(section: string) {
         order.fullName,
         formatMoney(order.total, order.currency),
         order.status,
+        order.id,
       ]);
     }
     case "customers": {

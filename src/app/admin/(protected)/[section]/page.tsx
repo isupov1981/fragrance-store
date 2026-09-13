@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getAdminSectionRows } from "@/lib/admin/queries";
 import { requireAdminPage } from "@/lib/auth/server";
 import { CsvPanel } from "./csv-panel";
+import { OrderStatusForm } from "./order-status-form";
 import { ResourceForm } from "./resource-form";
 
 const sections = {
@@ -13,6 +14,11 @@ const sections = {
   categories: {
     title: "Категории",
     columns: ["Название", "Slug", "Товаров", "Статус"],
+    fields: [["name", "Название"], ["slug", "Slug"], ["description", "Описание"]],
+  },
+  brands: {
+    title: "Бренды",
+    columns: ["Название", "Slug", "Описание", "Статус"],
     fields: [["name", "Название"], ["slug", "Slug"], ["description", "Описание"]],
   },
   orders: {
@@ -63,7 +69,14 @@ export default async function AdminSectionPage({
           <tbody>
             {rows.length ? rows.map((row, index) => (
               <tr key={index} className="border-t border-slate-200">
-                {row.map((cell) => <td key={`${index}-${cell}`} className="px-4 py-3">{cell}</td>)}
+                {section === "orders" ? (
+                  <>
+                    <td className="px-4 py-3">{row[0]}</td>
+                    <td className="px-4 py-3">{row[1]}</td>
+                    <td className="px-4 py-3">{row[2]}</td>
+                    <td className="px-4 py-3"><OrderStatusForm id={row[4]} status={row[3]} /></td>
+                  </>
+                ) : row.map((cell) => <td key={`${index}-${cell}`} className="px-4 py-3">{cell}</td>)}
               </tr>
             )) : (
               <tr>

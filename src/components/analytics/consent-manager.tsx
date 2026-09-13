@@ -2,6 +2,7 @@
 
 import Script from "next/script";
 import { useSyncExternalStore } from "react";
+import { useI18n } from "@/components/i18n/i18n-provider";
 
 type Consent = "accepted" | "declined" | null;
 
@@ -22,6 +23,7 @@ function getConsent() {
 }
 
 export function ConsentManager() {
+  const { dict } = useI18n();
   const consent = useSyncExternalStore(subscribe, getConsent, () => null);
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
   const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
@@ -53,14 +55,14 @@ fbq('init','${pixelId}');fbq('track','PageView');`}
         </Script>
       ) : null}
       {consent === null ? (
-        <section className="consent-banner" aria-label="Cookie preferences">
+        <section className="consent-banner" aria-label={dict.consent.label}>
           <div>
-            <strong>We value your privacy</strong>
-            <p>Analytics helps us improve the store. It only runs after you accept.</p>
+            <strong>{dict.consent.title}</strong>
+            <p>{dict.consent.copy}</p>
           </div>
           <div className="consent-actions">
-            <button type="button" onClick={() => choose("declined")}>Decline</button>
-            <button type="button" className="button-dark" onClick={() => choose("accepted")}>Accept</button>
+            <button type="button" onClick={() => choose("declined")}>{dict.consent.decline}</button>
+            <button type="button" className="button-dark" onClick={() => choose("accepted")}>{dict.consent.accept}</button>
           </div>
         </section>
       ) : null}

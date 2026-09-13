@@ -13,6 +13,7 @@ export type Order = {
   paymentReference?: string;
   paymentUrl?: string;
   createdAt: string;
+  locale?: "en" | "he";
 };
 
 type OrderRegistry = {
@@ -73,7 +74,7 @@ export async function saveOrder(order: Order) {
       },
     });
     const shipping = await prisma.shippingMethod.findUnique({
-      where: { code: order.cart.shippingTotal === 2500 ? "express" : "standard" },
+      where: { code: order.cart.shippingMethod },
     });
     await prisma.order.create({
       data: {
@@ -215,7 +216,8 @@ function fromDatabase(record: DatabaseOrder): Order {
       subtotal: record.subtotal,
       shippingTotal: record.shippingTotal,
       total: record.total,
-      currency: record.currency.toLowerCase() as "usd",
+      currency: record.currency.toLowerCase() as PricedCart["currency"],
+      shippingMethod: "standard",
     },
     paymentProvider: record.paymentProvider === "stripe" ? "stripe" : "demo",
     paymentReference: record.paymentReference ?? undefined,

@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Geist } from "next/font/google";
-import { ConsentManager } from "@/components/analytics/consent-manager";
-import { Footer } from "@/components/layout/footer";
-import { Header } from "@/components/layout/header";
+import { Cormorant_Garamond, Geist, Noto_Sans_Hebrew, Noto_Serif_Hebrew } from "next/font/google";
+import { headers } from "next/headers";
+import { isLocale, localeMeta } from "@/lib/i18n/config";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -16,6 +15,18 @@ const display = Cormorant_Garamond({
   weight: ["400", "500", "600"],
 });
 
+const hebrewSans = Noto_Sans_Hebrew({
+  variable: "--font-hebrew-sans",
+  subsets: ["hebrew"],
+  weight: ["400", "500", "600"],
+});
+
+const hebrewDisplay = Noto_Serif_Hebrew({
+  variable: "--font-hebrew-display",
+  subsets: ["hebrew"],
+  weight: ["400", "500", "600"],
+});
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: {
@@ -26,18 +37,20 @@ export const metadata: Metadata = {
     "A considered collection of niche fragrance: rare materials, singular perfumers and compositions made to live close to the skin.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const localeHeader = (await headers()).get("x-locale");
+  const locale = isLocale(localeHeader) ? localeHeader : "en";
+  const meta = localeMeta[locale];
+
   return (
     <html
-      lang="en"
-      className={`${geistSans.variable} ${display.variable} h-full antialiased`}
+      lang={meta.html}
+      dir={meta.dir}
+      suppressHydrationWarning
+      data-scroll-behavior="smooth"
+      className={`${geistSans.variable} ${display.variable} ${hebrewSans.variable} ${hebrewDisplay.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">
-        <Header />
-        {children}
-        <Footer />
-        <ConsentManager />
-      </body>
+      <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );
 }
