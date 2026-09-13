@@ -60,11 +60,27 @@ export async function findOrderByIdempotencyKey(key: string) {
 export async function saveOrder(order: Order) {
   if (databaseEnabled()) {
     const { prisma } = await import("@/lib/db/prisma");
+    const customer = await prisma.customer.upsert({
+      where: { email: order.customer.email },
+      update: {
+        name: order.customer.name,
+        phone: order.customer.phone,
+      },
+      create: {
+        email: order.customer.email,
+        name: order.customer.name,
+        phone: order.customer.phone,
+      },
+    });
+    const shipping = await prisma.shippingMethod.findUnique({
+      where: { code: order.cart.shippingTotal === 2500 ? "express" : "standard" },
+    });
     await prisma.order.create({
       data: {
         id: order.id,
         idempotencyKey: order.idempotencyKey,
         status: toDatabaseStatus(order.status),
+        customerId: customer.id,
         email: order.customer.email,
         fullName: order.customer.name,
         phone: order.customer.phone,
@@ -79,12 +95,12 @@ export async function saveOrder(order: Order) {
         subtotal: order.cart.subtotal,
         shippingTotal: order.cart.shippingTotal,
         total: order.cart.total,
+        shippingMethodId: shipping?.id,
         paymentProvider: order.paymentProvider,
         paymentReference: order.paymentReference,
         items: {
           create: order.cart.lines.map((line) => ({
-            productId: line.productId,
-            variantId: line.variantId,
+            productId: line.productId || undefined,
             sku: line.sku,
             name: `${line.productName} — ${line.variantName}`,
             quantity: line.quantity,

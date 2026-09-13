@@ -11,13 +11,22 @@ export function ProductCard({ product, priority = false }: { product: StoreProdu
       <Link className="block" href={`/products/${product.slug}`} aria-label={`View ${product.name}`}>
         <div className="relative aspect-[4/5] overflow-hidden bg-stone">
           <Image
-            className="h-full w-full object-cover transition duration-700 ease-out group-hover:scale-[1.025]"
+            className={`h-full w-full object-cover transition duration-700 ease-out group-hover:scale-[1.04] ${product.images[1] ? "group-hover:opacity-0" : ""}`}
             src={product.images[0]}
             alt={`${product.name} eau de parfum bottle`}
             fill
             sizes="(max-width: 640px) 78vw, (max-width: 1024px) 45vw, 25vw"
             priority={priority}
           />
+          {product.images[1] ? (
+            <Image
+              className="object-cover opacity-0 transition duration-700 ease-out group-hover:scale-[1.04] group-hover:opacity-100"
+              src={product.images[1]}
+              alt=""
+              fill
+              sizes="(max-width: 640px) 78vw, (max-width: 1024px) 45vw, 25vw"
+            />
+          ) : null}
           <div className="absolute left-3 top-3 flex flex-col items-start gap-1.5">
             {product.newArrival && <span className="badge">New</span>}
             {!available && <span className="badge bg-ink text-ivory">Sold out</span>}

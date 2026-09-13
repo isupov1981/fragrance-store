@@ -25,7 +25,7 @@ export function CheckoutSuccess({ orderId }: { orderId?: string }) {
         A confirmation will be sent when email delivery is configured.
       </p>
       <Link
-        href="/products"
+        href="/collections/all"
         className="mt-8 inline-block rounded-full bg-zinc-950 px-6 py-3 text-white"
       >
         Continue shopping

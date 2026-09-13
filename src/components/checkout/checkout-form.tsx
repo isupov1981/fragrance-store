@@ -78,7 +78,7 @@ export function CheckoutForm() {
     return (
       <div className="py-20 text-center">
         <p className="mb-5 text-zinc-600">Add something to your cart first.</p>
-        <Link href="/products" className="underline">
+        <Link href="/collections/all" className="underline">
           Browse fragrances
         </Link>
       </div>

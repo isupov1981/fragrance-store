@@ -52,18 +52,43 @@ async function main() {
     });
   }
 
-  const email = process.env.ADMIN_EMAIL;
+  const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
   const password = process.env.ADMIN_PASSWORD;
   if (email && password) {
     await prisma.adminUser.upsert({
       where: { email },
-      update: {},
+      update: {
+        name: process.env.ADMIN_NAME?.trim() || "Store administrator",
+        passwordHash: await hash(password, 12),
+        role: process.env.ADMIN_ROLE === "EDITOR" ? "EDITOR" : "ADMIN",
+      },
       create: {
         email,
-        name: "Store administrator",
+        name: process.env.ADMIN_NAME?.trim() || "Store administrator",
         passwordHash: await hash(password, 12),
-        role: "ADMIN",
+        role: process.env.ADMIN_ROLE === "EDITOR" ? "EDITOR" : "ADMIN",
       },
+    });
+  }
+
+  for (const method of [
+    {
+      code: "standard",
+      name: "Standard delivery",
+      description: "Complimentary over $250, otherwise $12.",
+      price: 1200,
+    },
+    {
+      code: "express",
+      name: "Express delivery",
+      description: "Priority dispatch in 1–2 business days.",
+      price: 2500,
+    },
+  ]) {
+    await prisma.shippingMethod.upsert({
+      where: { code: method.code },
+      update: method,
+      create: method,
     });
   }
 
@@ -72,6 +97,7 @@ async function main() {
     { slug: "shipping", title: "Shipping" },
     { slug: "refund", title: "Returns & refunds" },
     { slug: "contact", title: "Contact us" },
+    { slug: "about", title: "Our atelier" },
   ]) {
     await prisma.contentPage.upsert({
       where: { slug: page.slug },

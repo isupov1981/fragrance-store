@@ -1,5 +1,9 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Menu, Search, UserRound, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { CartLink } from "./cart-link";
 import { categories } from "@/lib/catalog";
 
@@ -10,21 +14,50 @@ const editorialLinks = [
 ];
 
 export function Header() {
+  const pathname = usePathname();
+  const isHome = pathname === "/";
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    if (!isHome) {
+      setScrolled(false);
+      return;
+    }
+    const onScroll = () => setScrolled(window.scrollY > 48);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [isHome]);
+
+  const overlay = isHome && !scrolled;
+
   return (
-    <header className="sticky top-0 z-50 border-b border-ink/10 bg-ivory/95 backdrop-blur-md">
+    <header
+      className={`site-header z-50 border-b transition-[background-color,border-color,color] duration-500 ${
+        isHome ? "fixed inset-x-0 top-0" : "sticky top-0"
+      } ${overlay ? "header-over-hero border-transparent bg-transparent text-ivory" : "border-ink/10 bg-ivory/95 text-ink backdrop-blur-md"}`}
+    >
       <a className="skip-link" href="#main-content">
         Skip to content
       </a>
-      <div className="bg-ink px-4 py-2 text-center text-[10px] font-medium uppercase tracking-[0.24em] text-ivory">
-        Complimentary delivery on orders over $250
-      </div>
+      {!isHome && (
+        <div className="bg-ink px-4 py-2 text-center text-[10px] font-medium uppercase tracking-[0.24em] text-ivory">
+          Complimentary delivery on orders over $250
+        </div>
+      )}
       <div className="shell flex h-20 items-center justify-between gap-5 lg:h-24">
         <details className="mobile-menu lg:hidden">
           <summary className="icon-button">
             <Menu aria-hidden="true" size={21} />
             <span className="sr-only">Open navigation</span>
           </summary>
-          <div className="fixed inset-x-0 top-[113px] h-[calc(100dvh-113px)] overflow-y-auto border-t border-ink/10 bg-ivory p-6">
+          <div
+            className={`fixed inset-x-0 overflow-y-auto border-t border-ink/10 bg-ivory p-6 text-ink ${
+              isHome
+                ? "top-20 h-[calc(100dvh-5rem)] lg:top-24 lg:h-[calc(100dvh-6rem)]"
+                : "top-[112px] h-[calc(100dvh-112px)] lg:top-32 lg:h-[calc(100dvh-8rem)]"
+            }`}
+          >
             <div className="mb-8 flex items-center justify-between">
               <span className="eyebrow">Menu</span>
               <span className="menu-close icon-button" aria-hidden="true">
@@ -63,7 +96,7 @@ export function Header() {
           <ul className="flex items-center gap-8 text-xs font-medium uppercase tracking-[0.16em]">
             <li className="group">
               <Link className="nav-link" href="/collections/all">Shop</Link>
-              <div className="invisible absolute inset-x-0 top-full border-y border-ink/10 bg-ivory opacity-0 shadow-[0_24px_45px_rgba(32,29,25,.08)] transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+              <div className="invisible absolute inset-x-0 top-full border-y border-ink/10 bg-ivory text-ink opacity-0 shadow-[0_24px_45px_rgba(32,29,25,.08)] transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
                 <div className="shell grid grid-cols-[1.1fr_1fr] gap-16 py-10">
                   <div>
                     <p className="eyebrow mb-5">The collection</p>
