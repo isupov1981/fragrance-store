@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import {
-  convertUsdCents,
+  convertCatalogCents,
   CURRENCY_COOKIE,
   type Currency,
   formatMoney,
@@ -14,8 +14,8 @@ import { localeMeta, type Locale } from "@/lib/i18n/config";
 type CurrencyValue = {
   currency: Currency;
   setCurrency: (currency: Currency) => void;
-  convert: (usdCents: number) => number;
-  format: (usdCents: number) => string;
+  convert: (ilsCents: number) => number;
+  format: (ilsCents: number) => string;
 };
 
 const CurrencyContext = createContext<CurrencyValue | null>(null);
@@ -51,8 +51,8 @@ export function CurrencyProvider({
     () => ({
       currency,
       setCurrency,
-      convert: (usdCents) => convertUsdCents(usdCents, currency),
-      format: (usdCents) => formatMoney(convertUsdCents(usdCents, currency), currency, intlLocale),
+      convert: (ilsCents) => convertCatalogCents(ilsCents, currency),
+      format: (ilsCents) => formatMoney(convertCatalogCents(ilsCents, currency), currency, intlLocale),
     }),
     [currency, intlLocale, setCurrency],
   );

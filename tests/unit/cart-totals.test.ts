@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { convertUsdCents } from "@/lib/currency";
+import { convertCatalogCents } from "@/lib/currency";
 import { calculateCartTotals, type CartItem } from "@/lib/cart/cart";
 import { priceCheckoutItems, CheckoutPricingError } from "@/lib/checkout/pricing";
 
@@ -23,21 +23,21 @@ describe("calculateCartTotals", () => {
 });
 
 describe("priceCheckoutItems", () => {
-  it("uses server catalogue prices and adds standard shipping", () => {
+  it("uses server catalogue ILS prices and adds standard shipping", () => {
     const cart = priceCheckoutItems([{ variantId: "v-amber-50", quantity: 1 }], "standard");
-    expect(cart.subtotal).toBe(16800);
-    expect(cart.shippingTotal).toBe(1200);
-    expect(cart.total).toBe(18000);
-    expect(cart.currency).toBe("usd");
+    expect(cart.subtotal).toBe(62496);
+    expect(cart.shippingTotal).toBe(4500);
+    expect(cart.total).toBe(66996);
+    expect(cart.currency).toBe("ils");
     expect(cart.shippingMethod).toBe("standard");
   });
 
-  it("converts catalogue prices into the selected currency", () => {
-    const cart = priceCheckoutItems([{ variantId: "v-amber-50", quantity: 1 }], "standard", "EUR");
-    expect(cart.currency).toBe("eur");
-    expect(cart.subtotal).toBe(convertUsdCents(16800, "EUR"));
-    expect(cart.shippingTotal).toBe(convertUsdCents(1200, "EUR"));
-    expect(cart.total).toBe(convertUsdCents(18000, "EUR"));
+  it("converts catalogue prices into USD rounded to whole dollars", () => {
+    const cart = priceCheckoutItems([{ variantId: "v-amber-50", quantity: 1 }], "standard", "USD");
+    expect(cart.currency).toBe("usd");
+    expect(cart.subtotal).toBe(convertCatalogCents(62496, "USD"));
+    expect(cart.shippingTotal).toBe(convertCatalogCents(4500, "USD"));
+    expect(cart.total).toBe(convertCatalogCents(66996, "USD"));
   });
 
   it("rejects quantities above available stock", () => {

@@ -12,12 +12,23 @@ original placeholders.
 - Zustand cart persisted to `localStorage`
 - Stripe provider with signed webhook handling
 - JWT-protected custom administration area
-- Vitest, Playwright, ESLint and GitHub Actions
+- S3-compatible object storage (MinIO, R2, AWS) with a local disk fallback
+- Vitest, Playwright, ESLint and Lighthouse budgets
 
-## Local setup
+## Local setup (MinIO connected to admin uploads)
 
-1. Copy `.env.example` to `.env` and replace the development secrets.
-2. Start PostgreSQL with `docker compose up -d`.
+1. Copy `.env.example` to `.env` (MinIO `S3_*` values are already filled for local Docker).
+2. Start PostgreSQL **and MinIO**:
+
+   ```bash
+   docker compose up -d
+   ```
+
+   Images come from `quay.io/minio/*` (Docker Hub pulls for `minio/minio` often fail).
+   MinIO API: `http://127.0.0.1:9000` · Console: `http://localhost:9001`
+   (`fragrance` / `fragrancesecret`). The `minio-init` service creates the
+   `fragrance-media` bucket with public read.
+
 3. Install and prepare the project:
 
    ```bash
@@ -28,9 +39,20 @@ original placeholders.
    npm run dev
    ```
 
-The storefront is available at `http://localhost:3000` and the administration
-area at `/admin`. If payment credentials are omitted, checkout runs in a clearly
-labelled demonstration mode and does not charge a card.
+4. Open `/admin` → **Товары** → **Загрузка изображений**. Uploads should return a
+   URL like `http://127.0.0.1:9000/fragrance-media/products/...`. Confirm storage
+   with `GET /api/health` (`"storage":"s3"`).
+
+5. Smoke the running app:
+
+   ```bash
+   npm run smoke
+   ```
+
+Storefront: `http://localhost:3000` (`/en`, `/he`). Admin: `/admin`
+(`admin@example.com` / `AtelierAdmin2026!` from `.env.example` until you rotate it).
+
+Without `S3_BUCKET` + keys, uploads fall back to `uploads/` and `/api/media/...`.
 
 ## Product import
 
@@ -40,20 +62,95 @@ CSV accepts these columns:
 sku,name,slug,brand,category,description,variantName,price,stock,imageUrl,status,featured
 ```
 
-CSV prices are decimal major units (for example `168.00`); the importer converts
-them to integer minor units for storage. Always use
-the admin preview before applying an import. SKU and slug are stable upsert keys.
+CSV prices are decimal ILS major units (for example `32.00` for ₪32); the importer
+converts them to integer agorot for storage. USD/EUR at checkout are converted from
+ILS and rounded to whole currency units. Always use the admin preview before
+applying an import. SKU and slug are stable upsert keys.
+
+## Production deploy (real domain)
+
+Provision first, then point DNS/TLS at the app.
+
+### 1. Managed PostgreSQL
+
+- Create a Postgres instance with automated backups.
+- Set `DATABASE_URL` to the provider connection string (SSL as required).
+
+### 2. Object storage (`S3_*`)
+
+Use managed S3, Cloudflare R2, or a hardened MinIO. Example:
+
+```text
+S3_ENDPOINT=https://s3.eu-central-1.amazonaws.com
+S3_REGION=eu-central-1
+S3_BUCKET=your-prod-bucket
+S3_ACCESS_KEY_ID=...
+S3_SECRET_ACCESS_KEY=...
+S3_PUBLIC_BASE_URL=https://cdn.your-domain.com
+S3_FORCE_PATH_STYLE=false
+```
+
+Add the public hostname to `next.config.ts` image `remotePatterns` via
+`S3_PUBLIC_BASE_URL` (already read at build/runtime for patterns).
+
+### 3. Secrets and site URL
+
+```text
+AUTH_SECRET=<random ≥32 chars>
+NEXT_PUBLIC_SITE_URL=https://your-domain.com
+ADMIN_EMAIL=...
+ADMIN_PASSWORD=<rotated>
+```
+
+### 4. Stripe webhook
+
+1. Set `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET`.
+2. In Stripe Dashboard → Webhooks, add endpoint:
+   `https://your-domain.com/api/webhooks/stripe`
+3. Subscribe at least to `checkout.session.completed`,
+   `checkout.session.async_payment_succeeded`,
+   `checkout.session.async_payment_failed`.
+
+### 5. SMTP
+
+```text
+SMTP_HOST=smtp.your-provider.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=...
+SMTP_PASSWORD=...
+EMAIL_FROM=orders@your-domain.com
+ORDER_ADMIN_EMAIL=ops@your-domain.com
+```
+
+Leave `SMTP_HOST` empty only if you intentionally want the noop mailer.
+
+### 6. Migrate, start, smoke
+
+```bash
+npm run db:deploy
+npm run build
+npm run start
+npm run smoke
+npm run test:lighthouse
+```
+
+Self-host with Docker:
+
+```bash
+docker compose -f docker-compose.prod.yml up --build -d
+```
+
+Then run `npx prisma migrate deploy` against production `DATABASE_URL`.
 
 ## Production checklist
 
-- Use managed PostgreSQL with backups and run `prisma migrate deploy`.
-- Set a random `AUTH_SECRET`, rotate the bootstrap admin password and configure
-  object storage for uploads.
-- Configure Stripe production keys and register `/api/webhooks/stripe`.
-- Set SMTP, sender/domain authentication, GA4 and Meta Pixel IDs.
-- Set `NEXT_PUBLIC_SITE_URL`, domain and SSL, then run the Playwright smoke suite.
-- Keep checkout totals and stock authoritative on the server; never trust prices
-  submitted by a browser.
+- Managed PostgreSQL + backups; `prisma migrate deploy` (`npm run db:deploy`).
+- Random `AUTH_SECRET`; rotated admin password; object storage for uploads.
+- Stripe live keys + webhook URL `/api/webhooks/stripe`.
+- SMTP + domain authentication; optional GA4 / Meta Pixel IDs.
+- `NEXT_PUBLIC_SITE_URL`, DNS, SSL; then `npm run smoke`.
+- Checkout totals and stock stay server-authoritative.
 
 ## Commands
 
@@ -61,40 +158,7 @@ the admin preview before applying an import. SKU and slug are stable upsert keys
 - `npm run typecheck` — TypeScript validation
 - `npm test` — unit tests
 - `npm run test:e2e` — browser tests
+- `npm run test:lighthouse` — Lighthouse budgets against a running server
+- `npm run smoke` — HTTP checks for locale home, sitemap, robots and `/api/health`
+- `npm run db:deploy` — apply Prisma migrations (`migrate deploy`)
 - `npm run build` — production build
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
-## Getting Started
-
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

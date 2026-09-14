@@ -9,9 +9,9 @@ import { useI18n } from "@/components/i18n/i18n-provider";
 import { calculateCartTotals } from "@/lib/cart/cart";
 import { useHydratedCart } from "@/lib/cart/use-hydrated-cart";
 import {
-  EXPRESS_SHIPPING_USD_CENTS,
-  FREE_SHIPPING_USD_CENTS,
-  STANDARD_SHIPPING_USD_CENTS,
+  EXPRESS_SHIPPING_ILS_CENTS,
+  FREE_SHIPPING_ILS_CENTS,
+  STANDARD_SHIPPING_ILS_CENTS,
 } from "@/lib/currency";
 
 type CheckoutResponse = {
@@ -30,12 +30,12 @@ export function CheckoutForm() {
   const [shippingMethod, setShippingMethod] = useState<"standard" | "express">("standard");
   const { dict, locale } = useI18n();
   const { currency, format } = useCurrency();
-  const shippingUsd =
+  const shippingIls =
     shippingMethod === "express"
-      ? EXPRESS_SHIPPING_USD_CENTS
-      : totals.subtotal >= FREE_SHIPPING_USD_CENTS
+      ? EXPRESS_SHIPPING_ILS_CENTS
+      : totals.subtotal >= FREE_SHIPPING_ILS_CENTS
         ? 0
-        : STANDARD_SHIPPING_USD_CENTS;
+        : STANDARD_SHIPPING_ILS_CENTS;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -44,7 +44,7 @@ export function CheckoutForm() {
     const form = new FormData(event.currentTarget);
     trackCommerceEvent("begin_checkout", {
       currency,
-      value: (totals.subtotal + shippingUsd) / 100,
+      value: (totals.subtotal + shippingIls) / 100,
       items: items.map((item) => ({
         item_id: item.variantId,
         item_name: item.productName,
@@ -126,11 +126,11 @@ export function CheckoutForm() {
           <div className="mt-4 grid gap-3">
             <label className="flex items-center justify-between rounded-lg border border-zinc-300 p-4">
               <span><input className="me-3" type="radio" name="shippingMethod" value="standard" checked={shippingMethod === "standard"} onChange={() => setShippingMethod("standard")} />{dict.checkout.standard}</span>
-              <span>{totals.subtotal >= FREE_SHIPPING_USD_CENTS ? dict.checkout.free : format(STANDARD_SHIPPING_USD_CENTS)}</span>
+              <span>{totals.subtotal >= FREE_SHIPPING_ILS_CENTS ? dict.checkout.free : format(STANDARD_SHIPPING_ILS_CENTS)}</span>
             </label>
             <label className="flex items-center justify-between rounded-lg border border-zinc-300 p-4">
               <span><input className="me-3" type="radio" name="shippingMethod" value="express" checked={shippingMethod === "express"} onChange={() => setShippingMethod("express")} />{dict.checkout.express}</span>
-              <span>{format(EXPRESS_SHIPPING_USD_CENTS)}</span>
+              <span>{format(EXPRESS_SHIPPING_ILS_CENTS)}</span>
             </label>
           </div>
         </fieldset>
@@ -151,7 +151,7 @@ export function CheckoutForm() {
         </ul>
         <div className="mt-5 flex justify-between border-t border-zinc-200 pt-5 text-lg font-medium">
           <span>{dict.checkout.total}</span>
-          <span>{format(totals.subtotal + shippingUsd)}</span>
+          <span>{format(totals.subtotal + shippingIls)}</span>
         </div>
         {error ? <p role="alert" className="mt-4 text-sm text-red-700">{error}</p> : null}
         <button

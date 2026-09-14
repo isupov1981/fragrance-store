@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { hasSameOrigin } from "@/lib/auth/server";
+import { hasSameOrigin, requireAdminRequest } from "@/lib/auth/server";
 
 export const runtime = "nodejs";
 
@@ -25,6 +25,7 @@ export async function POST(
   { params }: { params: Promise<{ resource: string }> },
 ) {
   if (!hasSameOrigin(request)) return NextResponse.json({ error: "Invalid request origin" }, { status: 403 });
+  if (!(await requireAdminRequest(request))) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const parsedResource = resourceSchema.safeParse((await params).resource);
   if (!parsedResource.success) return NextResponse.json({ error: "Unknown resource" }, { status: 404 });
   if (!process.env.DATABASE_URL || process.env.DATABASE_URL.includes("placeholder")) {
@@ -68,6 +69,7 @@ async function createResource(db: Database, resource: z.infer<typeof resourceSch
         sku: z.string().min(2),
         price: z.coerce.number().int().nonnegative(),
         stock: z.coerce.number().int().nonnegative().default(0),
+        imageUrl: z.union([z.url(), z.literal("")]).optional(),
       }).parse(input);
       return db.product.create({
         data: {
@@ -76,8 +78,11 @@ async function createResource(db: Database, resource: z.infer<typeof resourceSch
           description: data.description,
           status: "DRAFT",
           variants: { create: { name: "Default", sku: data.sku, price: data.price, stock: data.stock } },
+          images: data.imageUrl
+            ? { create: { url: data.imageUrl, alt: data.name, position: 0 } }
+            : undefined,
         },
-        include: { variants: true },
+        include: { variants: true, images: true },
       });
     }
     case "categories": {

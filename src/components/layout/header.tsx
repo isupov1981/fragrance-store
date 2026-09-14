@@ -12,7 +12,7 @@ import { useI18n } from "@/components/i18n/i18n-provider";
 import { interpolate } from "@/lib/i18n/interpolate";
 import { localizedPath, stripLocalePrefix } from "@/lib/i18n/path";
 import { categories } from "@/lib/catalog";
-import { FREE_SHIPPING_USD_CENTS } from "@/lib/currency";
+import { FREE_SHIPPING_ILS_CENTS } from "@/lib/currency";
 
 export function Header() {
   const pathname = usePathname();
@@ -51,7 +51,7 @@ export function Header() {
       </a>
       {!isHome && (
         <div className="bg-ink px-4 py-2 text-center text-[10px] font-medium uppercase tracking-[0.24em] text-ivory">
-          {interpolate(dict.nav.promo, { amount: format(FREE_SHIPPING_USD_CENTS) })}
+          {interpolate(dict.nav.promo, { amount: format(FREE_SHIPPING_ILS_CENTS) })}
         </div>
       )}
       <div className="shell flex h-20 items-center justify-between gap-5 lg:h-24">

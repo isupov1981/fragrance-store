@@ -4,12 +4,13 @@ import { requireAdminPage } from "@/lib/auth/server";
 import { CsvPanel } from "./csv-panel";
 import { OrderStatusForm } from "./order-status-form";
 import { ResourceForm } from "./resource-form";
+import { UploadPanel } from "./upload-panel";
 
 const sections = {
   products: {
     title: "Товары",
     columns: ["Название", "SKU", "Цена", "Статус"],
-    fields: [["name", "Название"], ["slug", "Slug"], ["description", "Описание"], ["sku", "SKU"], ["price", "Цена в центах"], ["stock", "Остаток"]],
+    fields: [["name", "Название"], ["slug", "Slug"], ["description", "Описание"], ["sku", "SKU"], ["price", "Цена в агоротах (ILS)"], ["stock", "Остаток"], ["imageUrl", "URL изображения"]],
   },
   categories: {
     title: "Категории",
@@ -39,7 +40,7 @@ const sections = {
   shipping: {
     title: "Доставка",
     columns: ["Название", "Код", "Цена", "Статус"],
-    fields: [["name", "Название"], ["code", "Код"], ["description", "Описание"], ["price", "Цена в центах"]],
+    fields: [["name", "Название"], ["code", "Код"], ["description", "Описание"], ["price", "Цена в агоротах (ILS)"]],
   },
 } as const;
 
@@ -93,7 +94,12 @@ export default async function AdminSectionPage({
         <p className="mb-4 text-sm text-slate-600">Записи сохраняются через защищённый API и проверяются на сервере.</p>
         <ResourceForm section={section} fields={data.fields} />
       </section>
-      {section === "products" ? <CsvPanel /> : null}
+      {section === "products" ? (
+        <>
+          <UploadPanel />
+          <CsvPanel />
+        </>
+      ) : null}
     </>
   );
 }

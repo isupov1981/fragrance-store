@@ -13,6 +13,8 @@ export function ProductCard({ product, priority = false }: { product: StoreProdu
   const { dict } = useI18n();
   const { format } = useCurrency();
   const category = dict.categories[product.category as keyof typeof dict.categories];
+  const concentration =
+    product.concentration === "extrait" ? dict.product.extrait : dict.product.edp;
 
   return (
     <article className="product-card group">
@@ -21,7 +23,7 @@ export function ProductCard({ product, priority = false }: { product: StoreProdu
           <Image
             className={`h-full w-full object-cover transition duration-700 ease-out group-hover:scale-[1.04] ${product.images[1] ? "group-hover:opacity-0" : ""}`}
             src={product.images[0]}
-            alt={`${product.name} ${dict.product.edp}`}
+            alt={`${product.name} ${concentration}`}
             fill
             sizes="(max-width: 640px) 78vw, (max-width: 1024px) 45vw, 25vw"
             priority={priority}
@@ -49,7 +51,7 @@ export function ProductCard({ product, priority = false }: { product: StoreProdu
             <h3 className="font-display text-xl leading-tight">{product.name}</h3>
             <p className="shrink-0 text-xs">{interpolate(dict.product.from, { price: format(variant.price) })}</p>
           </div>
-          <p className="mt-2 text-xs text-ink/55">{category?.name} · {dict.product.edp}</p>
+          <p className="mt-2 text-xs text-ink/55">{category?.name} · {concentration}</p>
         </div>
       </LocaleLink>
     </article>

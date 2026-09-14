@@ -6,7 +6,7 @@ import { ProductPurchase } from "@/components/product/product-purchase";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { LocaleLink } from "@/components/i18n/locale-link";
 import { getProduct, products } from "@/lib/catalog";
-import { convertUsdCents, defaultCurrency, formatMoney, FREE_SHIPPING_USD_CENTS, isCurrency, CURRENCY_COOKIE } from "@/lib/currency";
+import { convertCatalogCents, defaultCurrency, formatMoney, FREE_SHIPPING_ILS_CENTS, isCurrency, CURRENCY_COOKIE } from "@/lib/currency";
 import { cookies } from "next/headers";
 import { localeMeta } from "@/lib/i18n/config";
 import { getDictionary, hasLocale } from "@/lib/i18n/get-dictionary";
@@ -21,6 +21,10 @@ const notes: Record<string, Array<keyof ReturnType<typeof getDictionary>["notes"
   woody: ["Fig leaf", "Sandalwood", "Mineral musk"],
   floral: ["Iris", "Rose petal", "Ambrette"],
   citrus: ["Bergamot", "Neroli", "Vetiver"],
+};
+
+const notesBySlug: Record<string, Array<keyof ReturnType<typeof getDictionary>["notes"]>> = {
+  "notre-dame": ["Incense", "Galbanum", "Amber"],
 };
 
 export function generateStaticParams() {
@@ -65,8 +69,8 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
   const startingPrice = product.variants[0]?.price ?? Math.min(...product.variants.map((variant) => variant.price));
   const category = dict.categories[product.category as keyof typeof dict.categories];
   const description = dict.catalog[product.slug as keyof typeof dict.catalog] ?? product.description;
-  const priced = formatMoney(convertUsdCents(startingPrice, currency), currency, localeMeta[lang].intl);
-  const freeShip = formatMoney(convertUsdCents(FREE_SHIPPING_USD_CENTS, currency), currency, localeMeta[lang].intl);
+  const priced = formatMoney(convertCatalogCents(startingPrice, currency), currency, localeMeta[lang].intl);
+  const freeShip = formatMoney(convertCatalogCents(FREE_SHIPPING_ILS_CENTS, currency), currency, localeMeta[lang].intl);
 
   return (
     <main id="main-content">
@@ -123,7 +127,7 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
           <div className="mt-8 border-y border-ink/10 py-6">
             <p className="eyebrow mb-4">{dict.product.composition}</p>
             <div className="grid grid-cols-3 gap-4">
-              {(notes[product.category] ?? []).map((note, index) => (
+              {(notesBySlug[product.slug] ?? notes[product.category] ?? []).map((note, index) => (
                 <div key={note}>
                   <span className="font-display text-lg text-bronze">0{index + 1}</span>
                   <p className="mt-1 text-xs">{dict.notes[note]}</p>
@@ -136,7 +140,7 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
 
           <div className="mt-8 divide-y divide-ink/10 border-y border-ink/10">
             {[
-              [dict.product.wear, dict.product.wearCopy],
+              [dict.product.wear, product.concentration === "extrait" ? dict.product.wearCopyExtrait : dict.product.wearCopy],
               [dict.product.delivery, interpolate(dict.product.deliveryCopy, { amount: freeShip })],
               [dict.product.returns, dict.product.returnsCopy],
             ].map(([title, copy]) => (

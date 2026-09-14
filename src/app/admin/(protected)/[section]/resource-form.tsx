@@ -38,7 +38,12 @@ export function ResourceForm({
       {fields.map(([name, label]) => (
         <div key={name}>
           <label htmlFor={`${section}-${name}`} className="mb-1 block text-sm font-medium">{label}</label>
-          <input id={`${section}-${name}`} name={name} required className="w-full rounded-lg border border-slate-300 px-3 py-2" />
+          <input
+            id={`${section}-${name}`}
+            name={name}
+            required={name !== "imageUrl" && name !== "phone" && name !== "description"}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2"
+          />
         </div>
       ))}
       <div className="md:col-span-3">

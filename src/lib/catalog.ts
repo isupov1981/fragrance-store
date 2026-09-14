@@ -4,6 +4,7 @@ export type StoreVariant = {
   id: string;
   name: string;
   sku: string;
+  /** Price in ILS agorot (minor units). */
   price: number;
   compareAt?: number;
   stock: number;
@@ -16,6 +17,7 @@ export type StoreProduct = {
   brand: string;
   description: string;
   category: string;
+  concentration?: "edp" | "extrait";
   featured?: boolean;
   newArrival?: boolean;
   images: string[];
@@ -38,8 +40,8 @@ export const products: StoreProduct[] = [
       "https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=1200&q=85",
     ],
     variants: [
-      { id: "v-amber-50", name: "50 ml", sku: "MS-AV-50", price: 16800, stock: 12 },
-      { id: "v-amber-2", name: "2 ml sample", sku: "MS-AV-2", price: 1200, stock: 40 },
+      { id: "v-amber-50", name: "50 ml", sku: "MS-AV-50", price: 62496, stock: 12 },
+      { id: "v-amber-2", name: "2 ml sample", sku: "MS-AV-2", price: 4464, stock: 40 },
     ],
   },
   {
@@ -55,7 +57,7 @@ export const products: StoreProduct[] = [
       "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=1200&q=85",
       "https://images.unsplash.com/photo-1619994403073-2cec844b8e63?auto=format&fit=crop&w=1200&q=85",
     ],
-    variants: [{ id: "v-fig-75", name: "75 ml", sku: "AN-FN-75", price: 19200, stock: 8 }],
+    variants: [{ id: "v-fig-75", name: "75 ml", sku: "AN-FN-75", price: 71424, stock: 8 }],
   },
   {
     id: "p-iris-paper",
@@ -71,7 +73,7 @@ export const products: StoreProduct[] = [
       "https://images.unsplash.com/photo-1587017539504-67cfbddac569?auto=format&fit=crop&w=1200&q=85",
     ],
     variants: [
-      { id: "v-iris-50", name: "50 ml", sku: "ES-IP-50", price: 15400, compareAt: 18000, stock: 6 },
+      { id: "v-iris-50", name: "50 ml", sku: "ES-IP-50", price: 57288, compareAt: 66960, stock: 6 },
     ],
   },
   {
@@ -87,7 +89,7 @@ export const products: StoreProduct[] = [
       "https://images.unsplash.com/photo-1563170351-be82bc888aa4?auto=format&fit=crop&w=1200&q=85",
       "https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=1200&q=85",
     ],
-    variants: [{ id: "v-citrus-100", name: "100 ml", sku: "SO-CA-100", price: 17600, stock: 15 }],
+    variants: [{ id: "v-citrus-100", name: "100 ml", sku: "SO-CA-100", price: 65472, stock: 15 }],
   },
   {
     id: "p-salt-rose",
@@ -101,7 +103,7 @@ export const products: StoreProduct[] = [
     images: [
       "https://images.unsplash.com/photo-1610461888750-10bfc601b874?auto=format&fit=crop&w=1200&q=85",
     ],
-    variants: [{ id: "v-salt-50", name: "50 ml", sku: "NC-SR-50", price: 14500, stock: 0 }],
+    variants: [{ id: "v-salt-50", name: "50 ml", sku: "NC-SR-50", price: 53940, stock: 0 }],
   },
   {
     id: "p-cedar-after-rain",
@@ -114,7 +116,26 @@ export const products: StoreProduct[] = [
     images: [
       "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=1200&q=85",
     ],
-    variants: [{ id: "v-cedar-50", name: "50 ml", sku: "MS-CR-50", price: 16200, stock: 10 }],
+    variants: [{ id: "v-cedar-50", name: "50 ml", sku: "MS-CR-50", price: 60264, stock: 10 }],
+  },
+  {
+    id: "p-notre-dame",
+    slug: "notre-dame",
+    name: "Notre-Dame",
+    brand: "Filippo Sorcinelli",
+    description:
+      "Memento Extrait — Notre-Dame 15.4.2019. An artistic incense composition inspired by the cathedral after the fire: smoke, wet stone, precious woods and a thread of light.",
+    category: "woody",
+    concentration: "extrait",
+    featured: true,
+    newArrival: true,
+    images: ["/products/notre-dame.jpg"],
+    variants: [
+      { id: "v-notre-1", name: "1 ml", sku: "FS-ND-1", price: 3200, stock: 40 },
+      { id: "v-notre-3", name: "3 ml", sku: "FS-ND-3", price: 7900, stock: 30 },
+      { id: "v-notre-5", name: "5 ml", sku: "FS-ND-5", price: 11900, stock: 24 },
+      { id: "v-notre-10", name: "10 ml", sku: "FS-ND-10", price: 21900, stock: 18 },
+    ],
   },
 ];
 
@@ -134,7 +155,7 @@ export function getCategory(slug: string) {
   return categories.find((category) => category.slug === slug);
 }
 
-export function formatMoney(amount: number, currency = "USD") {
+export function formatMoney(amount: number, currency = "ILS") {
   const normalized = currency.toUpperCase();
-  return formatCurrency(amount, isCurrency(normalized) ? normalized : "USD");
+  return formatCurrency(amount, isCurrency(normalized) ? normalized : "ILS");
 }

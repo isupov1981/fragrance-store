@@ -1,5 +1,5 @@
 import type { StoreProduct } from "@/lib/catalog";
-import { convertUsdCents, type Currency } from "@/lib/currency";
+import { convertCatalogCents, type Currency } from "@/lib/currency";
 import type { Locale } from "@/lib/i18n/config";
 import { localizedPath } from "@/lib/i18n/path";
 
@@ -26,7 +26,7 @@ export function productJsonLd(
       "@type": "Offer",
       url: `${baseUrl}${localizedPath(locale, `/products/${product.slug}`)}`,
       priceCurrency: currency,
-      price: (convertUsdCents(variant.price, currency) / 100).toFixed(2),
+      price: (convertCatalogCents(variant.price, currency) / 100).toFixed(currency === "ILS" ? 2 : 0),
       availability:
         variant.stock > 0
           ? "https://schema.org/InStock"

@@ -75,14 +75,14 @@ async function main() {
     {
       code: "standard",
       name: "Standard delivery",
-      description: "Complimentary over $250, otherwise $12.",
-      price: 1200,
+      description: "Complimentary over ₪930, otherwise ₪45.",
+      price: 4500,
     },
     {
       code: "express",
       name: "Express delivery",
       description: "Priority dispatch in 1–2 business days.",
-      price: 2500,
+      price: 9300,
     },
   ]) {
     await prisma.shippingMethod.upsert({

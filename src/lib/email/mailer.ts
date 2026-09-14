@@ -29,9 +29,12 @@ class SmtpOrderMailer implements OrderMailer {
   }
 
   async sendConfirmation(order: Order) {
+    const from = process.env.EMAIL_FROM ?? process.env.ORDER_FROM_EMAIL ?? "orders@example.com";
+    const admin = process.env.ORDER_ADMIN_EMAIL;
     await this.transport().sendMail({
-      from: process.env.EMAIL_FROM ?? "orders@example.com",
+      from,
       to: order.customer.email,
+      ...(admin ? { bcc: admin } : {}),
       subject: `Order ${order.id} confirmed`,
       text: [
         `Thank you, ${order.customer.name}.`,
@@ -42,9 +45,10 @@ class SmtpOrderMailer implements OrderMailer {
   }
 
   async sendEnquiry(input: { name: string; email: string; subject: string; message: string }) {
+    const from = process.env.EMAIL_FROM ?? process.env.ORDER_FROM_EMAIL ?? "concierge@example.com";
     await this.transport().sendMail({
-      from: process.env.EMAIL_FROM ?? "concierge@example.com",
-      to: process.env.EMAIL_FROM ?? "concierge@example.com",
+      from,
+      to: process.env.ORDER_ADMIN_EMAIL ?? from,
       replyTo: input.email,
       subject: `Atelier enquiry: ${input.subject}`,
       text: [`From: ${input.name} <${input.email}>`, "", input.message].join("\n"),
