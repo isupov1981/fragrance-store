@@ -3,9 +3,12 @@
 import { FormEvent, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
+import { useAdminI18n } from "@/components/admin/admin-i18n-provider";
+
 export function LoginForm() {
   const router = useRouter();
   const search = useSearchParams();
+  const { dict } = useAdminI18n();
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
 
@@ -25,7 +28,7 @@ export function LoginForm() {
     setPending(false);
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(body?.error ?? "Не удалось войти");
+      setError(body?.error ?? dict.login.failed);
       return;
     }
     const next = search.get("next");
@@ -36,7 +39,9 @@ export function LoginForm() {
   return (
     <form onSubmit={submit} className="grid gap-4" aria-describedby="login-error">
       <div>
-        <label htmlFor="email" className="mb-1 block font-medium">Email</label>
+        <label htmlFor="email" className="mb-1 block font-medium">
+          Email
+        </label>
         <input
           id="email"
           name="email"
@@ -47,7 +52,9 @@ export function LoginForm() {
         />
       </div>
       <div>
-        <label htmlFor="password" className="mb-1 block font-medium">Пароль</label>
+        <label htmlFor="password" className="mb-1 block font-medium">
+          {dict.login.password}
+        </label>
         <input
           id="password"
           name="password"
@@ -66,7 +73,7 @@ export function LoginForm() {
         disabled={pending}
         className="rounded-lg bg-slate-950 px-4 py-2.5 font-medium text-white disabled:opacity-60"
       >
-        {pending ? "Вход…" : "Войти"}
+        {pending ? dict.login.submitting : dict.login.submit}
       </button>
     </form>
   );

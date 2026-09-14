@@ -182,7 +182,7 @@ export const en = {
     apartment: "Apartment, suite (optional)",
     city: "City",
     postal: "Postal code",
-    country: "Country code (US)",
+    country: "Country",
     delivery: "Delivery",
     standard: "Standard delivery",
     express: "Express delivery",

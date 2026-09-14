@@ -8,7 +8,7 @@ import { PerfumerSpotlight } from "@/components/home/perfumer-spotlight";
 import { ProductCarousel } from "@/components/home/product-carousel";
 import { Reveal } from "@/components/home/reveal";
 import type { Metadata } from "next";
-import { products } from "@/lib/catalog";
+import { listStoreProducts } from "@/lib/db/products";
 import { getDictionary, hasLocale } from "@/lib/i18n/get-dictionary";
 import { localizedPath } from "@/lib/i18n/path";
 
@@ -33,8 +33,9 @@ export async function generateMetadata({ params }: PageProps<"/[lang]">): Promis
 export default async function Home({ params }: PageProps<"/[lang]">) {
   const { lang } = await params;
   const dict = getDictionary(lang);
-  const arrivals = products.filter((product) => product.newArrival);
-  const cabinet = [...products].sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)));
+  const catalog = await listStoreProducts();
+  const arrivals = catalog.filter((product) => product.newArrival);
+  const cabinet = [...catalog].sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)));
 
   return (
     <main id="main-content">

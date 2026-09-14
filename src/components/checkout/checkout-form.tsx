@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useRef, useState } from "react";
+import { FormEvent, useMemo, useRef, useState } from "react";
 
 import { trackCommerceEvent } from "@/components/analytics/consent-manager";
 import { LocaleLink } from "@/components/i18n/locale-link";
@@ -13,6 +13,7 @@ import {
   FREE_SHIPPING_ILS_CENTS,
   STANDARD_SHIPPING_ILS_CENTS,
 } from "@/lib/currency";
+import { defaultCountryForLocale, getCountryOptions } from "@/lib/i18n/countries";
 
 type CheckoutResponse = {
   error?: string;
@@ -30,6 +31,8 @@ export function CheckoutForm() {
   const [shippingMethod, setShippingMethod] = useState<"standard" | "express">("standard");
   const { dict, locale } = useI18n();
   const { currency, format } = useCurrency();
+  const countries = useMemo(() => getCountryOptions(locale), [locale]);
+  const defaultCountry = defaultCountryForLocale();
   const shippingIls =
     shippingMethod === "express"
       ? EXPRESS_SHIPPING_ILS_CENTS
@@ -119,7 +122,23 @@ export function CheckoutForm() {
           <input className={`${fieldClass} sm:col-span-2`} name="addressLine2" placeholder={dict.checkout.apartment} autoComplete="address-line2" />
           <input className={fieldClass} name="city" placeholder={dict.checkout.city} autoComplete="address-level2" required />
           <input className={fieldClass} name="postalCode" placeholder={dict.checkout.postal} autoComplete="postal-code" required />
-          <input className={fieldClass} name="country" placeholder={dict.checkout.country} autoComplete="country" minLength={2} maxLength={2} required />
+          <label className="sr-only" htmlFor="checkout-country">
+            {dict.checkout.country}
+          </label>
+          <select
+            id="checkout-country"
+            className={fieldClass}
+            name="country"
+            autoComplete="country"
+            defaultValue={defaultCountry}
+            required
+          >
+            {countries.map((country) => (
+              <option key={country.code} value={country.code}>
+                {country.name}
+              </option>
+            ))}
+          </select>
         </div>
         <fieldset className="mt-8">
           <legend className="text-xl font-medium">{dict.checkout.delivery}</legend>

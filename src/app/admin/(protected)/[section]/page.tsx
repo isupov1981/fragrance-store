@@ -1,4 +1,11 @@
 import { notFound } from "next/navigation";
+
+import {
+  formatAdminMessage,
+  getAdminDictionary,
+  type AdminDictionary,
+} from "@/lib/admin/i18n";
+import { getAdminLocale } from "@/lib/admin/get-locale";
 import { getAdminSectionRows } from "@/lib/admin/queries";
 import { requireAdminPage } from "@/lib/auth/server";
 import { CsvPanel } from "./csv-panel";
@@ -6,45 +13,22 @@ import { OrderStatusForm } from "./order-status-form";
 import { ResourceForm } from "./resource-form";
 import { UploadPanel } from "./upload-panel";
 
-const sections = {
-  products: {
-    title: "Товары",
-    columns: ["Название", "SKU", "Цена", "Статус"],
-    fields: [["name", "Название"], ["slug", "Slug"], ["description", "Описание"], ["sku", "SKU"], ["price", "Цена в агоротах (ILS)"], ["stock", "Остаток"], ["imageUrl", "URL изображения"]],
-  },
-  categories: {
-    title: "Категории",
-    columns: ["Название", "Slug", "Товаров", "Статус"],
-    fields: [["name", "Название"], ["slug", "Slug"], ["description", "Описание"]],
-  },
-  brands: {
-    title: "Бренды",
-    columns: ["Название", "Slug", "Описание", "Статус"],
-    fields: [["name", "Название"], ["slug", "Slug"], ["description", "Описание"]],
-  },
-  orders: {
-    title: "Заказы",
-    columns: ["Номер", "Клиент", "Сумма", "Статус"],
-    fields: [["number", "Номер"], ["email", "Email"], ["status", "Статус"]],
-  },
-  customers: {
-    title: "Клиенты",
-    columns: ["Имя", "Email", "Заказов", "Регистрация"],
-    fields: [["name", "Имя"], ["email", "Email"], ["phone", "Телефон"]],
-  },
-  content: {
-    title: "Контент",
-    columns: ["Заголовок", "Slug", "Обновлено", "Статус"],
-    fields: [["title", "Заголовок"], ["slug", "Slug"], ["content", "Содержимое"]],
-  },
-  shipping: {
-    title: "Доставка",
-    columns: ["Название", "Код", "Цена", "Статус"],
-    fields: [["name", "Название"], ["code", "Код"], ["description", "Описание"], ["price", "Цена в агоротах (ILS)"]],
-  },
+const sectionFieldKeys = {
+  products: ["name", "slug", "description", "sku", "price", "stock", "imageUrl"],
+  categories: ["name", "slug", "description"],
+  brands: ["name", "slug", "description"],
+  orders: ["number", "email", "status"],
+  customers: ["name", "email", "phone"],
+  content: ["title", "slug", "content"],
+  shipping: ["name", "code", "description", "price"],
 } as const;
 
-type Section = keyof typeof sections;
+type Section = keyof typeof sectionFieldKeys;
+
+function sectionFields(dict: AdminDictionary, section: Section) {
+  const labels = dict.sections[section].fields as Record<string, string>;
+  return sectionFieldKeys[section].map((key) => [key, labels[key]] as const);
+}
 
 export default async function AdminSectionPage({
   params,
@@ -52,37 +36,59 @@ export default async function AdminSectionPage({
   params: Promise<{ section: string }>;
 }) {
   await requireAdminPage();
+  const locale = await getAdminLocale();
+  const dict = getAdminDictionary(locale);
   const { section } = await params;
-  if (!(section in sections)) notFound();
-  const data = sections[section as Section];
+  if (!(section in sectionFieldKeys)) notFound();
+  const key = section as Section;
+  const data = dict.sections[key];
+  const fields = sectionFields(dict, key);
   const rows = await getAdminSectionRows(section);
 
   return (
     <>
-      <p className="text-sm font-medium text-slate-500">Записи из PostgreSQL</p>
+      <p className="text-sm font-medium text-slate-500">{dict.section.eyebrow}</p>
       <h1 className="text-3xl font-bold">{data.title}</h1>
       <div className="mt-6 overflow-x-auto rounded-xl bg-white shadow-sm">
-        <table className="w-full border-collapse text-left">
-          <caption className="sr-only">{data.title}: записи из базы данных</caption>
+        <table className="w-full border-collapse text-start">
+          <caption className="sr-only">
+            {formatAdminMessage(dict.section.caption, { title: data.title })}
+          </caption>
           <thead className="bg-slate-50">
-            <tr>{data.columns.map((column) => <th key={column} scope="col" className="px-4 py-3 text-sm">{column}</th>)}</tr>
+            <tr>
+              {data.columns.map((column) => (
+                <th key={column} scope="col" className="px-4 py-3 text-sm">
+                  {column}
+                </th>
+              ))}
+            </tr>
           </thead>
           <tbody>
-            {rows.length ? rows.map((row, index) => (
-              <tr key={index} className="border-t border-slate-200">
-                {section === "orders" ? (
-                  <>
-                    <td className="px-4 py-3">{row[0]}</td>
-                    <td className="px-4 py-3">{row[1]}</td>
-                    <td className="px-4 py-3">{row[2]}</td>
-                    <td className="px-4 py-3"><OrderStatusForm id={row[4]} status={row[3]} /></td>
-                  </>
-                ) : row.map((cell) => <td key={`${index}-${cell}`} className="px-4 py-3">{cell}</td>)}
-              </tr>
-            )) : (
+            {rows.length ? (
+              rows.map((row, index) => (
+                <tr key={index} className="border-t border-slate-200">
+                  {section === "orders" ? (
+                    <>
+                      <td className="px-4 py-3">{row[0]}</td>
+                      <td className="px-4 py-3">{row[1]}</td>
+                      <td className="px-4 py-3">{row[2]}</td>
+                      <td className="px-4 py-3">
+                        <OrderStatusForm id={row[4]} status={row[3]} />
+                      </td>
+                    </>
+                  ) : (
+                    row.map((cell) => (
+                      <td key={`${index}-${cell}`} className="px-4 py-3">
+                        {cell}
+                      </td>
+                    ))
+                  )}
+                </tr>
+              ))
+            ) : (
               <tr>
                 <td className="px-4 py-6 text-slate-500" colSpan={data.columns.length}>
-                  Пока нет записей.
+                  {dict.section.empty}
                 </td>
               </tr>
             )}
@@ -90,9 +96,11 @@ export default async function AdminSectionPage({
         </table>
       </div>
       <section className="mt-8 rounded-xl bg-white p-5 shadow-sm" aria-labelledby="editor-heading">
-        <h2 id="editor-heading" className="text-xl font-semibold">Форма редактора</h2>
-        <p className="mb-4 text-sm text-slate-600">Записи сохраняются через защищённый API и проверяются на сервере.</p>
-        <ResourceForm section={section} fields={data.fields} />
+        <h2 id="editor-heading" className="text-xl font-semibold">
+          {dict.section.editorTitle}
+        </h2>
+        <p className="mb-4 text-sm text-slate-600">{dict.section.editorHelp}</p>
+        <ResourceForm section={section} fields={fields} />
       </section>
       {section === "products" ? (
         <>

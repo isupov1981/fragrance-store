@@ -1,3 +1,4 @@
+import { agentTokenConfigured } from "@/lib/agent/auth";
 import { isS3Configured } from "@/lib/storage";
 
 export const runtime = "nodejs";
@@ -14,5 +15,6 @@ export async function GET() {
     database: databaseConfigured ? "configured" : "missing",
     stripe: process.env.STRIPE_SECRET_KEY ? "configured" : "demo",
     smtp: process.env.SMTP_HOST ? "configured" : "noop",
+    hermesAgent: agentTokenConfigured() ? "configured" : "missing",
   });
 }

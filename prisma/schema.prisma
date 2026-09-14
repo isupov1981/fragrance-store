@@ -59,9 +59,13 @@ model Product {
   name           String
   slug           String            @unique
   description    String
+  descriptionHe  String?
   excerpt        String?
   status         ProductStatus     @default(DRAFT)
   featured       Boolean           @default(false)
+  newArrival     Boolean           @default(false)
+  concentration  String?
+  notes          Json?
   seoTitle       String?
   seoDescription String?
   brandId        String?

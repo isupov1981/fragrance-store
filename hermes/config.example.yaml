@@ -1,0 +1,21 @@
+# Merge into ~/.hermes/config.yaml (keep your model / API keys).
+# Docs: https://hermes-agent.nousresearch.com/docs/guides/use-mcp-with-hermes
+
+mcp_servers:
+  fragrance:
+    command: "node"
+    args: ["hermes/mcp-stdio.mjs"]
+    env:
+      FRAGRANCE_API_URL: "http://localhost:3000"
+      HERMES_AGENT_TOKEN: "${HERMES_AGENT_TOKEN}"
+    timeout: 120
+    tools:
+      resources: false
+      prompts: false
+
+# Alternative HTTP MCP (same Bearer token):
+# mcp_servers:
+#   fragrance:
+#     url: "http://localhost:3000/api/agent/mcp"
+#     headers:
+#       Authorization: "Bearer ${HERMES_AGENT_TOKEN}"

@@ -1,14 +1,15 @@
 import type { MetadataRoute } from "next";
-import { categories, products } from "@/lib/catalog";
+import { listStoreCategories, listStoreProducts } from "@/lib/db/products";
 import { locales } from "@/lib/i18n/config";
 import { localizedPath } from "@/lib/i18n/path";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   const now = new Date();
+  const [catalog, categories] = await Promise.all([listStoreProducts(), listStoreCategories()]);
   const paths = [
     "/",
-    ...products.map((product) => `/products/${product.slug}`),
+    ...catalog.map((product) => `/products/${product.slug}`),
     ...categories.map((category) => `/collections/${category.slug}`),
     "/faq",
     "/contact",

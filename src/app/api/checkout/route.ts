@@ -31,7 +31,7 @@ export async function POST(request: Request) {
       });
     }
 
-    const cart = priceCheckoutItems(
+    const cart = await priceCheckoutItems(
       parsed.data.items,
       parsed.data.shippingMethod,
       parsed.data.currency,

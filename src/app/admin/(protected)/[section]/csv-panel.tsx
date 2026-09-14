@@ -3,6 +3,9 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 
+import { useAdminI18n } from "@/components/admin/admin-i18n-provider";
+import { formatAdminMessage } from "@/lib/admin/i18n";
+
 type Preview = {
   total: number;
   errors: { row: number; issues: string[] }[];
@@ -10,6 +13,7 @@ type Preview = {
 };
 
 export function CsvPanel() {
+  const { dict } = useAdminI18n();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<Preview | null>(null);
   const [message, setMessage] = useState("");
@@ -27,11 +31,16 @@ export function CsvPanel() {
     setPending(false);
     if (!response.ok) {
       setPreview(null);
-      setMessage(body.error ?? "Не удалось проверить CSV");
+      setMessage(body.error ?? dict.csv.previewFailed);
       return;
     }
     setPreview(body);
-    setMessage(`Проверено строк: ${body.total}. Ошибок: ${body.errors.length}.`);
+    setMessage(
+      formatAdminMessage(dict.csv.previewOk, {
+        total: body.total,
+        errors: body.errors.length,
+      }),
+    );
   }
 
   async function runImport() {
@@ -45,8 +54,11 @@ export function CsvPanel() {
     setPending(false);
     setMessage(
       response.ok
-        ? `Импорт завершён: создано ${body.created}, обновлено ${body.updated}.`
-        : body.error ?? "Импорт не выполнен",
+        ? formatAdminMessage(dict.csv.importOk, {
+            created: body.created,
+            updated: body.updated,
+          })
+        : (body.error ?? dict.csv.importFailed),
     );
   }
 
@@ -54,18 +66,20 @@ export function CsvPanel() {
     <section className="mt-8 rounded-xl bg-white p-5 shadow-sm" aria-labelledby="csv-heading">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 id="csv-heading" className="text-xl font-semibold">CSV import / export</h2>
-          <p className="text-sm text-slate-600">
-            Сначала проверьте файл. Импорт доступен роли ADMIN при валидных строках.
-          </p>
+          <h2 id="csv-heading" className="text-xl font-semibold">
+            {dict.csv.title}
+          </h2>
+          <p className="text-sm text-slate-600">{dict.csv.help}</p>
         </div>
         <Link href="/api/admin/products/csv/export" className="rounded-lg border border-slate-300 px-4 py-2">
-          Экспорт CSV
+          {dict.csv.export}
         </Link>
       </div>
       <form onSubmit={previewFile} className="mt-4 flex flex-wrap items-end gap-3">
         <div>
-          <label htmlFor="csv-file" className="mb-1 block text-sm font-medium">Файл товаров</label>
+          <label htmlFor="csv-file" className="mb-1 block text-sm font-medium">
+            {dict.csv.file}
+          </label>
           <input
             id="csv-file"
             type="file"
@@ -78,7 +92,7 @@ export function CsvPanel() {
           />
         </div>
         <button disabled={pending} className="rounded-lg bg-slate-900 px-4 py-2 text-white disabled:opacity-60">
-          Проверить
+          {dict.csv.preview}
         </button>
         <button
           type="button"
@@ -86,14 +100,21 @@ export function CsvPanel() {
           disabled={pending || !preview || preview.errors.length > 0}
           className="rounded-lg bg-emerald-700 px-4 py-2 text-white disabled:opacity-50"
         >
-          Подтвердить импорт
+          {dict.csv.confirm}
         </button>
       </form>
-      <p role="status" aria-live="polite" className="mt-3 text-sm">{message}</p>
+      <p role="status" aria-live="polite" className="mt-3 text-sm">
+        {message}
+      </p>
       {preview?.errors.length ? (
-        <ul className="mt-3 list-disc pl-5 text-sm text-red-700">
+        <ul className="mt-3 list-disc ps-5 text-sm text-red-700">
           {preview.errors.slice(0, 10).map((error) => (
-            <li key={error.row}>Строка {error.row}: {error.issues.join("; ")}</li>
+            <li key={error.row}>
+              {formatAdminMessage(dict.csv.rowError, {
+                row: error.row,
+                issues: error.issues.join("; "),
+              })}
+            </li>
           ))}
         </ul>
       ) : null}

@@ -1,0 +1,184 @@
+import { z } from "zod";
+
+import { requireAgentToken } from "@/lib/agent/auth";
+import {
+  createDraftProduct,
+  listAgentProducts,
+  publishProduct,
+  updateProduct,
+} from "@/lib/agent/products";
+import { AgentCatalogError } from "@/lib/agent/products";
+import {
+  createProductInputSchema,
+  listProductsInputSchema,
+  productLookupSchema,
+  updateProductInputSchema,
+} from "@/lib/agent/schema";
+import { buildDailyBriefing, getDailyReport, getRecommendations, AgentReportError } from "@/lib/agent/reports";
+import { StorageError, storeImage } from "@/lib/storage";
+
+export const agentTools = [
+  {
+    name: "create_product",
+    description:
+      "Create a DRAFT fragrance product. Prices are ILS agorot (32₪ = 3200). Sample sizes typically 1/3/5/10 ml at 3200/7900/11900/21900. Never publishes.",
+    inputSchema: {
+      type: "object",
+      required: ["name", "slug", "description", "variants"],
+      properties: {
+        name: { type: "string" },
+        slug: { type: "string" },
+        description: { type: "string", description: "English description" },
+        descriptionHe: { type: "string" },
+        brand: { type: "string" },
+        category: { type: "string", description: "Family slug or name, e.g. woody" },
+        concentration: { type: "string", enum: ["edp", "extrait"] },
+        featured: { type: "boolean" },
+        newArrival: { type: "boolean" },
+        notes: { type: "array", items: { type: "string" } },
+        images: {
+          type: "array",
+          items: {
+            type: "object",
+            required: ["url"],
+            properties: { url: { type: "string" }, alt: { type: "string" } },
+          },
+        },
+        variants: {
+          type: "array",
+          items: {
+            type: "object",
+            required: ["name", "sku", "price"],
+            properties: {
+              name: { type: "string" },
+              sku: { type: "string" },
+              price: { type: "integer" },
+              stock: { type: "integer" },
+              compareAt: { type: "integer" },
+            },
+          },
+        },
+      },
+    },
+  },
+  {
+    name: "update_product",
+    description: "Update an existing product by id or slug. Cannot set ACTIVE — use publish_product.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "string" },
+        slug: { type: "string" },
+        name: { type: "string" },
+        description: { type: "string" },
+        descriptionHe: { type: "string" },
+        brand: { type: "string" },
+        category: { type: "string" },
+        images: { type: "array" },
+        variants: { type: "array" },
+      },
+    },
+  },
+  {
+    name: "publish_product",
+    description: "Publish a draft to the storefront (ACTIVE). Requires at least one image and one variant. Only after the admin explicitly asks to publish.",
+    inputSchema: {
+      type: "object",
+      properties: { id: { type: "string" }, slug: { type: "string" } },
+    },
+  },
+  {
+    name: "list_products",
+    description: "List products, optionally filtered by status or search query.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        q: { type: "string" },
+        status: { type: "string", enum: ["DRAFT", "ACTIVE", "ARCHIVED"] },
+        take: { type: "integer" },
+      },
+    },
+  },
+  {
+    name: "upload_product_image",
+    description: "Store a JPEG/PNG/WebP product image (base64, max 5 MB) and return its public URL for create_product/update_product.",
+    inputSchema: {
+      type: "object",
+      required: ["data"],
+      properties: {
+        contentType: { type: "string", description: "image/jpeg, image/png or image/webp" },
+        data: { type: "string", description: "Raw image bytes encoded as base64" },
+      },
+    },
+  },
+  {
+    name: "get_daily_report",
+    description: "Orders, revenue, drafts and low stock for the last 24 hours.",
+    inputSchema: { type: "object", properties: {} },
+  },
+  {
+    name: "get_recommendations",
+    description: "What to publish, restock, or fix in the catalogue.",
+    inputSchema: { type: "object", properties: {} },
+  },
+] as const;
+
+export type AgentToolName = (typeof agentTools)[number]["name"];
+
+export async function dispatchAgentTool(name: string, args: unknown) {
+  switch (name) {
+    case "create_product":
+      return createDraftProduct(createProductInputSchema.parse(args ?? {}));
+    case "update_product":
+      return updateProduct(updateProductInputSchema.parse(args ?? {}));
+    case "publish_product":
+      return publishProduct(productLookupSchema.parse(args ?? {}));
+    case "list_products":
+      return listAgentProducts(listProductsInputSchema.parse(args ?? {}));
+    case "upload_product_image": {
+      const payload = z
+        .object({
+          contentType: z.string().default("image/jpeg"),
+          data: z.string().min(1),
+        })
+        .parse(args ?? {});
+      const body = Buffer.from(payload.data, "base64");
+      const origin = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+      return storeImage({
+        body,
+        contentType: payload.contentType,
+        size: body.byteLength,
+        origin,
+      });
+    }
+    case "get_daily_report": {
+      const report = await getDailyReport();
+      const recs = await getRecommendations();
+      return { ...report, briefing: buildDailyBriefing(report, recs) };
+    }
+    case "get_recommendations":
+      return getRecommendations();
+    default:
+      throw new AgentCatalogError(`Unknown tool: ${name}`, 404);
+  }
+}
+
+export function assertAgentRequest(request: Request) {
+  if (!requireAgentToken(request)) {
+    throw new AgentCatalogError("Unauthorized", 401);
+  }
+}
+
+export function jsonAgentError(error: unknown) {
+  if (error instanceof StorageError) {
+    return { error: error.message, status: error.status };
+  }
+  if (error instanceof AgentCatalogError || error instanceof AgentReportError) {
+    return { error: error.message, status: error.status };
+  }
+  if (error instanceof z.ZodError) {
+    return { error: "Invalid arguments", issues: error.issues, status: 400 };
+  }
+  console.error(error);
+  return { error: "Agent request failed", status: 500 };
+}

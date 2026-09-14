@@ -1,4 +1,6 @@
-import { products } from "@/lib/catalog";
+import type { StoreProduct } from "@/lib/catalog";
+import { fallbackProducts } from "@/lib/catalog";
+import { listStoreProducts } from "@/lib/db/products";
 import {
   convertCatalogCents,
   EXPRESS_SHIPPING_ILS_CENTS,
@@ -30,7 +32,8 @@ export type PricedCart = {
 
 export class CheckoutPricingError extends Error {}
 
-export function priceCheckoutItems(
+export function priceCatalogItems(
+  catalog: StoreProduct[],
   items: CheckoutInput["items"],
   shippingMethod: CheckoutInput["shippingMethod"],
   currency: Currency = "ILS",
@@ -44,7 +47,7 @@ export function priceCheckoutItems(
   }
 
   const lines = Array.from(quantities, ([variantId, quantity]) => {
-    const product = products.find((candidate) =>
+    const product = catalog.find((candidate) =>
       candidate.variants.some((variant) => variant.id === variantId),
     );
     const variant = product?.variants.find(
@@ -91,4 +94,21 @@ export function priceCheckoutItems(
     currency: currency.toLowerCase() as PricedCart["currency"],
     shippingMethod,
   };
+}
+
+export async function priceCheckoutItems(
+  items: CheckoutInput["items"],
+  shippingMethod: CheckoutInput["shippingMethod"],
+  currency: Currency = "ILS",
+) {
+  return priceCatalogItems(await listStoreProducts(), items, shippingMethod, currency);
+}
+
+/** Synchronous helper for tests against the fallback catalogue. */
+export function priceCheckoutItemsSync(
+  items: CheckoutInput["items"],
+  shippingMethod: CheckoutInput["shippingMethod"],
+  currency: Currency = "ILS",
+) {
+  return priceCatalogItems(fallbackProducts, items, shippingMethod, currency);
 }

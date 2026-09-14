@@ -11,32 +11,7 @@ export async function getAdminDashboard() {
     prisma.contentPage.count(),
   ]);
 
-  return [
-    {
-      label: "Товары",
-      value: String(products),
-      note: `${drafts} черновиков`,
-      href: "/admin/products",
-    },
-    {
-      label: "Заказы",
-      value: String(orders),
-      note: `${pending} требуют внимания`,
-      href: "/admin/orders",
-    },
-    {
-      label: "Клиенты",
-      value: String(customers),
-      note: "из базы данных",
-      href: "/admin/customers",
-    },
-    {
-      label: "Страницы",
-      value: String(pages),
-      note: "контент из CMS",
-      href: "/admin/content",
-    },
-  ];
+  return { products, drafts, orders, pending, customers, pages };
 }
 
 export async function getAdminSectionRows(section: string) {

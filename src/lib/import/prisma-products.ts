@@ -1,5 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import type { ProductImportRepository, ProductImportRow } from "./products";
+import { toSlug } from "../catalog/slug";
 
 export async function createPrismaProductRepository(): Promise<ProductImportRepository> {
   const { prisma } = await import("../db/prisma");
@@ -91,13 +92,4 @@ export async function createPrismaProductRepository(): Promise<ProductImportRepo
       });
     },
   };
-}
-
-function toSlug(value: string) {
-  const slug = value
-    .normalize("NFKD")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-  return slug || `item-${Array.from(value, (char) => char.codePointAt(0)?.toString(16)).join("-")}`;
 }

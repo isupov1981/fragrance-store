@@ -4,15 +4,17 @@ import { Search } from "lucide-react";
 import { ProductGrid } from "@/components/product/product-grid";
 import { LocaleLink } from "@/components/i18n/locale-link";
 import { AutoSubmitForm } from "@/components/ui/auto-submit-form";
-import { categories, getCategory, products } from "@/lib/catalog";
+import { getCategory as getFallbackCategory, localizedDescription } from "@/lib/catalog";
+import { listStoreCategories, listStoreProducts } from "@/lib/db/products";
 import { isCollectionSort, paginateCollection, sortCollection, type CollectionSort } from "@/lib/catalog/browse";
 import { getDictionary, hasLocale } from "@/lib/i18n/get-dictionary";
 import { interpolate } from "@/lib/i18n/interpolate";
 import { localizedPath } from "@/lib/i18n/path";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const categories = await listStoreCategories();
   return categories.map(({ slug }) => ({ slug }));
 }
 
@@ -20,7 +22,8 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/collection
   const { lang, slug } = await params;
   if (!hasLocale(lang)) return {};
   const dict = getDictionary(lang);
-  const category = getCategory(slug);
+  const category =
+    getFallbackCategory(slug) ?? (await listStoreCategories()).find((item) => item.slug === slug);
   const copy = dict.categories[slug as keyof typeof dict.categories];
   return {
     title: copy?.name ?? dict.collection.prive,
@@ -37,7 +40,9 @@ export default async function CollectionPage({
   if (!hasLocale(lang)) notFound();
   const query = await searchParams;
   const dict = getDictionary(lang);
-  const category = getCategory(slug);
+  const categories = await listStoreCategories();
+  const catalog = await listStoreProducts();
+  const category = categories.find((item) => item.slug === slug) ?? getFallbackCategory(slug);
   if (!category) notFound();
   const copy = dict.categories[slug as keyof typeof dict.categories];
 
@@ -47,10 +52,10 @@ export default async function CollectionPage({
   const sort: CollectionSort = isCollectionSort(sortParam) ? sortParam : "featured";
   const inStock = query.stock === "1";
   const page = Number.parseInt(typeof query.page === "string" ? query.page : "1", 10) || 1;
-  const filtered = products.filter((product) => {
+  const filtered = catalog.filter((product) => {
     const inCategory = slug === "all" || product.category === slug;
     const inEdit = edit === "new" ? product.newArrival : edit === "featured" ? product.featured : true;
-    const description = dict.catalog[product.slug as keyof typeof dict.catalog] ?? product.description;
+    const description = dict.catalog[product.slug as keyof typeof dict.catalog] ?? localizedDescription(product, lang);
     const inSearch = !search || `${product.name} ${product.brand} ${description}`.toLowerCase().includes(search);
     const available = !inStock || product.variants.some((variant) => variant.stock > 0);
     return inCategory && inEdit && inSearch && available;
@@ -99,7 +104,7 @@ export default async function CollectionPage({
                   href={`/collections/${item.slug}`}
                   aria-current={slug === item.slug ? "page" : undefined}
                 >
-                  {dict.categories[item.slug as keyof typeof dict.categories].name}
+                  {dict.categories[item.slug as keyof typeof dict.categories]?.name ?? item.name}
                 </LocaleLink>
               </li>
             ))}

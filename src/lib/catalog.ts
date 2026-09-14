@@ -1,4 +1,5 @@
 import { formatMoney as formatCurrency, isCurrency } from "@/lib/currency";
+import type { Locale } from "@/lib/i18n/config";
 
 export type StoreVariant = {
   id: string;
@@ -16,15 +17,23 @@ export type StoreProduct = {
   name: string;
   brand: string;
   description: string;
+  descriptionHe?: string;
   category: string;
   concentration?: "edp" | "extrait";
   featured?: boolean;
   newArrival?: boolean;
+  notes?: string[];
   images: string[];
   variants: StoreVariant[];
 };
 
-export const products: StoreProduct[] = [
+export type StoreCategory = {
+  slug: string;
+  name: string;
+  description: string;
+};
+
+export const fallbackProducts: StoreProduct[] = [
   {
     id: "p-amber-veil",
     slug: "amber-veil",
@@ -32,9 +41,12 @@ export const products: StoreProduct[] = [
     brand: "Maison Sol",
     description:
       "A warm, enveloping composition of amber resin, vanilla absolute and dry cedar. Elegant, intimate and designed to linger.",
+    descriptionHe:
+      "קומפוזיציה חמה ועוטפת של שרף אמבר, וניל אבסולוט וארז יבש. אלגנטית, אינטימית ונועדה להישאר.",
     category: "amber",
     featured: true,
     newArrival: true,
+    notes: ["Labdanum", "Vanilla absolute", "Dry cedar"],
     images: [
       "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=1200&q=85",
       "https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=1200&q=85",
@@ -51,8 +63,11 @@ export const products: StoreProduct[] = [
     brand: "Atelier Nox",
     description:
       "Green fig leaves meet creamy sandalwood and mineral musk in a modern, understated eau de parfum.",
+    descriptionHe:
+      "עלי תאנה ירוקים פוגשים סנדלווד קרמי ומאסק מינרלי באו דה פרפיום מודרני ומאופק.",
     category: "woody",
     featured: true,
+    notes: ["Fig leaf", "Sandalwood", "Mineral musk"],
     images: [
       "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=1200&q=85",
       "https://images.unsplash.com/photo-1619994403073-2cec844b8e63?auto=format&fit=crop&w=1200&q=85",
@@ -66,8 +81,10 @@ export const products: StoreProduct[] = [
     brand: "Éditions Sillage",
     description:
       "Powdered iris, clean linen and pale woods. A quiet skin scent with a refined, textural finish.",
+    descriptionHe: "איריס אביק, פשתן נקי ועצים בהירים. ניחוח עור שקט עם סיום מרקמי ומדויק.",
     category: "floral",
     newArrival: true,
+    notes: ["Iris", "Rose petal", "Ambrette"],
     images: [
       "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85",
       "https://images.unsplash.com/photo-1587017539504-67cfbddac569?auto=format&fit=crop&w=1200&q=85",
@@ -83,8 +100,11 @@ export const products: StoreProduct[] = [
     brand: "Studio Orangerie",
     description:
       "Bergamot peel, neroli and bitter orange over vetiver. Bright at first, softly smoky as it dries down.",
+    descriptionHe:
+      "קליפת ברגמוט, נרולי ותפוז מר מעל וטיבר. בהיר בהתחלה, מעושן בעדינות בייבוש.",
     category: "citrus",
     newArrival: true,
+    notes: ["Bergamot", "Neroli", "Vetiver"],
     images: [
       "https://images.unsplash.com/photo-1563170351-be82bc888aa4?auto=format&fit=crop&w=1200&q=85",
       "https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=1200&q=85",
@@ -96,13 +116,12 @@ export const products: StoreProduct[] = [
     slug: "salt-rose",
     name: "Salt Rose",
     brand: "North Coast",
-    description:
-      "A translucent rose carried by sea salt, ambrette and sun-warmed driftwood.",
+    description: "A translucent rose carried by sea salt, ambrette and sun-warmed driftwood.",
+    descriptionHe: "ורד שקוף הנישא על מלח ים, אמברט ועץ צף שחומם בשמש.",
     category: "floral",
     featured: true,
-    images: [
-      "https://images.unsplash.com/photo-1610461888750-10bfc601b874?auto=format&fit=crop&w=1200&q=85",
-    ],
+    notes: ["Iris", "Rose petal", "Ambrette"],
+    images: ["https://images.unsplash.com/photo-1610461888750-10bfc601b874?auto=format&fit=crop&w=1200&q=85"],
     variants: [{ id: "v-salt-50", name: "50 ml", sku: "NC-SR-50", price: 53940, stock: 0 }],
   },
   {
@@ -110,12 +129,11 @@ export const products: StoreProduct[] = [
     slug: "cedar-after-rain",
     name: "Cedar After Rain",
     brand: "Maison Sol",
-    description:
-      "Wet cedar, black tea and moss: cool, meditative and quietly persistent.",
+    description: "Wet cedar, black tea and moss: cool, meditative and quietly persistent.",
+    descriptionHe: "ארז רטוב, תה שחור וטחב: קריר, מדיטטיבי ומתמיד בשקט.",
     category: "woody",
-    images: [
-      "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=1200&q=85",
-    ],
+    notes: ["Fig leaf", "Sandalwood", "Mineral musk"],
+    images: ["https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=1200&q=85"],
     variants: [{ id: "v-cedar-50", name: "50 ml", sku: "MS-CR-50", price: 60264, stock: 10 }],
   },
   {
@@ -125,10 +143,13 @@ export const products: StoreProduct[] = [
     brand: "Filippo Sorcinelli",
     description:
       "Memento Extrait — Notre-Dame 15.4.2019. An artistic incense composition inspired by the cathedral after the fire: smoke, wet stone, precious woods and a thread of light.",
+    descriptionHe:
+      "Notre-Dame 15.4.2019 מבית Filippo Sorcinelli (סדרת Memento, Extrait) הוא ניחוח יוניסקס אמנותי בהשראת קתדרלת נוטרדאם והשריפה מ־15 באפריל 2019. האווירה שאחרי השריפה — עשן וקטורת, עץ, אבן לחה וקרני אור — מתורגמת לניחוח עמוק, מסתורי ומדיטטיבי.",
     category: "woody",
     concentration: "extrait",
     featured: true,
     newArrival: true,
+    notes: ["Incense", "Galbanum", "Amber"],
     images: ["/products/notre-dame.jpg"],
     variants: [
       { id: "v-notre-1", name: "1 ml", sku: "FS-ND-1", price: 3200, stock: 40 },
@@ -139,7 +160,10 @@ export const products: StoreProduct[] = [
   },
 ];
 
-export const categories = [
+/** @deprecated Use listStoreProducts() — kept as the offline fallback catalogue. */
+export const products = fallbackProducts;
+
+export const categories: StoreCategory[] = [
   { slug: "all", name: "All fragrances", description: "The complete Privé collection." },
   { slug: "amber", name: "Amber", description: "Warm resins, woods and golden vanilla." },
   { slug: "woody", name: "Woody", description: "Cedar, sandalwood and atmospheric forest notes." },
@@ -148,11 +172,16 @@ export const categories = [
 ];
 
 export function getProduct(slug: string) {
-  return products.find((product) => product.slug === slug);
+  return fallbackProducts.find((product) => product.slug === slug);
 }
 
 export function getCategory(slug: string) {
   return categories.find((category) => category.slug === slug);
+}
+
+export function localizedDescription(product: StoreProduct, locale: Locale) {
+  if (locale === "he" && product.descriptionHe) return product.descriptionHe;
+  return product.description;
 }
 
 export function formatMoney(amount: number, currency = "ILS") {

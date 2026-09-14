@@ -49,6 +49,10 @@ services:
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
       SMTP_HOST: ${SMTP_HOST:-}
+      HERMES_AGENT_TOKEN: ${HERMES_AGENT_TOKEN:-}
+
+  # Optional: run Nous Hermes Agent on the host (not vendored as an image).
+  # See hermes/README.md for Telegram gateway + cron setup.
 
 volumes:
   fragrance_postgres:

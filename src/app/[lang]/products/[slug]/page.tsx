@@ -5,16 +5,17 @@ import { ProductCard } from "@/components/product/product-card";
 import { ProductPurchase } from "@/components/product/product-purchase";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { LocaleLink } from "@/components/i18n/locale-link";
-import { getProduct, products } from "@/lib/catalog";
+import { getStoreProduct, listStoreProducts } from "@/lib/db/products";
 import { convertCatalogCents, defaultCurrency, formatMoney, FREE_SHIPPING_ILS_CENTS, isCurrency, CURRENCY_COOKIE } from "@/lib/currency";
 import { cookies } from "next/headers";
 import { localeMeta } from "@/lib/i18n/config";
+import { localizedDescription } from "@/lib/catalog";
 import { getDictionary, hasLocale } from "@/lib/i18n/get-dictionary";
 import { interpolate } from "@/lib/i18n/interpolate";
 import { localizedPath } from "@/lib/i18n/path";
 import { productJsonLd, breadcrumbJsonLd } from "@/lib/seo/product-json-ld";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 const notes: Record<string, Array<keyof ReturnType<typeof getDictionary>["notes"]>> = {
   amber: ["Labdanum", "Vanilla absolute", "Dry cedar"],
@@ -27,17 +28,18 @@ const notesBySlug: Record<string, Array<keyof ReturnType<typeof getDictionary>["
   "notre-dame": ["Incense", "Galbanum", "Amber"],
 };
 
-export function generateStaticParams() {
-  return products.map(({ slug }) => ({ slug }));
+export async function generateStaticParams() {
+  const catalog = await listStoreProducts();
+  return catalog.map(({ slug }) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/products/[slug]">): Promise<Metadata> {
   const { lang, slug } = await params;
   if (!hasLocale(lang)) return { title: "Not found" };
   const dict = getDictionary(lang);
-  const product = getProduct(slug);
+  const product = await getStoreProduct(slug);
   if (!product) return { title: dict.product.notFound };
-  const description = dict.catalog[product.slug as keyof typeof dict.catalog] ?? product.description;
+  const description = dict.catalog[product.slug as keyof typeof dict.catalog] ?? localizedDescription(product, lang);
   const path = localizedPath(lang, `/products/${product.slug}`);
   return {
     title: product.name,
@@ -60,15 +62,16 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
   const { lang, slug } = await params;
   if (!hasLocale(lang)) notFound();
   const dict = getDictionary(lang);
-  const product = getProduct(slug);
+  const product = await getStoreProduct(slug);
   if (!product) notFound();
 
   const currencyValue = (await cookies()).get(CURRENCY_COOKIE)?.value;
   const currency = isCurrency(currencyValue) ? currencyValue : defaultCurrency;
-  const related = products.filter((item) => item.id !== product.id && (item.category === product.category || item.featured)).slice(0, 3);
+  const catalog = await listStoreProducts();
+  const related = catalog.filter((item) => item.id !== product.id && (item.category === product.category || item.featured)).slice(0, 3);
   const startingPrice = product.variants[0]?.price ?? Math.min(...product.variants.map((variant) => variant.price));
   const category = dict.categories[product.category as keyof typeof dict.categories];
-  const description = dict.catalog[product.slug as keyof typeof dict.catalog] ?? product.description;
+  const description = dict.catalog[product.slug as keyof typeof dict.catalog] ?? localizedDescription(product, lang);
   const priced = formatMoney(convertCatalogCents(startingPrice, currency), currency, localeMeta[lang].intl);
   const freeShip = formatMoney(convertCatalogCents(FREE_SHIPPING_ILS_CENTS, currency), currency, localeMeta[lang].intl);
 
@@ -127,10 +130,13 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
           <div className="mt-8 border-y border-ink/10 py-6">
             <p className="eyebrow mb-4">{dict.product.composition}</p>
             <div className="grid grid-cols-3 gap-4">
-              {(notesBySlug[product.slug] ?? notes[product.category] ?? []).map((note, index) => (
+              {(product.notes?.length
+                ? product.notes
+                : (notesBySlug[product.slug] ?? notes[product.category] ?? [])
+              ).map((note, index) => (
                 <div key={note}>
                   <span className="font-display text-lg text-bronze">0{index + 1}</span>
-                  <p className="mt-1 text-xs">{dict.notes[note]}</p>
+                  <p className="mt-1 text-xs">{dict.notes[note as keyof typeof dict.notes] ?? note}</p>
                 </div>
               ))}
             </div>

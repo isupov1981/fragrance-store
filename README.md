@@ -143,6 +143,18 @@ docker compose -f docker-compose.prod.yml up --build -d
 
 Then run `npx prisma migrate deploy` against production `DATABASE_URL`.
 
+## Hermes Agent (Telegram)
+
+The storefront reads **ACTIVE** products from Postgres. A Bearer-token Agent API lets
+[Nous Hermes](https://hermes-agent.nousresearch.com/docs/user-guide/messaging/telegram)
+create drafts, upload photos, publish on command, and send a daily briefing.
+
+1. Set `HERMES_AGENT_TOKEN` (24+ random characters).
+2. Follow [hermes/README.md](hermes/README.md) to connect Telegram + MCP.
+3. Products stay `DRAFT` until you say «опубликуй» in Telegram.
+
+`GET /api/health` reports `"hermesAgent":"configured"` when the token is set.
+
 ## Production checklist
 
 - Managed PostgreSQL + backups; `prisma migrate deploy` (`npm run db:deploy`).

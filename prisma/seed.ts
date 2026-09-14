@@ -26,14 +26,27 @@ async function main() {
 
     await prisma.product.upsert({
       where: { slug: item.slug },
-      update: {},
+      update: {
+        name: item.name,
+        description: item.description,
+        descriptionHe: item.descriptionHe,
+        status: ProductStatus.ACTIVE,
+        featured: item.featured ?? false,
+        newArrival: item.newArrival ?? false,
+        concentration: item.concentration,
+        notes: item.notes,
+      },
       create: {
         id: item.id,
         name: item.name,
         slug: item.slug,
         description: item.description,
+        descriptionHe: item.descriptionHe,
         status: ProductStatus.ACTIVE,
         featured: item.featured ?? false,
+        newArrival: item.newArrival ?? false,
+        concentration: item.concentration,
+        notes: item.notes,
         brandId: brand.id,
         images: {
           create: item.images.map((url, position) => ({

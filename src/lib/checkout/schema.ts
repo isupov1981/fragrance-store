@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+import { ISO_COUNTRY_CODES } from "@/lib/i18n/countries";
+
+const countryCodes: readonly string[] = ISO_COUNTRY_CODES;
+
 export const checkoutSchema = z.object({
   idempotencyKey: z.string().min(16).max(128),
   items: z
@@ -19,7 +23,11 @@ export const checkoutSchema = z.object({
     addressLine2: z.string().trim().max(150).optional(),
     city: z.string().trim().min(2).max(100),
     postalCode: z.string().trim().min(2).max(20),
-    country: z.string().trim().length(2).transform((value) => value.toUpperCase()),
+    country: z
+      .string()
+      .trim()
+      .transform((value) => value.toUpperCase())
+      .refine((value) => countryCodes.includes(value), { message: "Invalid country code" }),
   }),
   shippingMethod: z.enum(["standard", "express"]),
   currency: z.enum(["USD", "EUR", "ILS"]).default("USD"),

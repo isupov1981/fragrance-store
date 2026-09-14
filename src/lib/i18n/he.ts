@@ -182,7 +182,7 @@ export const he: Dictionary = {
     apartment: "דירה, סוויטה (רשות)",
     city: "עיר",
     postal: "מיקוד",
-    country: "קוד מדינה (IL)",
+    country: "מדינה",
     delivery: "משלוח",
     standard: "משלוח רגיל",
     express: "משלוח מהיר",

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { convertCatalogCents } from "@/lib/currency";
 import { calculateCartTotals, type CartItem } from "@/lib/cart/cart";
-import { priceCheckoutItems, CheckoutPricingError } from "@/lib/checkout/pricing";
+import { priceCheckoutItemsSync as priceCheckoutItems, CheckoutPricingError } from "@/lib/checkout/pricing";
 
 const line: CartItem = {
   productId: "product",

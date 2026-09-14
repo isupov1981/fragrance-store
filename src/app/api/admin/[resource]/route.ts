@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { createDraftProduct, parseAdminProductInput } from "@/lib/agent/products";
 import { hasSameOrigin, requireAdminRequest } from "@/lib/auth/server";
 
 export const runtime = "nodejs";
@@ -62,28 +63,7 @@ function listResource(db: Database, resource: z.infer<typeof resourceSchema>) {
 async function createResource(db: Database, resource: z.infer<typeof resourceSchema>, input: unknown) {
   switch (resource) {
     case "products": {
-      const data = z.object({
-        name: z.string().min(2),
-        slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
-        description: z.string().min(10),
-        sku: z.string().min(2),
-        price: z.coerce.number().int().nonnegative(),
-        stock: z.coerce.number().int().nonnegative().default(0),
-        imageUrl: z.union([z.url(), z.literal("")]).optional(),
-      }).parse(input);
-      return db.product.create({
-        data: {
-          name: data.name,
-          slug: data.slug,
-          description: data.description,
-          status: "DRAFT",
-          variants: { create: { name: "Default", sku: data.sku, price: data.price, stock: data.stock } },
-          images: data.imageUrl
-            ? { create: { url: data.imageUrl, alt: data.name, position: 0 } }
-            : undefined,
-        },
-        include: { variants: true, images: true },
-      });
+      return createDraftProduct(parseAdminProductInput(input));
     }
     case "categories": {
       const data = z.object({ name: z.string().min(2), slug: z.string().regex(/^[a-z0-9-]+$/), description: z.string().optional() }).parse(input);

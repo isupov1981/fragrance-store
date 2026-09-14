@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ADMIN_LOCALE_COOKIE, defaultAdminLocale, isAdminLocale } from "@/lib/admin/locale";
 import { ADMIN_COOKIE, verifyAdminSession } from "@/lib/auth/session";
 import { LOCALE_COOKIE, isLocale, negotiateLocale, type Locale } from "@/lib/i18n/config";
 
@@ -20,13 +21,19 @@ function withLocaleHeader(response: NextResponse, locale: Locale) {
 }
 
 async function handleAdmin(request: NextRequest, pathname: string) {
+  const adminLocaleCookie = request.cookies.get(ADMIN_LOCALE_COOKIE)?.value;
+  const adminLocale = isAdminLocale(adminLocaleCookie) ? adminLocaleCookie : defaultAdminLocale;
   const session = await verifyAdminSession(request.cookies.get(ADMIN_COOKIE)?.value);
 
   if (publicAdminPaths.has(pathname)) {
     if (pathname === "/admin/login" && session) {
-      return NextResponse.redirect(new URL("/admin", request.url));
+      const redirect = NextResponse.redirect(new URL("/admin", request.url));
+      redirect.headers.set("x-locale", adminLocale);
+      return redirect;
     }
-    return NextResponse.next();
+    const response = NextResponse.next();
+    response.headers.set("x-locale", adminLocale);
+    return response;
   }
 
   if (!session) {
@@ -35,10 +42,14 @@ async function handleAdmin(request: NextRequest, pathname: string) {
     }
     const login = new URL("/admin/login", request.url);
     login.searchParams.set("next", pathname);
-    return NextResponse.redirect(login);
+    const redirect = NextResponse.redirect(login);
+    redirect.headers.set("x-locale", adminLocale);
+    return redirect;
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+  response.headers.set("x-locale", adminLocale);
+  return response;
 }
 
 export async function proxy(request: NextRequest) {

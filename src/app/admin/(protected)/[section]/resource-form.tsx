@@ -2,6 +2,8 @@
 
 import { FormEvent, useState } from "react";
 
+import { useAdminI18n } from "@/components/admin/admin-i18n-provider";
+
 export function ResourceForm({
   section,
   fields,
@@ -9,6 +11,7 @@ export function ResourceForm({
   section: string;
   fields: ReadonlyArray<readonly [string, string]>;
 }) {
+  const { dict } = useAdminI18n();
   const [message, setMessage] = useState<string>();
   const [saving, setSaving] = useState(false);
   const creatable = section !== "orders";
@@ -26,18 +29,20 @@ export function ResourceForm({
     const result = await response.json().catch(() => ({}));
     setSaving(false);
     if (!response.ok) {
-      setMessage(result.error ?? "Не удалось сохранить запись");
+      setMessage(result.error ?? dict.form.saveFailed);
       return;
     }
     event.currentTarget.reset();
-    setMessage("Запись сохранена. Обновите список для просмотра.");
+    setMessage(dict.form.saveOk);
   }
 
   return (
     <form className="grid gap-4 md:grid-cols-3" onSubmit={submit}>
       {fields.map(([name, label]) => (
         <div key={name}>
-          <label htmlFor={`${section}-${name}`} className="mb-1 block text-sm font-medium">{label}</label>
+          <label htmlFor={`${section}-${name}`} className="mb-1 block text-sm font-medium">
+            {label}
+          </label>
           <input
             id={`${section}-${name}`}
             name={name}
@@ -47,10 +52,18 @@ export function ResourceForm({
         </div>
       ))}
       <div className="md:col-span-3">
-        <button type="submit" disabled={!creatable || saving} className="rounded-lg bg-slate-900 px-4 py-2 text-white disabled:opacity-60">
-          {!creatable ? "Заказы создаются через checkout" : saving ? "Сохранение…" : "Сохранить"}
+        <button
+          type="submit"
+          disabled={!creatable || saving}
+          className="rounded-lg bg-slate-900 px-4 py-2 text-white disabled:opacity-60"
+        >
+          {!creatable ? dict.form.ordersReadonly : saving ? dict.form.saving : dict.form.save}
         </button>
-        {message ? <p role="status" className="mt-2 text-sm">{message}</p> : null}
+        {message ? (
+          <p role="status" className="mt-2 text-sm">
+            {message}
+          </p>
+        ) : null}
       </div>
     </form>
   );
