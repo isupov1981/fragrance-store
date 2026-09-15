@@ -21,13 +21,16 @@ function publicBaseUrl() {
 
 function client() {
   return new S3Client({
-    region: process.env.S3_REGION || "us-east-1",
+    region: process.env.S3_REGION || "auto",
     endpoint: process.env.S3_ENDPOINT || undefined,
     forcePathStyle: process.env.S3_FORCE_PATH_STYLE !== "false",
     credentials: {
       accessKeyId: process.env.S3_ACCESS_KEY_ID ?? "",
       secretAccessKey: process.env.S3_SECRET_ACCESS_KEY ?? "",
     },
+    // R2 rejects AWS SDK default CRC32 checksums.
+    requestChecksumCalculation: "WHEN_REQUIRED",
+    responseChecksumValidation: "WHEN_REQUIRED",
   });
 }
 
@@ -41,10 +44,10 @@ async function ensureBucket(s3: S3Client, bucket: string) {
   }
 }
 
-export async function putS3Object(input: { body: Buffer; contentType: string }) {
+export async function putS3Object(input: { body: Buffer; contentType: string; key?: string }) {
   const bucket = process.env.S3_BUCKET;
   if (!bucket) throw new Error("S3_BUCKET is not configured");
-  const key = createObjectKey(input.contentType);
+  const key = input.key ?? createObjectKey(input.contentType);
   const s3 = client();
   try {
     await s3.send(

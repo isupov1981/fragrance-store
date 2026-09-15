@@ -25,7 +25,9 @@
     "db:migrate": "node scripts/run-prisma.mjs migrate dev",
     "db:deploy": "node scripts/run-prisma.mjs migrate deploy",
     "db:seed": "node scripts/run-prisma.mjs db seed",
-    "import:products": "tsx scripts/import-products-csv.ts"
+    "import:products": "tsx scripts/import-products-csv.ts",
+    "media:upload": "node scripts/upload-catalog-media.mjs",
+    "stripe:webhook": "node scripts/stripe-register-webhook.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

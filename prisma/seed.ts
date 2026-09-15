@@ -1,8 +1,32 @@
 import { hash } from "bcryptjs";
 import { PrismaClient, ProductStatus } from "@prisma/client";
-import { categories, products } from "../src/lib/catalog";
+import { atelierProducts, categories } from "../src/lib/catalog";
 
 const prisma = new PrismaClient();
+const atelierSlugs = atelierProducts.map((item) => item.slug);
+
+async function syncProductImages(
+  productId: string,
+  name: string,
+  images: string[],
+) {
+  await prisma.productImage.deleteMany({
+    where: { productId, url: { notIn: images } },
+  });
+  for (const [position, url] of images.entries()) {
+    const existing = await prisma.productImage.findFirst({ where: { productId, url } });
+    if (existing) {
+      await prisma.productImage.update({
+        where: { id: existing.id },
+        data: { alt: name, position },
+      });
+    } else {
+      await prisma.productImage.create({
+        data: { productId, url, alt: name, position },
+      });
+    }
+  }
+}
 
 async function main() {
   for (const category of categories.filter(({ slug }) => slug !== "all")) {
@@ -13,7 +37,7 @@ async function main() {
     });
   }
 
-  for (const item of products) {
+  for (const item of atelierProducts) {
     const category = await prisma.category.findUnique({ where: { slug: item.category } });
     const brand = await prisma.brand.upsert({
       where: { slug: item.brand.toLowerCase().replaceAll(/[^a-z0-9]+/g, "-") },
@@ -24,7 +48,7 @@ async function main() {
       },
     });
 
-    await prisma.product.upsert({
+    const product = await prisma.product.upsert({
       where: { slug: item.slug },
       update: {
         name: item.name,
@@ -35,6 +59,7 @@ async function main() {
         newArrival: item.newArrival ?? false,
         concentration: item.concentration,
         notes: item.notes,
+        brandId: brand.id,
       },
       create: {
         id: item.id,
@@ -48,21 +73,50 @@ async function main() {
         concentration: item.concentration,
         notes: item.notes,
         brandId: brand.id,
-        images: {
-          create: item.images.map((url, position) => ({
-            url,
-            alt: item.name,
-            position,
-          })),
-        },
-        variants: {
-          create: item.variants.map((variant) => variant),
-        },
-        categories: category
-          ? { create: { category: { connect: { id: category.id } } } }
-          : undefined,
       },
     });
+
+    for (const variant of item.variants) {
+      await prisma.productVariant.upsert({
+        where: { sku: variant.sku },
+        update: {
+          productId: product.id,
+          name: variant.name,
+          price: variant.price,
+          compareAt: variant.compareAt,
+          stock: variant.stock,
+        },
+        create: {
+          id: variant.id,
+          productId: product.id,
+          sku: variant.sku,
+          name: variant.name,
+          price: variant.price,
+          compareAt: variant.compareAt,
+          stock: variant.stock,
+        },
+      });
+    }
+
+    await syncProductImages(product.id, item.name, item.images);
+
+    if (category) {
+      await prisma.productCategory.upsert({
+        where: {
+          productId_categoryId: { productId: product.id, categoryId: category.id },
+        },
+        update: {},
+        create: { productId: product.id, categoryId: category.id },
+      });
+    }
+  }
+
+  const archived = await prisma.product.updateMany({
+    where: { slug: { notIn: atelierSlugs } },
+    data: { status: ProductStatus.DRAFT, featured: false, newArrival: false },
+  });
+  if (archived.count) {
+    console.log(`Archived ${archived.count} demo product(s) as DRAFT.`);
   }
 
   const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();

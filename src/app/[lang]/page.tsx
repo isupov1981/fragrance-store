@@ -53,7 +53,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
       </Reveal>
 
       <Reveal>
-        <EditorialTrio />
+        <EditorialTrio products={catalog} />
       </Reveal>
 
       <Reveal>
@@ -72,11 +72,11 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
       </Reveal>
 
       <Reveal>
-        <FeaturedStory />
+        <FeaturedStory product={cabinet[0]} />
       </Reveal>
 
       <Reveal>
-        <PerfumerSpotlight />
+        <PerfumerSpotlight products={catalog} />
       </Reveal>
 
       <CinematicBand />

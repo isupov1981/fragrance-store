@@ -6,29 +6,47 @@ import { LocaleLink } from "@/components/i18n/locale-link";
 import { useI18n } from "@/components/i18n/i18n-provider";
 import { usePrefersReducedMotion } from "./reveal";
 
-export function FeaturedStory() {
+type FeaturedProduct = {
+  slug: string;
+  name: string;
+  brand: string;
+  description: string;
+  images: string[];
+};
+
+export function FeaturedStory({ product }: { product?: FeaturedProduct }) {
   const { dict } = useI18n();
   const reduced = usePrefersReducedMotion();
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const slides = [
+    product?.images[0]
+      ? {
+          id: product.slug,
+          kicker: product.brand,
+          title: product.name,
+          copy: product.description,
+          href: `/products/${product.slug}`,
+          image: product.images[0],
+          alt: product.name,
+        }
+      : {
+          id: "sol",
+          kicker: dict.home.storyKicker,
+          title: dict.home.storySolTitle,
+          copy: dict.home.storySolCopy,
+          href: "/collections/all?edit=featured",
+          image: "https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=2200&q=88",
+          alt: dict.home.storySolTitle,
+        },
     {
-      id: "sol",
+      id: "atelier",
       kicker: dict.home.storyKicker,
-      title: dict.home.storySolTitle,
-      copy: dict.home.storySolCopy,
-      href: "/collections/all?edit=featured",
-      image: "https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=2200&q=88",
-      alt: dict.home.storySolTitle,
-    },
-    {
-      id: "nox",
-      kicker: dict.home.storyKicker,
-      title: dict.home.storyNoxTitle,
-      copy: dict.home.storyNoxCopy,
+      title: dict.home.storyAtelierTitle,
+      copy: dict.home.storyAtelierCopy,
       href: "/about",
       image: "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=2200&q=88",
-      alt: dict.home.storyNoxTitle,
+      alt: dict.home.storyAtelierTitle,
     },
   ];
   const slide = slides[index];

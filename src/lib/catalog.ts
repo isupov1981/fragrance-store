@@ -33,7 +33,34 @@ export type StoreCategory = {
   description: string;
 };
 
-export const fallbackProducts: StoreProduct[] = [
+/** Live atelier catalogue — seeded to production and shown when the database is reachable. */
+export const atelierProducts: StoreProduct[] = [
+  {
+    id: "p-notre-dame",
+    slug: "notre-dame",
+    name: "Notre-Dame",
+    brand: "Filippo Sorcinelli",
+    description:
+      "Memento Extrait — Notre-Dame 15.4.2019. An artistic incense composition inspired by the cathedral after the fire: smoke, wet stone, precious woods and a thread of light.",
+    descriptionHe:
+      "Notre-Dame 15.4.2019 מבית Filippo Sorcinelli (סדרת Memento, Extrait) הוא ניחוח יוניסקס אמנותי בהשראת קתדרלת נוטרדאם והשריפה מ־15 באפריל 2019. האווירה שאחרי השריפה — עשן וקטורת, עץ, אבן לחה וקרני אור — מתורגמת לניחוח עמוק, מסתורי ומדיטטיבי.",
+    category: "woody",
+    concentration: "extrait",
+    featured: true,
+    newArrival: true,
+    notes: ["Incense", "Galbanum", "Amber"],
+    images: ["/products/notre-dame.jpg"],
+    variants: [
+      { id: "v-notre-1", name: "1 ml", sku: "FS-ND-1", price: 3200, stock: 40 },
+      { id: "v-notre-3", name: "3 ml", sku: "FS-ND-3", price: 7900, stock: 30 },
+      { id: "v-notre-5", name: "5 ml", sku: "FS-ND-5", price: 11900, stock: 24 },
+      { id: "v-notre-10", name: "10 ml", sku: "FS-ND-10", price: 21900, stock: 18 },
+    ],
+  },
+];
+
+/** Offline / test fixtures. Production seed archives these as DRAFT. */
+export const demoProducts: StoreProduct[] = [
   {
     id: "p-amber-veil",
     slug: "amber-veil",
@@ -136,31 +163,10 @@ export const fallbackProducts: StoreProduct[] = [
     images: ["https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=1200&q=85"],
     variants: [{ id: "v-cedar-50", name: "50 ml", sku: "MS-CR-50", price: 60264, stock: 10 }],
   },
-  {
-    id: "p-notre-dame",
-    slug: "notre-dame",
-    name: "Notre-Dame",
-    brand: "Filippo Sorcinelli",
-    description:
-      "Memento Extrait — Notre-Dame 15.4.2019. An artistic incense composition inspired by the cathedral after the fire: smoke, wet stone, precious woods and a thread of light.",
-    descriptionHe:
-      "Notre-Dame 15.4.2019 מבית Filippo Sorcinelli (סדרת Memento, Extrait) הוא ניחוח יוניסקס אמנותי בהשראת קתדרלת נוטרדאם והשריפה מ־15 באפריל 2019. האווירה שאחרי השריפה — עשן וקטורת, עץ, אבן לחה וקרני אור — מתורגמת לניחוח עמוק, מסתורי ומדיטטיבי.",
-    category: "woody",
-    concentration: "extrait",
-    featured: true,
-    newArrival: true,
-    notes: ["Incense", "Galbanum", "Amber"],
-    images: ["/products/notre-dame.jpg"],
-    variants: [
-      { id: "v-notre-1", name: "1 ml", sku: "FS-ND-1", price: 3200, stock: 40 },
-      { id: "v-notre-3", name: "3 ml", sku: "FS-ND-3", price: 7900, stock: 30 },
-      { id: "v-notre-5", name: "5 ml", sku: "FS-ND-5", price: 11900, stock: 24 },
-      { id: "v-notre-10", name: "10 ml", sku: "FS-ND-10", price: 21900, stock: 18 },
-    ],
-  },
 ];
 
 /** @deprecated Use listStoreProducts() — kept as the offline fallback catalogue. */
+export const fallbackProducts: StoreProduct[] = [...atelierProducts, ...demoProducts];
 export const products = fallbackProducts;
 
 export const categories: StoreCategory[] = [

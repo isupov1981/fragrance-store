@@ -66,6 +66,8 @@ export const en = {
     trioEyebrow: "The atelier edit",
     trioTitle: "Three studies in light",
     trioCopy: "A citrus opening, a powdery interlude, a forest dry-down — wear them as a conversation.",
+    trioTitleSingle: "In the cabinet",
+    trioCopySingle: "The composition currently in the atelier — still unfolding on skin.",
     curatorEyebrow: "Returned to the cabinet",
     curatorTitle: "The curator's edit",
     curatorCopy: "Distinctive signatures, selected for their craft, character and beautiful evolution on skin.",
@@ -84,6 +86,9 @@ export const en = {
     storyNoxTitle: "Atelier Nox",
     storyNoxCopy:
       "Mineral musks, fig leaf and night air. Modern compositions with a clean line and a memory that lingers after the room is empty.",
+    storyAtelierTitle: "Privé Atelier",
+    storyAtelierCopy:
+      "A private cabinet of independent houses. Each bottle is worn, judged and kept only if it earns a place on skin.",
     fullStory: "The full story",
     houseStories: "House stories",
     spotlightEyebrow: "The hands behind the work",
@@ -94,6 +99,7 @@ export const en = {
     elleryCopy: "Green fig, mineral musk and night air. A modern line with the courage to stay quiet until the dry-down.",
     wearAmber: "Wear Amber Veil",
     wearFig: "Wear Fig Nocturne",
+    wearProduct: "Wear {name}",
     trust1Title: "Curated with intention",
     trust1Copy: "Every composition is worn and evaluated by our atelier.",
     trust2Title: "The ritual, complete",

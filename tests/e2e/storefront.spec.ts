@@ -1,14 +1,14 @@
 import { expect, test } from "@playwright/test";
 
 test("customer can browse a product and add it to cart", async ({ page }) => {
-  await page.goto("/en/products/amber-veil", { waitUntil: "domcontentloaded" });
-  await expect(page.getByRole("heading", { name: /Amber Veil/i })).toBeVisible();
+  await page.goto("/en/products/notre-dame", { waitUntil: "domcontentloaded" });
+  await expect(page.getByRole("heading", { name: /Notre-Dame/i })).toBeVisible();
   await page.getByTestId("add-to-cart").click();
   await expect(page.getByRole("dialog", { name: /shopping bag/i })).toBeVisible();
-  await expect(page.getByText("Amber Veil").first()).toBeVisible();
+  await expect(page.getByText("Notre-Dame").first()).toBeVisible();
   await page.getByRole("link", { name: /view shopping bag/i }).click();
   await expect(page).toHaveURL(/\/en\/cart/);
-  await expect(page.getByText("Amber Veil").first()).toBeVisible();
+  await expect(page.getByText("Notre-Dame").first()).toBeVisible();
 });
 
 test("hebrew storefront is rtl and can switch currency", async ({ page }) => {
@@ -17,7 +17,7 @@ test("hebrew storefront is rtl and can switch currency", async ({ page }) => {
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
   await expect(page.getByRole("link", { name: "EN" })).toBeVisible();
 
-  await page.goto("/en/products/amber-veil", { waitUntil: "domcontentloaded" });
+  await page.goto("/en/products/notre-dame", { waitUntil: "domcontentloaded" });
   await page.getByRole("button", { name: /EUR/ }).first().click();
   await expect(page.getByText(/€|EUR/).first()).toBeVisible();
   await page.getByRole("button", { name: /ILS/ }).first().click();
@@ -25,7 +25,7 @@ test("hebrew storefront is rtl and can switch currency", async ({ page }) => {
 });
 
 test("customer can complete demo checkout", async ({ page }) => {
-  await page.goto("/en/products/amber-veil", { waitUntil: "domcontentloaded" });
+  await page.goto("/en/products/notre-dame", { waitUntil: "domcontentloaded" });
   await page.getByTestId("add-to-cart").click();
   await page.getByRole("link", { name: /^checkout$/i }).click();
   await expect(page).toHaveURL(/\/en\/checkout/);
