@@ -5,6 +5,8 @@ architecture and premium shopping experience described in the Almaycasa
 technical brief. All included branding, copy and demo catalogue data are
 original placeholders.
 
+Architecture overview: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+
 ## Stack
 
 - Next.js App Router, React, TypeScript and Tailwind CSS
