@@ -31,7 +31,7 @@ export const checkoutSchema = z.object({
   }),
   shippingMethod: z.enum(["standard", "express"]),
   currency: z.enum(["USD", "EUR", "ILS"]).default("USD"),
-  locale: z.enum(["en", "he"]).default("en"),
+  locale: z.enum(["en", "he", "ru"]).default("en"),
   acceptsTerms: z.literal(true),
 });
 

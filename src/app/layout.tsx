@@ -30,8 +30,8 @@ const hebrewDisplay = Noto_Serif_Hebrew({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: {
-    default: "PRIVÉ ATELIER — Rare fragrance, intimately chosen",
-    template: "%s — PRIVÉ ATELIER",
+    default: "The Perfume Room — Rare fragrance, intimately chosen",
+    template: "%s — The Perfume Room",
   },
   description:
     "A considered collection of niche fragrance: rare materials, singular perfumers and compositions made to live close to the skin.",

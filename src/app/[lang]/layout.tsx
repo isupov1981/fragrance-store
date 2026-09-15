@@ -7,6 +7,7 @@ import { CartDrawer } from "@/components/cart/cart-drawer";
 import { StoreProviders } from "@/components/i18n/store-providers";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
+import { listStoreBrands } from "@/lib/catalog/brands";
 import { getOrdersEnabled } from "@/lib/commerce";
 import { defaultCurrency, isCurrency, CURRENCY_COOKIE } from "@/lib/currency";
 import { locales } from "@/lib/i18n/config";
@@ -24,13 +25,14 @@ export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Prom
   return {
     title: {
       default: dict.meta.title,
-      template: "%s — PRIVÉ ATELIER",
+      template: "%s — The Perfume Room",
     },
     description: dict.meta.description,
     alternates: {
       languages: {
         en: localizedPath("en", "/"),
         he: localizedPath("he", "/"),
+        ru: localizedPath("ru", "/"),
         "x-default": localizedPath("en", "/"),
       },
     },
@@ -44,12 +46,12 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
   const dict = getDictionary(lang);
   const currencyValue = (await cookies()).get(CURRENCY_COOKIE)?.value;
   const currency = isCurrency(currencyValue) ? currencyValue : defaultCurrency;
-  const ordersEnabled = await getOrdersEnabled();
+  const [ordersEnabled, brands] = await Promise.all([getOrdersEnabled(), listStoreBrands()]);
 
   return (
     <StoreProviders locale={lang} dict={dict} currency={currency} ordersEnabled={ordersEnabled}>
       <Suspense fallback={null}>
-        <Header />
+        <Header brands={brands} />
       </Suspense>
       {children}
       <Footer locale={lang} />

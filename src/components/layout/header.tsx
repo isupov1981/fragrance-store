@@ -2,32 +2,40 @@
 
 import { usePathname } from "next/navigation";
 import { Menu, Search, UserRound, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { BrandsMenu } from "./brands-menu";
 import { CartLink } from "./cart-link";
+import { CategoriesMenu } from "./categories-menu";
 import { CurrencySwitcher } from "@/components/i18n/currency-switcher";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { LocaleLink } from "@/components/i18n/locale-link";
 import { useCurrency } from "@/components/i18n/currency-provider";
 import { useI18n } from "@/components/i18n/i18n-provider";
 import { useCommerce } from "@/components/commerce/commerce-provider";
+import type { StoreBrand } from "@/lib/catalog/brands";
+import { isMerchCategorySlug } from "@/lib/catalog/merchandising";
 import { interpolate } from "@/lib/i18n/interpolate";
 import { localizedPath, stripLocalePrefix } from "@/lib/i18n/path";
 import { categories } from "@/lib/catalog";
 import { FREE_SHIPPING_ILS_CENTS } from "@/lib/currency";
 
-export function Header() {
+export function Header({ brands = [] }: { brands?: StoreBrand[] }) {
   const pathname = usePathname();
   const { locale, dict } = useI18n();
   const { format } = useCurrency();
   const { ordersEnabled } = useCommerce();
   const isHome = stripLocalePrefix(pathname) === "/";
   const [scrolled, setScrolled] = useState(false);
+  const mobileMenuRef = useRef<HTMLDetailsElement>(null);
+  const familyCategories = categories.filter((category) => category.slug !== "all" && !isMerchCategorySlug(category.slug));
 
-  const editorialLinks = [
-    { href: "/collections/all", label: dict.nav.all },
-    { href: "/collections/all?edit=new", label: dict.nav.arrivals },
-    { href: "/collections/all?edit=featured", label: dict.nav.featured },
-  ];
+  function closeMobileMenu() {
+    if (mobileMenuRef.current) mobileMenuRef.current.open = false;
+  }
+
+  useEffect(() => {
+    closeMobileMenu();
+  }, [pathname]);
 
   useEffect(() => {
     if (!isHome) {
@@ -59,7 +67,7 @@ export function Header() {
         </div>
       )}
       <div className="shell flex h-20 items-center justify-between gap-5 lg:h-24">
-        <details className="mobile-menu lg:hidden">
+        <details ref={mobileMenuRef} className="mobile-menu lg:hidden">
           <summary className="icon-button">
             <Menu aria-hidden="true" size={21} />
             <span className="sr-only">{dict.nav.open}</span>
@@ -73,23 +81,23 @@ export function Header() {
           >
             <div className="mb-8 flex items-center justify-between">
               <span className="eyebrow">{dict.nav.menu}</span>
-              <span className="menu-close icon-button" aria-hidden="true">
-                <X size={20} />
-              </span>
+              <button className="menu-close icon-button" type="button" onClick={closeMobileMenu} aria-label={dict.nav.close}>
+                <X aria-hidden="true" size={20} />
+              </button>
             </div>
-            <nav aria-label={dict.nav.menu}>
-              <ul className="space-y-1">
-                {editorialLinks.map((item) => (
-                  <li key={item.href}>
-                    <LocaleLink className="block border-b border-ink/10 py-4 font-display text-2xl" href={item.href}>
-                      {item.label}
-                    </LocaleLink>
-                  </li>
-                ))}
-              </ul>
-              <p className="eyebrow mb-3 mt-9">{dict.nav.mood}</p>
+            <nav aria-label={dict.nav.menu} onClick={(event) => {
+              const target = event.target as HTMLElement;
+              if (target.closest("a")) closeMobileMenu();
+            }}>
+              <CategoriesMenu variant="mobile" />
+              {brands.length ? (
+                <div className="mt-2">
+                  <BrandsMenu brands={brands} variant="mobile" />
+                </div>
+              ) : null}
+              <p className="eyebrow mb-3 mt-9">{dict.nav.families}</p>
               <ul className="grid grid-cols-2 gap-2">
-                {categories.slice(1).map((category) => (
+                {familyCategories.map((category) => (
                   <li key={category.slug}>
                     <LocaleLink className="block bg-sand/45 p-4 text-sm" href={`/collections/${category.slug}`}>
                       {dict.categories[category.slug as keyof typeof dict.categories].name}
@@ -112,44 +120,42 @@ export function Header() {
         <nav className="hidden flex-1 lg:block" aria-label="Primary navigation">
           <ul className="flex items-center gap-8 text-xs font-medium uppercase tracking-[0.16em]">
             <li className="group">
-              <LocaleLink className="nav-link" href="/collections/all">{dict.nav.shop}</LocaleLink>
+              <LocaleLink className="nav-link" href="/collections/all">{dict.nav.categories}</LocaleLink>
               <div className="invisible absolute inset-x-0 top-full border-y border-ink/10 bg-ivory text-ink opacity-0 shadow-[0_24px_45px_rgba(32,29,25,.08)] transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
-                <div className="shell grid grid-cols-[1.1fr_1fr] gap-16 py-10">
-                  <div>
-                    <p className="eyebrow mb-5">{dict.nav.collection}</p>
-                    <ul className="grid grid-cols-2 gap-x-10 gap-y-4">
-                      {editorialLinks.map((item) => (
-                        <li key={item.href}>
-                          <LocaleLink className="font-display text-xl normal-case tracking-normal hover:text-bronze" href={item.href}>
-                            {item.label}
-                          </LocaleLink>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="border-s border-ink/10 ps-16">
-                    <p className="eyebrow mb-5">{dict.nav.families}</p>
-                    <ul className="grid grid-cols-2 gap-3">
-                      {categories.slice(1).map((category) => (
-                        <li key={category.slug}>
-                          <LocaleLink className="text-sm normal-case tracking-normal hover:text-bronze" href={`/collections/${category.slug}`}>
-                            {dict.categories[category.slug as keyof typeof dict.categories].name} <span aria-hidden="true">↗</span>
-                          </LocaleLink>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                <CategoriesMenu variant="desktop" />
+              </div>
+            </li>
+            {brands.length ? (
+              <li className="group">
+                <LocaleLink className="nav-link" href="/brands">{dict.nav.brands}</LocaleLink>
+                <div className="invisible absolute inset-x-0 top-full border-y border-ink/10 bg-ivory text-ink opacity-0 shadow-[0_24px_45px_rgba(32,29,25,.08)] transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                  <BrandsMenu brands={brands} variant="desktop" />
+                </div>
+              </li>
+            ) : null}
+            <li className="group">
+              <span className="nav-link cursor-default">{dict.nav.families}</span>
+              <div className="invisible absolute inset-x-0 top-full border-y border-ink/10 bg-ivory text-ink opacity-0 shadow-[0_24px_45px_rgba(32,29,25,.08)] transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                <div className="shell py-10">
+                  <ul className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                    {familyCategories.map((category) => (
+                      <li key={category.slug}>
+                        <LocaleLink className="text-sm normal-case tracking-normal hover:text-bronze" href={`/collections/${category.slug}`}>
+                          {dict.categories[category.slug as keyof typeof dict.categories].name}
+                        </LocaleLink>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </div>
             </li>
-            <li><LocaleLink className="nav-link" href="/collections/all?edit=new">{dict.nav.news}</LocaleLink></li>
             <li><LocaleLink className="nav-link" href="/about">{dict.nav.atelier}</LocaleLink></li>
           </ul>
         </nav>
 
         <LocaleLink className="shrink-0 text-center" href="/" aria-label={dict.nav.home}>
-          <span className="block font-display text-[1.65rem] leading-none tracking-[0.08em] sm:text-3xl">PRIVÉ</span>
-          <span className="mt-1 block text-[8px] font-semibold uppercase tracking-[0.48em]">Atelier</span>
+          <span className="block font-display text-[1.35rem] leading-none tracking-[0.08em] sm:text-[1.75rem]">THE PERFUME</span>
+          <span className="mt-1 block text-[8px] font-semibold uppercase tracking-[0.48em]">Room</span>
         </LocaleLink>
 
         <div className="flex flex-1 items-center justify-end gap-1 sm:gap-2">

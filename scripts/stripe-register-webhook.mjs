@@ -41,7 +41,7 @@ async function main() {
   const created = await stripe.webhookEndpoints.create({
     url,
     enabled_events: enabledEvents,
-    description: "Privé Atelier checkout",
+    description: "The Perfume Room checkout",
   });
   console.log(`Created webhook ${created.id}`);
   console.log(`URL ${url}`);

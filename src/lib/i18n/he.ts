@@ -2,23 +2,26 @@ import type { Dictionary } from "./en";
 
 export const he: Dictionary = {
   meta: {
-    title: "PRIVÉ ATELIER — ניחוחות נדירים, שנבחרו באופן אינטימי",
+    title: "The Perfume Room — ניחוחות נדירים, שנבחרו באופן אינטימי",
     description:
       "אוסף מדויק של בשמי נישה: חומרי גלם נדירים, פרפיומרים בעלי חתימה וניחוחות שנועדו לחיות קרוב לעור.",
   },
   nav: {
     skip: "דלגו לתוכן",
     open: "פתחו תפריט",
+    close: "סגירת תפריט",
     menu: "תפריט",
     shop: "חנות",
     news: "חדש",
-    atelier: "האטלייה שלנו",
+    atelier: "אודותינו",
     collection: "הקולקציה",
     families: "משפחות ריח",
     all: "כל הניחוחות",
     arrivals: "חדשים באתר",
     featured: "בחירת האוצר",
     mood: "קנייה לפי מצב רוח",
+    brands: "מותגים",
+    categories: "קטגוריות",
     contact: "צור קשר",
     faq: "שאלות נפוצות",
     search: "חיפוש",
@@ -26,7 +29,7 @@ export const he: Dictionary = {
     searchPlaceholder: "חיפוש בושם",
     account: "חשבון",
     bag: "סל קניות",
-    home: "PRIVÉ ATELIER דף הבית",
+    home: "The Perfume Room דף הבית",
     promo: "משלוח חינם בהזמנות מעל {amount}",
     browseOnlyPromo: "תצוגת קטלוג — הזמנות אינן זמינות כרגע",
     language: "שפה",
@@ -36,12 +39,28 @@ export const he: Dictionary = {
     title: "ההזמנות אינן זמינות כרגע",
     notice:
       "הקטלוג פתוח לצפייה בזמן שאנו מעדכנים את פרטי המוצרים. האפשרות לרכוש תחזור בקרוב.",
-    contact: "צרו קשר עם האטלייה",
+    contact: "צרו קשר איתנו",
     browse: "לצפייה בניחוחות",
+  },
+  brands: {
+    title: "מותגים",
+    intro: "עיינו בבתי הבושם של The Perfume Room, מסודרים לפי אלפבית.",
+    viewAll: "כל המותגים",
+    letterBrands: "{letter} — מותגים",
+    brandDescription: "ניחוחות של {brand}.",
+    empty: "עדיין אין מותגים ברשימה.",
+    emptyBrand: "עדיין אין ניחוחות זמינים למותג זה.",
+  },
+  categoriesMenu: {
+    allProducts: "כל המוצרים",
+    newArrivals: "חדשים באתר",
+    backInStock: "חזר למלאי",
+    testersRefills: "טסטרים / מילויים",
+    additionalProducts: "מוצרים נוספים",
   },
   footer: {
     correspondence: "התכתבות פרטית",
-    notesTitle: "הערות מהאטלייה",
+    notesTitle: "הערות מ־The Perfume Room",
     notesCopy: "ניחוחות חדשים, טקסים שקטים והזמנות לעריכות הפרטיות שלנו — מדי פעם.",
     email: "כתובת דוא״ל",
     emailPlaceholder: "הדוא״ל שלכם",
@@ -51,7 +70,7 @@ export const he: Dictionary = {
     care: "שירות לקוחות",
     delivery: "משלוחים",
     returns: "החזרות",
-    rights: "© {year} Privé Atelier. כל הזכויות שמורות.",
+    rights: "© {year} The Perfume Room. כל הזכויות שמורות.",
     cities: "פריז · ניו יורק · תל אביב · לכל העולם",
   },
   consent: {
@@ -94,7 +113,7 @@ export const he: Dictionary = {
     storySolCopy: "שרפים חמים ועצים זהובים, שנועדו לשבת קרוב לעור. נוכחות שקטה שנפתחת שעות.",
     storyNoxTitle: "Atelier Nox",
     storyNoxCopy: "מאסקים מינרליים, עלה תאנה ואוויר לילה. קו מודרני עם זיכרון שנשאר אחרי שהחדר מתרוקן.",
-    storyAtelierTitle: "Privé Atelier",
+    storyAtelierTitle: "The Perfume Room",
     storyAtelierCopy: "ארון פרטי של בתים עצמאיים. כל בקבוק נלבש, נבחן ונשמר רק אם הוא ראוי למקום על העור.",
     fullStory: "הסיפור המלא",
     houseStories: "סיפורי הבתים",
@@ -147,7 +166,7 @@ export const he: Dictionary = {
     notFound: "הניחוח לא נמצא",
   },
   collection: {
-    prive: "קולקציית Privé",
+    prive: "הקולקציה",
     families: "משפחות ריח",
     searchThis: "חיפוש בקולקציה",
     search: "חיפוש",
@@ -231,10 +250,10 @@ export const he: Dictionary = {
     items: "פריטים",
   },
   about: {
-    title: "האטלייה שלנו",
+    title: "אודותינו",
     eyebrow: "נקודת המבט שלנו",
     heading: "עריכה פרטית של בושם מודרני.",
-    intro: "PRIVÉ ATELIER נוסד על אמונה פשוטה: הניחוח המשכנע ביותר מתגלה דרך תשומת לב, לא דרך שפע.",
+    intro: "The Perfume Room נוסד על אמונה פשוטה: הניחוח המשכנע ביותר מתגלה דרך תשומת לב, לא דרך שפע.",
     slow: "נבחר לאט",
     slow1:
       "הקולקציה שלנו תמציתית במכוון. אנחנו חיים עם כל קומפוזיציה לפני שהיא נכנסת לאטלייה, ומתבוננים בפתיחה, בהתפתחות ובשובל שהיא משאירה שעות אחר כך.",
@@ -247,7 +266,7 @@ export const he: Dictionary = {
   contact: {
     title: "צור קשר",
     eyebrow: "ליווי אישי",
-    heading: "דברו עם האטלייה.",
+    heading: "דברו איתנו.",
     intro: "להכוונת ניחוח, שאלות על הזמנה או המלצה מדויקת — כתבו לנו. אנחנו משיבים תוך שני ימי עסקים.",
     email: "דוא״ל",
     hours: "שעות האטלייה",
@@ -266,7 +285,7 @@ export const he: Dictionary = {
     title: "שאלות נפוצות",
     eyebrow: "שירות לקוחות",
     heading: "שאלות, במחשבה.",
-    intro: "כל מה שאולי תרצו לדעת על בחירה, לבישה וקבלת ניחוח מ־PRIVÉ ATELIER.",
+    intro: "כל מה שאולי תרצו לדעת על בחירה, לבישה וקבלת ניחוח מ־The Perfume Room.",
     items: [
       [
         "איך בוחרים בושם אונליין?",
@@ -332,11 +351,14 @@ export const he: Dictionary = {
     explore: "לצפייה בניחוחות",
   },
   categories: {
-    all: { name: "כל הניחוחות", description: "כל קולקציית Privé." },
+    all: { name: "כל הניחוחות", description: "הקולקציה המלאה." },
     amber: { name: "אמבר", description: "שרפים חמים, עצים ווניל זהוב." },
     woody: { name: "עצי", description: "ארז, סנדלווד ותווי יער אטמוספריים." },
     floral: { name: "פרחוני", description: "עלי כותרת מודרניים, איריס וורד מובהק." },
     citrus: { name: "הדרי", description: "ברגמוט זוהר, נרולי ותפוז מר." },
+    "back-in-stock": { name: "חזר למלאי", description: "ניחוחות שחזרו למלאי לאחרונה." },
+    "testers-refills": { name: "טסטרים / מילויים", description: "טסטרים ופורמטי מילוי." },
+    "additional-products": { name: "מוצרים נוספים", description: "מוצרים משלימים מעבר לקולקציה המרכזית." },
   },
   catalog: {
     "amber-veil": "קומפוזיציה חמה ועוטפת של שרף אמבר, וניל אבסולוט וארז יבש. אלגנטית, אינטימית ונועדה להישאר.",

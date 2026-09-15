@@ -19,6 +19,8 @@ export type StoreProduct = {
   description: string;
   descriptionHe?: string;
   category: string;
+  /** All category slugs linked to the product (families + merchandising). */
+  categorySlugs?: string[];
   concentration?: "edp" | "extrait";
   featured?: boolean;
   newArrival?: boolean;
@@ -59,7 +61,7 @@ export const atelierProducts: StoreProduct[] = [
   },
 ];
 
-/** Offline / test fixtures. Production seed archives these as DRAFT. */
+/** Offline / test fixtures. Production seed deletes these if present. */
 export const demoProducts: StoreProduct[] = [
   {
     id: "p-amber-veil",
@@ -170,11 +172,18 @@ export const fallbackProducts: StoreProduct[] = [...atelierProducts, ...demoProd
 export const products = fallbackProducts;
 
 export const categories: StoreCategory[] = [
-  { slug: "all", name: "All fragrances", description: "The complete Privé collection." },
+  { slug: "all", name: "All fragrances", description: "The complete collection." },
   { slug: "amber", name: "Amber", description: "Warm resins, woods and golden vanilla." },
   { slug: "woody", name: "Woody", description: "Cedar, sandalwood and atmospheric forest notes." },
   { slug: "floral", name: "Floral", description: "Modern petals, iris and expressive rose." },
   { slug: "citrus", name: "Citrus", description: "Luminous bergamot, neroli and bitter orange." },
+  { slug: "back-in-stock", name: "Back In Stock", description: "Recently restocked fragrances." },
+  { slug: "testers-refills", name: "Testers / Refills", description: "Testers and refill formats." },
+  {
+    slug: "additional-products",
+    name: "Additional Products",
+    description: "Complementary products beyond the core collection.",
+  },
 ];
 
 export function getProduct(slug: string) {

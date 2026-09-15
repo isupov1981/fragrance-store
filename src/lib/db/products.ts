@@ -2,6 +2,7 @@ import type { Prisma } from "@prisma/client";
 
 import type { StoreCategory, StoreProduct } from "@/lib/catalog";
 import { categories as fallbackCategories, fallbackProducts, getProduct } from "@/lib/catalog";
+import { isMerchCategorySlug } from "@/lib/catalog/merchandising";
 import { databaseEnabled } from "@/lib/db/enabled";
 
 const publishedInclude = {
@@ -15,7 +16,9 @@ export type PublishedProduct = Prisma.ProductGetPayload<{ include: typeof publis
 
 export function toStoreProduct(record: PublishedProduct): StoreProduct | null {
   if (!record.variants.length) return null;
-  const category = record.categories[0]?.category.slug ?? "all";
+  const categorySlugs = record.categories.map((item) => item.category.slug);
+  const category =
+    categorySlugs.find((slug) => !isMerchCategorySlug(slug)) ?? categorySlugs[0] ?? "all";
   const concentration =
     record.concentration === "extrait" || record.concentration === "edp"
       ? record.concentration
@@ -31,6 +34,7 @@ export function toStoreProduct(record: PublishedProduct): StoreProduct | null {
     description: record.description,
     descriptionHe: record.descriptionHe ?? undefined,
     category,
+    categorySlugs: categorySlugs.length ? categorySlugs : [category],
     concentration,
     featured: record.featured,
     newArrival: record.newArrival,

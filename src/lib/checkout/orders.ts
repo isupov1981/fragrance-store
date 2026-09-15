@@ -1,5 +1,6 @@
 import type { CheckoutInput } from "@/lib/checkout/schema";
 import type { PricedCart } from "@/lib/checkout/pricing";
+import type { Locale } from "@/lib/i18n/config";
 
 export type OrderStatus = "pending" | "paid" | "payment_failed";
 
@@ -13,7 +14,7 @@ export type Order = {
   paymentReference?: string;
   paymentUrl?: string;
   createdAt: string;
-  locale?: "en" | "he";
+  locale?: Locale;
 };
 
 type OrderRegistry = {

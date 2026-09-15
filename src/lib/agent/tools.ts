@@ -21,7 +21,7 @@ export const agentTools = [
   {
     name: "create_product",
     description:
-      "Create a DRAFT fragrance product. Prices are ILS agorot (32₪ = 3200). Sample sizes typically 1/3/5/10 ml at 3200/7900/11900/21900. Never publishes.",
+      "Create a DRAFT fragrance product. Prices are ILS agorot (32₪ = 3200). Sample sizes typically 1/3/5/10 ml at 3200/7900/11900/21900. Never publishes. Use merchandising for store menu placement: back-in-stock, testers-refills, additional-products.",
     inputSchema: {
       type: "object",
       required: ["name", "slug", "description", "variants"],
@@ -31,7 +31,12 @@ export const agentTools = [
         description: { type: "string", description: "English description" },
         descriptionHe: { type: "string" },
         brand: { type: "string" },
-        category: { type: "string", description: "Family slug or name, e.g. woody" },
+        category: { type: "string", description: "Olfactive family slug or name, e.g. woody / floral / amber / citrus" },
+        merchandising: {
+          type: "array",
+          description: "Store Categories menu tags",
+          items: { type: "string", enum: ["back-in-stock", "testers-refills", "additional-products"] },
+        },
         concentration: { type: "string", enum: ["edp", "extrait"] },
         featured: { type: "boolean" },
         newArrival: { type: "boolean" },
@@ -63,7 +68,8 @@ export const agentTools = [
   },
   {
     name: "update_product",
-    description: "Update an existing product by id or slug. Cannot set ACTIVE — use publish_product.",
+    description:
+      "Update an existing product by id or slug. Cannot set ACTIVE — use publish_product. Set merchandising to place the product in Categories: Back In Stock / Testers / Additional (pass [] to clear).",
     inputSchema: {
       type: "object",
       properties: {
@@ -73,7 +79,13 @@ export const agentTools = [
         description: { type: "string" },
         descriptionHe: { type: "string" },
         brand: { type: "string" },
-        category: { type: "string" },
+        category: { type: "string", description: "Olfactive family" },
+        merchandising: {
+          type: "array",
+          items: { type: "string", enum: ["back-in-stock", "testers-refills", "additional-products"] },
+        },
+        featured: { type: "boolean" },
+        newArrival: { type: "boolean" },
         images: { type: "array" },
         variants: { type: "array" },
       },
@@ -89,12 +101,16 @@ export const agentTools = [
   },
   {
     name: "list_products",
-    description: "List products, optionally filtered by status or search query.",
+    description: "List products, optionally filtered by status, merchandising tag, or search query.",
     inputSchema: {
       type: "object",
       properties: {
         q: { type: "string" },
         status: { type: "string", enum: ["DRAFT", "ACTIVE", "ARCHIVED"] },
+        merchandising: {
+          type: "string",
+          enum: ["back-in-stock", "testers-refills", "additional-products"],
+        },
         take: { type: "integer" },
       },
     },

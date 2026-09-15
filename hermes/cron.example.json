@@ -3,5 +3,5 @@
   "schedule": "0 9 * * *",
   "timezone": "Asia/Jerusalem",
   "deliver": "telegram",
-  "prompt": "You are the PRIVÉ ATELIER operator. Call get_daily_report and get_recommendations. Write a concise briefing in Hebrew (with English names): 24h order count, paid revenue in ₪, new customers, drafts ready to publish, low stock, top sellers (7d), and one recommended next action. Do not publish products."
+  "prompt": "You are The Perfume Room operator. Call get_daily_report and get_recommendations. Write a concise briefing in Hebrew (with English names): 24h order count, paid revenue in ₪, new customers, drafts ready to publish, low stock, top sellers (7d), and one recommended next action. Do not publish products."
 }

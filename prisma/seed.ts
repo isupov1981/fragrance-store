@@ -1,9 +1,10 @@
 import { hash } from "bcryptjs";
 import { PrismaClient, ProductStatus } from "@prisma/client";
-import { atelierProducts, categories } from "../src/lib/catalog";
+import { atelierProducts, categories, demoProducts } from "../src/lib/catalog";
 
 const prisma = new PrismaClient();
 const atelierSlugs = atelierProducts.map((item) => item.slug);
+const demoSlugs = demoProducts.map((item) => item.slug);
 
 async function syncProductImages(
   productId: string,
@@ -111,12 +112,16 @@ async function main() {
     }
   }
 
-  const archived = await prisma.product.updateMany({
-    where: { slug: { notIn: atelierSlugs } },
-    data: { status: ProductStatus.DRAFT, featured: false, newArrival: false },
+  // Drop fixture demos from the live catalogue (keep real atelier SKUs only).
+  const demoRows = await prisma.product.findMany({
+    where: { slug: { in: demoSlugs } },
+    select: { id: true, slug: true },
   });
-  if (archived.count) {
-    console.log(`Archived ${archived.count} demo product(s) as DRAFT.`);
+  if (demoRows.length) {
+    const ids = demoRows.map((row) => row.id);
+    await prisma.orderItem.updateMany({ where: { productId: { in: ids } }, data: { productId: null } });
+    await prisma.product.deleteMany({ where: { id: { in: ids } } });
+    console.log(`Removed ${demoRows.length} demo product(s): ${demoRows.map((r) => r.slug).join(", ")}`);
   }
 
   const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();

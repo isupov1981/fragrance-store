@@ -31,13 +31,16 @@ describe("locale routing", () => {
   it("prefixes storefront paths for each locale", () => {
     expect(localizedPath("en", "/products/amber-veil")).toBe("/en/products/amber-veil");
     expect(localizedPath("he", "/cart?from=nav")).toBe("/he/cart?from=nav");
+    expect(localizedPath("ru", "/about")).toBe("/ru/about");
     expect(stripLocalePrefix("/he/collections/all")).toBe("/collections/all");
     expect(replaceLocaleInPath("/en/about", "he")).toBe("/he/about");
+    expect(replaceLocaleInPath("/he/cart", "ru")).toBe("/ru/cart");
   });
 
-  it("prefers the locale cookie, then Hebrew Accept-Language", () => {
+  it("prefers the locale cookie, then Hebrew/Russian Accept-Language", () => {
     expect(negotiateLocale("en-US,en;q=0.9", "he")).toBe("he");
     expect(negotiateLocale("he-IL,he;q=0.9", null)).toBe("he");
+    expect(negotiateLocale("ru-RU,ru;q=0.9", null)).toBe("ru");
     expect(negotiateLocale("en-US,en;q=0.9", null)).toBe("en");
   });
 });

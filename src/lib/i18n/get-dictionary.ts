@@ -2,9 +2,10 @@ import { notFound } from "next/navigation";
 import { isLocale, type Locale } from "./config";
 import { en, type Dictionary } from "./en";
 import { he } from "./he";
+import { ru } from "./ru";
 import { interpolate } from "./interpolate";
 
-const dictionaries: Record<Locale, Dictionary> = { en, he };
+const dictionaries: Record<Locale, Dictionary> = { en, he, ru };
 
 export type { Dictionary, Locale };
 export { interpolate };

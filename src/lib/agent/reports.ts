@@ -161,7 +161,7 @@ export async function getRecommendations() {
 
 export function buildDailyBriefing(report: Awaited<ReturnType<typeof getDailyReport>>, recs: Awaited<ReturnType<typeof getRecommendations>>) {
   const lines = [
-    `Privé Atelier daily briefing (${report.generatedAt.slice(0, 10)})`,
+    `The Perfume Room daily briefing (${report.generatedAt.slice(0, 10)})`,
     `Orders (24h): ${report.orders.count}. Paid revenue: ₪${(report.orders.revenueIls / 100).toFixed(2)}.`,
     `New customers: ${report.customers.new}. Drafts: ${report.catalog.drafts}.`,
   ];

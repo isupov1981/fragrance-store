@@ -337,9 +337,10 @@ const he: typeof en = {
 export const adminDictionaries = { en, he } as const;
 
 export type AdminDictionary = typeof en;
+export type AdminLocale = keyof typeof adminDictionaries;
 
 export function getAdminDictionary(locale: Locale): AdminDictionary {
-  return adminDictionaries[locale];
+  return locale === "he" ? adminDictionaries.he : adminDictionaries.en;
 }
 
 export function formatAdminMessage(

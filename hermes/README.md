@@ -50,7 +50,7 @@ After the gateway is up:
 
 ```bash
 hermes cron create "0 9 * * *" --name "atelier-daily" --deliver telegram --tz Asia/Jerusalem \
-  "Call get_daily_report and get_recommendations for PRIVÉ ATELIER. Write a short Hebrew+English briefing: 24h orders, ₪ revenue, drafts to publish, low stock, one next action."
+  "Call get_daily_report and get_recommendations for The Perfume Room. Write a short Hebrew+English briefing: 24h orders, ₪ revenue, drafts to publish, low stock, one next action."
 ```
 
 See [cron.example.json](cron.example.json).

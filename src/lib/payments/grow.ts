@@ -60,7 +60,7 @@ export async function createGrowPaymentProcess(order: Order, origin: string) {
   if (secret) notify.searchParams.set("secret", secret);
 
   const description = sanitize(
-    order.cart.lines.map((line) => `${line.productName} ${line.variantName}`).join(" ") || "Privé Atelier order",
+    order.cart.lines.map((line) => `${line.productName} ${line.variantName}`).join(" ") || "The Perfume Room order",
   );
 
   const data = await postForm("createPaymentProcess", {

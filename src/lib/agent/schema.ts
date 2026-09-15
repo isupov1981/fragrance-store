@@ -2,6 +2,12 @@ import { z } from "zod";
 
 const slugSchema = z.string().trim().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
 
+export const merchandisingTagSchema = z.enum([
+  "back-in-stock",
+  "testers-refills",
+  "additional-products",
+]);
+
 export const productVariantInputSchema = z.object({
   name: z.string().trim().min(1).max(100),
   sku: z.string().trim().min(2).max(100),
@@ -22,6 +28,7 @@ export const createProductInputSchema = z.object({
   descriptionHe: z.string().trim().min(10).optional(),
   brand: z.string().trim().min(1).max(120).optional(),
   category: z.string().trim().min(1).max(120).optional(),
+  merchandising: z.array(merchandisingTagSchema).max(3).optional().default([]),
   concentration: z.enum(["edp", "extrait"]).optional(),
   featured: z.boolean().optional().default(false),
   newArrival: z.boolean().optional().default(false),
@@ -38,6 +45,7 @@ export const updateProductInputSchema = z.object({
   descriptionHe: z.string().trim().min(10).nullable().optional(),
   brand: z.string().trim().min(1).max(120).nullable().optional(),
   category: z.string().trim().min(1).max(120).nullable().optional(),
+  merchandising: z.array(merchandisingTagSchema).max(3).nullable().optional(),
   concentration: z.enum(["edp", "extrait"]).nullable().optional(),
   featured: z.boolean().optional(),
   newArrival: z.boolean().optional(),
@@ -47,14 +55,17 @@ export const updateProductInputSchema = z.object({
   status: z.enum(["DRAFT", "ARCHIVED"]).optional(),
 });
 
-export const productLookupSchema = z.object({
-  id: z.string().min(1).optional(),
-  slug: slugSchema.optional(),
-}).refine((value) => Boolean(value.id || value.slug), { message: "id or slug is required" });
+export const productLookupSchema = z
+  .object({
+    id: z.string().min(1).optional(),
+    slug: slugSchema.optional(),
+  })
+  .refine((value) => Boolean(value.id || value.slug), { message: "id or slug is required" });
 
 export const listProductsInputSchema = z.object({
   q: z.string().trim().max(120).optional(),
   status: z.enum(["DRAFT", "ACTIVE", "ARCHIVED"]).optional(),
+  merchandising: merchandisingTagSchema.optional(),
   take: z.coerce.number().int().min(1).max(100).optional().default(30),
 });
 
@@ -73,3 +84,4 @@ export const adminSimpleProductSchema = z.object({
 
 export type CreateProductInput = z.infer<typeof createProductInputSchema>;
 export type UpdateProductInput = z.infer<typeof updateProductInputSchema>;
+export type MerchandisingTag = z.infer<typeof merchandisingTagSchema>;

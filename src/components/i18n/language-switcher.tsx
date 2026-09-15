@@ -29,7 +29,7 @@ export function LanguageSwitcher() {
             }}
             aria-current={active ? "true" : undefined}
           >
-            {item === "he" ? "עב" : "EN"}
+            {item === "he" ? "עב" : item === "ru" ? "RU" : "EN"}
           </Link>
         );
       })}

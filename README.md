@@ -1,4 +1,4 @@
-# Privé Atelier fragrance store
+# The Perfume Room fragrance store
 
 Independent fragrance commerce application inspired by the information
 architecture and premium shopping experience described in the Almaycasa

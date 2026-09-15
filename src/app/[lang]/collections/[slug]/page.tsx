@@ -7,6 +7,7 @@ import { AutoSubmitForm } from "@/components/ui/auto-submit-form";
 import { getCategory as getFallbackCategory, localizedDescription } from "@/lib/catalog";
 import { listStoreCategories, listStoreProducts } from "@/lib/db/products";
 import { isCollectionSort, paginateCollection, sortCollection, type CollectionSort } from "@/lib/catalog/browse";
+import { matchesMerchandisingEdit, merchandisingTitle, isMerchCategorySlug } from "@/lib/catalog/merchandising";
 import { getDictionary, hasLocale } from "@/lib/i18n/get-dictionary";
 import { interpolate } from "@/lib/i18n/interpolate";
 import { localizedPath } from "@/lib/i18n/path";
@@ -53,8 +54,9 @@ export default async function CollectionPage({
   const inStock = query.stock === "1";
   const page = Number.parseInt(typeof query.page === "string" ? query.page : "1", 10) || 1;
   const filtered = catalog.filter((product) => {
-    const inCategory = slug === "all" || product.category === slug;
-    const inEdit = edit === "new" ? product.newArrival : edit === "featured" ? product.featured : true;
+    const slugs = product.categorySlugs?.length ? product.categorySlugs : [product.category];
+    const inCategory = slug === "all" || slugs.includes(slug) || product.category === slug;
+    const inEdit = matchesMerchandisingEdit(product, edit);
     const description = dict.catalog[product.slug as keyof typeof dict.catalog] ?? localizedDescription(product, lang);
     const inSearch = !search || `${product.name} ${product.brand} ${description}`.toLowerCase().includes(search);
     const available = !inStock || product.variants.some((variant) => variant.stock > 0);
@@ -62,8 +64,7 @@ export default async function CollectionPage({
   });
   const sorted = sortCollection(filtered, sort);
   const paged = paginateCollection(sorted, page);
-  const title =
-    edit === "new" ? dict.collection.arrivals : edit === "featured" ? dict.collection.featured : (copy?.name ?? category.name);
+  const title = merchandisingTitle(dict, edit, copy?.name ?? category.name);
 
   function hrefFor(next: Record<string, string | undefined>) {
     const params = new URLSearchParams();
@@ -95,7 +96,9 @@ export default async function CollectionPage({
       <div className="shell py-12 sm:py-16">
         <nav className="mb-10 overflow-x-auto border-b border-ink/10" aria-label={dict.collection.families}>
           <ul className="flex min-w-max gap-8">
-            {categories.map((item) => (
+            {categories
+              .filter((item) => item.slug === "all" || !isMerchCategorySlug(item.slug))
+              .map((item) => (
               <li key={item.slug}>
                 <LocaleLink
                   className={`block border-b py-4 text-[10px] font-semibold uppercase tracking-[0.17em] ${

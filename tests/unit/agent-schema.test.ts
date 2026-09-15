@@ -12,6 +12,7 @@ describe("createProductInputSchema", () => {
       descriptionHe: "קטורת, אבן לחה וחוט אור אחרי השריפה במקדש.",
       brand: "Filippo Sorcinelli",
       category: "woody",
+      merchandising: ["back-in-stock", "testers-refills"],
       concentration: "extrait",
       variants: [
         { name: "1 ml", sku: "FS-NDT-1", price: 3200, stock: 10 },
@@ -20,6 +21,7 @@ describe("createProductInputSchema", () => {
     });
     expect(parsed.variants).toHaveLength(2);
     expect(parsed.featured).toBe(false);
+    expect(parsed.merchandising).toEqual(["back-in-stock", "testers-refills"]);
   });
 });
 

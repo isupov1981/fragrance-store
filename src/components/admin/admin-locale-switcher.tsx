@@ -1,9 +1,10 @@
 "use client";
 
 import { useAdminI18n } from "@/components/admin/admin-i18n-provider";
-import { localeMeta, type Locale } from "@/lib/i18n/config";
+import type { AdminLocale } from "@/lib/admin/i18n";
+import { localeMeta } from "@/lib/i18n/config";
 
-const options: Locale[] = ["en", "he"];
+const options: AdminLocale[] = ["en", "he"];
 
 export function AdminLocaleSwitcher() {
   const { locale, setLocale, dict } = useAdminI18n();

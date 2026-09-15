@@ -4,18 +4,22 @@ import { createContext, useCallback, useContext, useMemo, useState, type ReactNo
 import { useRouter } from "next/navigation";
 
 import { ADMIN_LOCALE_COOKIE } from "@/lib/admin/locale";
-import { adminDictionaries, type AdminDictionary } from "@/lib/admin/i18n";
+import { getAdminDictionary, type AdminDictionary, type AdminLocale } from "@/lib/admin/i18n";
 import { localeMeta, type Locale } from "@/lib/i18n/config";
 
 type AdminI18nValue = {
-  locale: Locale;
+  locale: AdminLocale;
   dict: AdminDictionary;
-  setLocale: (locale: Locale) => void;
+  setLocale: (locale: AdminLocale) => void;
 };
 
 const AdminI18nContext = createContext<AdminI18nValue | null>(null);
 
-function persistAdminLocale(locale: Locale) {
+function toAdminLocale(locale: Locale): AdminLocale {
+  return locale === "he" ? "he" : "en";
+}
+
+function persistAdminLocale(locale: AdminLocale) {
   document.cookie = `${ADMIN_LOCALE_COOKIE}=${locale}; path=/; max-age=31536000; samesite=lax`;
 }
 
@@ -27,13 +31,12 @@ export function AdminI18nProvider({
   children: ReactNode;
 }) {
   const router = useRouter();
-  const [locale, setLocaleState] = useState<Locale>(initialLocale);
-  const dict = adminDictionaries[locale];
+  const [locale, setLocaleState] = useState<AdminLocale>(toAdminLocale(initialLocale));
+  const dict = getAdminDictionary(locale);
   const meta = localeMeta[locale];
 
   const setLocale = useCallback(
-    (next: Locale) => {
-      if (next !== "en" && next !== "he") return;
+    (next: AdminLocale) => {
       setLocaleState(next);
       persistAdminLocale(next);
       router.refresh();

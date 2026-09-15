@@ -4,11 +4,14 @@ import {
   adminSimpleProductSchema,
   createProductInputSchema,
   listProductsInputSchema,
+  merchandisingTagSchema,
   productLookupSchema,
   updateProductInputSchema,
   type CreateProductInput,
+  type MerchandisingTag,
   type UpdateProductInput,
 } from "@/lib/agent/schema";
+import { merchandisingCategoryDefs, isMerchCategorySlug } from "@/lib/catalog/merchandising";
 import { toSlug } from "@/lib/catalog/slug";
 import { databaseEnabled } from "@/lib/db/enabled";
 
@@ -49,9 +52,15 @@ async function upsertBrand(tx: Prisma.TransactionClient, name?: string | null) {
   });
 }
 
-async function upsertCategory(tx: Prisma.TransactionClient, name?: string | null) {
+async function upsertFamilyCategory(tx: Prisma.TransactionClient, name?: string | null) {
   if (!name) return null;
   const slug = toSlug(name);
+  if (isMerchCategorySlug(slug)) {
+    throw new AgentCatalogError(
+      `Use merchandising for ${slug}; category is for olfactive family (woody / floral / amber / citrus).`,
+      400,
+    );
+  }
   return tx.category.upsert({
     where: { slug },
     update: { name },
@@ -59,9 +68,22 @@ async function upsertCategory(tx: Prisma.TransactionClient, name?: string | null
   });
 }
 
-function serializeProduct(
-  product: Prisma.ProductGetPayload<{ include: typeof productInclude }>,
-) {
+async function ensureMerchandisingCategory(tx: Prisma.TransactionClient, tag: MerchandisingTag) {
+  const def = merchandisingCategoryDefs.find((item) => item.slug === tag);
+  if (!def) throw new AgentCatalogError(`Unknown merchandising tag: ${tag}`, 400);
+  return tx.category.upsert({
+    where: { slug: def.slug },
+    update: { name: def.name, description: def.description },
+    create: { slug: def.slug, name: def.name, description: def.description },
+  });
+}
+
+function serializeProduct(product: Prisma.ProductGetPayload<{ include: typeof productInclude }>) {
+  const categorySlugs = product.categories.map((item) => item.category.slug);
+  const family = categorySlugs.find((slug) => !isMerchCategorySlug(slug)) ?? null;
+  const merchandising = categorySlugs.filter((slug): slug is MerchandisingTag =>
+    merchandisingTagSchema.safeParse(slug).success,
+  );
   return {
     id: product.id,
     slug: product.slug,
@@ -70,7 +92,9 @@ function serializeProduct(
     description: product.description,
     descriptionHe: product.descriptionHe,
     brand: product.brand?.name ?? null,
-    category: product.categories[0]?.category.slug ?? null,
+    category: family,
+    categories: categorySlugs,
+    merchandising,
     featured: product.featured,
     newArrival: product.newArrival,
     concentration: product.concentration,
@@ -80,6 +104,19 @@ function serializeProduct(
     adminUrl: `/admin/products`,
     storeUrl: product.status === "ACTIVE" ? `/products/${product.slug}` : null,
   };
+}
+
+async function linkCategories(
+  tx: Prisma.TransactionClient,
+  productId: string,
+  categoryIds: string[],
+) {
+  const unique = [...new Set(categoryIds.filter(Boolean))];
+  await tx.productCategory.deleteMany({ where: { productId } });
+  if (!unique.length) return;
+  await tx.productCategory.createMany({
+    data: unique.map((categoryId) => ({ productId, categoryId })),
+  });
 }
 
 export function parseAdminProductInput(input: unknown): CreateProductInput {
@@ -107,7 +144,10 @@ export async function createDraftProduct(input: CreateProductInput) {
   const prisma = await db();
   return prisma.$transaction(async (tx) => {
     const brand = await upsertBrand(tx, input.brand);
-    const category = await upsertCategory(tx, input.category);
+    const family = await upsertFamilyCategory(tx, input.category);
+    const merch = await Promise.all(
+      (input.merchandising ?? []).map((tag) => ensureMerchandisingCategory(tx, tag)),
+    );
     const created = await tx.product.create({
       data: {
         name: input.name,
@@ -138,11 +178,20 @@ export async function createDraftProduct(input: CreateProductInput) {
             compareAt: variant.compareAt,
           })),
         },
-        categories: category ? { create: { categoryId: category.id } } : undefined,
       },
       include: productInclude,
     });
-    return serializeProduct(created);
+
+    const categoryIds = [...(family ? [family.id] : []), ...merch.map((item) => item.id)];
+    if (categoryIds.length) {
+      await linkCategories(tx, created.id, categoryIds);
+    }
+
+    const full = await tx.product.findUniqueOrThrow({
+      where: { id: created.id },
+      include: productInclude,
+    });
+    return serializeProduct(full);
   });
 }
 
@@ -158,10 +207,6 @@ export async function updateProduct(input: UpdateProductInput) {
 
     const brand =
       input.brand === undefined ? existing.brand : await upsertBrand(tx, input.brand);
-    const category =
-      input.category === undefined
-        ? existing.categories[0]?.category
-        : await upsertCategory(tx, input.category);
 
     if (input.variants) {
       await tx.productVariant.deleteMany({ where: { productId: existing.id } });
@@ -169,11 +214,8 @@ export async function updateProduct(input: UpdateProductInput) {
     if (input.images) {
       await tx.productImage.deleteMany({ where: { productId: existing.id } });
     }
-    if (input.category !== undefined) {
-      await tx.productCategory.deleteMany({ where: { productId: existing.id } });
-    }
 
-    const updated = await tx.product.update({
+    await tx.product.update({
       where: { id: existing.id },
       data: {
         name: input.name,
@@ -210,14 +252,43 @@ export async function updateProduct(input: UpdateProductInput) {
               })),
             }
           : undefined,
-        categories:
-          input.category !== undefined && category
-            ? { create: { categoryId: category.id } }
-            : undefined,
       },
+    });
+
+    if (input.category !== undefined || input.merchandising !== undefined) {
+      const existingLinks = existing.categories;
+      const existingFamily = existingLinks.find((item) => !isMerchCategorySlug(item.category.slug));
+      const existingMerch = existingLinks
+        .map((item) => item.category.slug)
+        .filter((slug): slug is MerchandisingTag => merchandisingTagSchema.safeParse(slug).success);
+
+      let familyId = existingFamily?.categoryId ?? null;
+      if (input.category !== undefined) {
+        if (input.category === null) {
+          familyId = null;
+        } else {
+          const family = await upsertFamilyCategory(tx, input.category);
+          familyId = family?.id ?? null;
+        }
+      }
+
+      let merchTags = existingMerch;
+      if (input.merchandising !== undefined) {
+        merchTags = input.merchandising ?? [];
+      }
+      const merchRows = await Promise.all(merchTags.map((tag) => ensureMerchandisingCategory(tx, tag)));
+
+      await linkCategories(tx, existing.id, [
+        ...(familyId ? [familyId] : []),
+        ...merchRows.map((row) => row.id),
+      ]);
+    }
+
+    const full = await tx.product.findUniqueOrThrow({
+      where: { id: existing.id },
       include: productInclude,
     });
-    return serializeProduct(updated);
+    return serializeProduct(full);
   });
 }
 
@@ -249,6 +320,9 @@ export async function listAgentProducts(input: unknown) {
   const products = await prisma.product.findMany({
     where: {
       status: query.status,
+      categories: query.merchandising
+        ? { some: { category: { slug: query.merchandising } } }
+        : undefined,
       OR: query.q
         ? [
             { name: { contains: query.q, mode: "insensitive" } },
