@@ -25,6 +25,9 @@ function storageImagePatterns() {
 const nextConfig: NextConfig = {
   output: "standalone",
   serverExternalPackages: ["@aws-sdk/client-s3", "@prisma/client", "sharp"],
+  outputFileTracingIncludes: {
+    "/*": ["./node_modules/.prisma/client/**/*", "./node_modules/@prisma/client/**/*"],
+  },
   images: {
     remotePatterns: storageImagePatterns(),
   },

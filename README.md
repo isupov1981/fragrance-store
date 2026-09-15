@@ -69,6 +69,10 @@ applying an import. SKU and slug are stable upsert keys.
 
 ## Production deploy (real domain)
 
+**Hostinger Business + Neon:** step-by-step for `parfums.cloud` is in
+[`docs/hostinger-deploy.md`](docs/hostinger-deploy.md) (env template:
+[`.env.hostinger.example`](.env.hostinger.example)).
+
 Provision first, then point DNS/TLS at the app.
 
 ### 1. Managed PostgreSQL

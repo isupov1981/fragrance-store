@@ -32,6 +32,10 @@ const missing = [
   ...report("Hermes Agent (empty = Telegram operator disabled)", hermesKeys),
 ];
 
+if (present("DATABASE_URL") && process.env.DATABASE_URL.includes("-pooler") && !present("DATABASE_URL_UNPOOLED")) {
+  console.log("\nWARN  DATABASE_URL is Neon pooled; set DATABASE_URL_UNPOOLED (direct host, no -pooler) for migrations.");
+}
+
 const auth = process.env.AUTH_SECRET ?? "";
 if (auth && auth.length < 32) {
   console.log("\nWARN  AUTH_SECRET should be at least 32 characters");

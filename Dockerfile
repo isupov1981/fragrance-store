@@ -11,8 +11,9 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder"
+ENV DATABASE_URL_UNPOOLED="postgresql://placeholder:placeholder@localhost:5432/placeholder"
 ENV AUTH_SECRET="docker-build-secret-with-at-least-thirty-two-chars"
-RUN npx prisma generate && npm run build
+RUN npm run build
 
 FROM base AS runner
 ENV NODE_ENV=production
