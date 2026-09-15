@@ -68,7 +68,8 @@ Re-run when migrations change. Skip seed on repeat if data already exists (omit 
    | Entry file | leave blank (Hostinger starts the standalone server) |
    | Node version | **20** or **22** |
 
-   `npm run build` already runs `prisma generate`, `next build`, and copies Prisma into `.next/standalone`.  
+   `npm run build` already runs `prisma generate`, `next build --webpack`, and copies Prisma into `.next/standalone`.  
+   Webpack is required: Hostinger’s shared glibc is older than Next 16’s native SWC (`GLIBC_2.29`), and Turbopack cannot fall back to WASM.  
    To also migrate on every deploy, set `HOSTINGER_MIGRATE_ON_BUILD=true` in env (still keep `DATABASE_URL_UNPOOLED`).
 
 4. **Environment variables** — paste from [`.env.hostinger.example`](../.env.hostinger.example). Minimum:

@@ -35,5 +35,7 @@ if (migrate) {
   run(npx, ["prisma", "migrate", "deploy"]);
 }
 
-run(npx, ["next", "build"]);
+// Hostinger shared Node uses glibc older than SWC's native linux-x64-gnu
+// (GLIBC_2.29). Turbopack cannot fall back to WASM; webpack can.
+run(npx, ["next", "build", "--webpack"]);
 run(process.execPath, ["scripts/copy-standalone-prisma.mjs"]);

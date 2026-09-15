@@ -1,7 +1,6 @@
-import type { NextConfig } from "next";
-
+/** @type {import('next').NextConfig} */
 function storageImagePatterns() {
-  const patterns: Array<{ protocol: "http" | "https"; hostname: string; port?: string; pathname: string }> = [
+  const patterns = [
     { protocol: "https", hostname: "images.unsplash.com", pathname: "/**" },
     { protocol: "http", hostname: "localhost", port: "9000", pathname: "/**" },
     { protocol: "http", hostname: "127.0.0.1", port: "9000", pathname: "/**" },
@@ -22,7 +21,7 @@ function storageImagePatterns() {
   return patterns;
 }
 
-const nextConfig: NextConfig = {
+const nextConfig = {
   output: "standalone",
   serverExternalPackages: ["@aws-sdk/client-s3", "@prisma/client", "sharp"],
   outputFileTracingIncludes: {

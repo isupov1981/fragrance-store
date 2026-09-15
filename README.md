@@ -94,7 +94,7 @@ S3_PUBLIC_BASE_URL=https://cdn.your-domain.com
 S3_FORCE_PATH_STYLE=false
 ```
 
-Add the public hostname to `next.config.ts` image `remotePatterns` via
+Add the public hostname to `next.config.mjs` image `remotePatterns` via
 `S3_PUBLIC_BASE_URL` (already read at build/runtime for patterns).
 
 ### 3. Secrets and site URL
