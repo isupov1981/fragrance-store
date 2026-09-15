@@ -84,6 +84,8 @@ Re-run when migrations change. Skip seed on repeat if data already exists (omit 
 5. Deploy / rebuild. Open the preview URL → `/en` and `/api/health`.  
    Expect `database: "configured"` and `databaseReachable: true`. `storage` will be `"local"` until R2/S3 is set.
 
+   **Browse-only:** leave `NEXT_PUBLIC_ORDERS_ENABLED` unset or `false` so cart/checkout stay hidden. Set `true` and rebuild when purchasing should reopen. After each `git push` to `main`, confirm hPanel shows a fresh deploy (Redeploy if the site still serves the previous build).
+
 ### 4. Object storage (recommended)
 
 On Business Node hosting, **local `uploads/` is wiped on redeploy**. Configure **Cloudflare R2** (or another S3 API) and all `S3_*` vars. After deploy, `/api/health` should show `"storage":"s3"`.

@@ -1,6 +1,5 @@
 /**
- * When false, the storefront is browse-only: catalogue and product pages stay
- * available, but cart, checkout and order creation are disabled.
- * Set NEXT_PUBLIC_ORDERS_ENABLED=true to re-enable purchasing.
+ * Purchasing is intentionally off while catalogue details are verified.
+ * Set NEXT_PUBLIC_ORDERS_ENABLED=true and rebuild to re-enable cart/checkout.
  */
 export const ordersEnabled = process.env.NEXT_PUBLIC_ORDERS_ENABLED === "true";
