@@ -23,12 +23,35 @@ export async function requireAdminRequest(request: Request) {
   return verifyAdminSession(token);
 }
 
-export function hasSameOrigin(request: Request) {
-  const origin = request.headers.get("origin");
-  if (!origin) return false;
+function originsMatch(a: string, b: string) {
   try {
-    return new URL(origin).origin === new URL(request.url).origin;
+    return new URL(a).origin === new URL(b).origin;
   } catch {
     return false;
   }
+}
+
+/** Public origins allowed for browser POSTs (admin CSRF check). */
+function allowedOrigins(request: Request): string[] {
+  const origins = [new URL(request.url).origin];
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (siteUrl) origins.push(siteUrl);
+
+  const forwardedHost = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+  const host = forwardedHost || request.headers.get("host")?.split(",")[0]?.trim();
+  if (host) {
+    const proto =
+      request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() ||
+      (new URL(request.url).protocol === "https:" ? "https" : "http");
+    origins.push(`${proto}://${host}`);
+  }
+
+  return origins;
+}
+
+export function hasSameOrigin(request: Request) {
+  const origin = request.headers.get("origin");
+  if (!origin) return false;
+  return allowedOrigins(request).some((allowed) => originsMatch(origin, allowed));
 }
