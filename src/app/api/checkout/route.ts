@@ -7,6 +7,7 @@ import {
   type Order,
 } from "@/lib/checkout/orders";
 import { checkoutSchema } from "@/lib/checkout/schema";
+import { ordersEnabled } from "@/lib/commerce";
 import { getOrderMailer } from "@/lib/email/mailer";
 import { GrowCheckoutError } from "@/lib/payments/grow";
 import { getPaymentProvider } from "@/lib/payments/provider";
@@ -14,6 +15,13 @@ import { getPaymentProvider } from "@/lib/payments/provider";
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
+  if (!ordersEnabled) {
+    return NextResponse.json(
+      { error: "Ordering is temporarily unavailable" },
+      { status: 503 },
+    );
+  }
+
   try {
     const parsed = checkoutSchema.safeParse(await request.json());
     if (!parsed.success) {

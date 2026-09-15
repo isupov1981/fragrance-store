@@ -28,8 +28,16 @@ export const he: Dictionary = {
     bag: "סל קניות",
     home: "PRIVÉ ATELIER דף הבית",
     promo: "משלוח חינם בהזמנות מעל {amount}",
+    browseOnlyPromo: "תצוגת קטלוג — הזמנות אינן זמינות כרגע",
     language: "שפה",
     currency: "מטבע",
+  },
+  browseOnly: {
+    title: "ההזמנות אינן זמינות כרגע",
+    notice:
+      "הקטלוג פתוח לצפייה בזמן שאנו מעדכנים את פרטי המוצרים. האפשרות לרכוש תחזור בקרוב.",
+    contact: "צרו קשר עם האטלייה",
+    browse: "לצפייה בניחוחות",
   },
   footer: {
     correspondence: "התכתבות פרטית",

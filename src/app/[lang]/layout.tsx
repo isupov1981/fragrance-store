@@ -7,6 +7,7 @@ import { CartDrawer } from "@/components/cart/cart-drawer";
 import { StoreProviders } from "@/components/i18n/store-providers";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
+import { ordersEnabled } from "@/lib/commerce";
 import { defaultCurrency, isCurrency, CURRENCY_COOKIE } from "@/lib/currency";
 import { locales } from "@/lib/i18n/config";
 import { getDictionary, hasLocale } from "@/lib/i18n/get-dictionary";
@@ -51,7 +52,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
       </Suspense>
       {children}
       <Footer locale={lang} />
-      <CartDrawer />
+      {ordersEnabled ? <CartDrawer /> : null}
       <ConsentManager />
     </StoreProviders>
   );

@@ -8,6 +8,7 @@ import { useI18n } from "@/components/i18n/i18n-provider";
 import type { StoreProduct, StoreVariant } from "@/lib/catalog";
 import { createCartItem } from "@/lib/cart/cart";
 import { useCartStore } from "@/lib/cart/store";
+import { ordersEnabled } from "@/lib/commerce";
 
 type AddToCartButtonProps = {
   product: StoreProduct;
@@ -30,6 +31,7 @@ export function AddToCartButton({
   const soldOut = variant.stock < 1;
 
   function handleClick() {
+    if (!ordersEnabled) return;
     addItem(createCartItem(product, variant, quantity));
     openDrawer();
     trackCommerceEvent("add_to_cart", {
@@ -45,14 +47,20 @@ export function AddToCartButton({
     <button
       type="button"
       data-testid="add-to-cart"
-      disabled={soldOut}
+      disabled={soldOut || !ordersEnabled}
       onClick={handleClick}
       className={
         className ??
         "rounded-full bg-zinc-950 px-6 py-3 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-zinc-300"
       }
     >
-      {soldOut ? dict.product.soldOut : added ? dict.product.added : dict.product.add}
+      {!ordersEnabled
+        ? dict.browseOnly.title
+        : soldOut
+          ? dict.product.soldOut
+          : added
+            ? dict.product.added
+            : dict.product.add}
     </button>
   );
 }

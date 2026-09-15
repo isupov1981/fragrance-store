@@ -26,8 +26,16 @@ export const en = {
     bag: "Shopping bag",
     home: "Privé Atelier home",
     promo: "Complimentary delivery on orders over {amount}",
+    browseOnlyPromo: "Catalogue preview — ordering temporarily unavailable",
     language: "Language",
     currency: "Currency",
+  },
+  browseOnly: {
+    title: "Ordering temporarily unavailable",
+    notice:
+      "Our catalogue is open for browsing while we finish updating product details. Purchasing will return shortly.",
+    contact: "Contact the atelier",
+    browse: "Browse fragrances",
   },
   footer: {
     correspondence: "Private correspondence",

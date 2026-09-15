@@ -9,6 +9,7 @@ import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { LocaleLink } from "@/components/i18n/locale-link";
 import { useCurrency } from "@/components/i18n/currency-provider";
 import { useI18n } from "@/components/i18n/i18n-provider";
+import { ordersEnabled } from "@/lib/commerce";
 import { interpolate } from "@/lib/i18n/interpolate";
 import { localizedPath, stripLocalePrefix } from "@/lib/i18n/path";
 import { categories } from "@/lib/catalog";
@@ -51,7 +52,9 @@ export function Header() {
       </a>
       {!isHome && (
         <div className="bg-ink px-4 py-2 text-center text-[10px] font-medium uppercase tracking-[0.24em] text-ivory">
-          {interpolate(dict.nav.promo, { amount: format(FREE_SHIPPING_ILS_CENTS) })}
+          {ordersEnabled
+            ? interpolate(dict.nav.promo, { amount: format(FREE_SHIPPING_ILS_CENTS) })
+            : dict.nav.browseOnlyPromo}
         </div>
       )}
       <div className="shell flex h-20 items-center justify-between gap-5 lg:h-24">
@@ -172,7 +175,7 @@ export function Header() {
           <LocaleLink className="icon-button hidden sm:grid" href="/account" aria-label={dict.nav.account}>
             <UserRound aria-hidden="true" size={20} />
           </LocaleLink>
-          <CartLink />
+          {ordersEnabled ? <CartLink /> : null}
         </div>
       </div>
     </header>
