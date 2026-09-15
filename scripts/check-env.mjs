@@ -5,6 +5,7 @@
  */
 const requiredAlways = ["AUTH_SECRET", "NEXT_PUBLIC_SITE_URL", "DATABASE_URL"];
 const s3Keys = ["S3_BUCKET", "S3_ACCESS_KEY_ID", "S3_SECRET_ACCESS_KEY", "S3_ENDPOINT", "S3_PUBLIC_BASE_URL"];
+const growKeys = ["GROW_USER_ID", "GROW_PAGE_CODE", "GROW_WEBHOOK_SECRET"];
 const stripeKeys = ["STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET", "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY"];
 const smtpKeys = ["SMTP_HOST", "SMTP_PORT", "EMAIL_FROM"];
 const hermesKeys = ["HERMES_AGENT_TOKEN"];
@@ -27,7 +28,8 @@ function report(label, keys) {
 const missing = [
   ...report("Core", requiredAlways),
   ...report("Object storage (MinIO / S3)", s3Keys),
-  ...report("Stripe (empty = demo checkout)", stripeKeys),
+  ...report("Grow Light API (empty = skip; preferred Israeli acquirer)", growKeys),
+  ...report("Stripe (empty = unused)", stripeKeys),
   ...report("SMTP (empty SMTP_HOST = noop mailer)", smtpKeys),
   ...report("Hermes Agent (empty = Telegram operator disabled)", hermesKeys),
 ];

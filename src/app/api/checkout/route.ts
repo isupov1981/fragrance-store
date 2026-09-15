@@ -8,6 +8,7 @@ import {
 } from "@/lib/checkout/orders";
 import { checkoutSchema } from "@/lib/checkout/schema";
 import { getOrderMailer } from "@/lib/email/mailer";
+import { GrowCheckoutError } from "@/lib/payments/grow";
 import { getPaymentProvider } from "@/lib/payments/provider";
 
 export const runtime = "nodejs";
@@ -31,12 +32,12 @@ export async function POST(request: Request) {
       });
     }
 
+    const provider = getPaymentProvider();
     const cart = await priceCheckoutItems(
       parsed.data.items,
       parsed.data.shippingMethod,
-      parsed.data.currency,
+      provider.name === "grow" ? "ILS" : parsed.data.currency,
     );
-    const provider = getPaymentProvider();
     const order: Order = {
       id: crypto.randomUUID(),
       idempotencyKey: parsed.data.idempotencyKey,
@@ -69,6 +70,9 @@ export async function POST(request: Request) {
       { status: 201 },
     );
   } catch (error) {
+    if (error instanceof GrowCheckoutError) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
     if (error instanceof CheckoutPricingError) {
       return NextResponse.json({ error: error.message }, { status: 409 });
     }

@@ -104,10 +104,16 @@ On Business Node hosting, **local `uploads/` is wiped on redeploy**. Configure *
 
 3. Enable **SSL**. If you first deployed with a preview URL, set `NEXT_PUBLIC_SITE_URL=https://parfums.cloud` and rebuild.
 
-### 6. Stripe (when going live)
+### 6. Payments (when going live)
 
-- Webhook: `https://parfums.cloud/api/webhooks/stripe`
-- Set `STRIPE_*` in hPanel and rebuild.
+Preferred: **Grow Light API** after an Israeli business (osek) is registered.
+
+- Webhook: `https://parfums.cloud/api/webhooks/grow`
+- Set `GROW_USER_ID`, `GROW_PAGE_CODE`, `GROW_WEBHOOK_SECRET` in hPanel and rebuild.
+- Checkout stays in **demo** until those variables are set.
+- Stripe remains an optional fallback (`/api/webhooks/stripe`) if a non-IL Stripe entity exists.
+
+Without a payment provider, `/api/health` shows `"payments":"demo"`.
 
 ### 7. Hermes agent (optional)
 

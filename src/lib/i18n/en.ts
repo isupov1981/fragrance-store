@@ -198,7 +198,7 @@ export const en = {
     total: "Total",
     pay: "Continue to payment",
     starting: "Starting payment…",
-    demo: "Without Stripe configuration, a safe demo payment is used.",
+    demo: "Without a payment provider, a safe demo checkout is used.",
     failed: "Checkout could not be started",
     error: "Checkout failed",
     loading: "Preparing your bag…",

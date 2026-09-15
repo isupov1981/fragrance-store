@@ -26,6 +26,7 @@ export type PricedCart = {
   subtotal: number;
   shippingTotal: number;
   total: number;
+  ilsTotal: number;
   currency: "usd" | "eur" | "ils";
   shippingMethod: CheckoutInput["shippingMethod"];
 };
@@ -91,6 +92,7 @@ export function priceCatalogItems(
     subtotal: convertCatalogCents(subtotalIls, currency),
     shippingTotal: convertCatalogCents(shippingIls, currency),
     total: convertCatalogCents(subtotalIls + shippingIls, currency),
+    ilsTotal: subtotalIls + shippingIls,
     currency: currency.toLowerCase() as PricedCart["currency"],
     shippingMethod,
   };

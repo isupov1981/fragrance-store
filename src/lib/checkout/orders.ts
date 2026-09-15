@@ -9,7 +9,7 @@ export type Order = {
   status: OrderStatus;
   customer: CheckoutInput["customer"];
   cart: PricedCart;
-  paymentProvider: "stripe" | "demo";
+  paymentProvider: "grow" | "stripe" | "demo";
   paymentReference?: string;
   paymentUrl?: string;
   createdAt: string;
@@ -145,10 +145,10 @@ export async function hasProcessedWebhookEvent(id: string) {
   return registry.processedWebhookEvents.has(id);
 }
 
-export async function markWebhookEventProcessed(id: string) {
+export async function markWebhookEventProcessed(id: string, provider = "stripe") {
   if (databaseEnabled()) {
     const { prisma } = await import("@/lib/db/prisma");
-    await prisma.webhookEvent.create({ data: { id, provider: "stripe" } });
+    await prisma.webhookEvent.create({ data: { id, provider } });
   }
   registry.processedWebhookEvents.add(id);
 }
@@ -216,10 +216,14 @@ function fromDatabase(record: DatabaseOrder): Order {
       subtotal: record.subtotal,
       shippingTotal: record.shippingTotal,
       total: record.total,
+      ilsTotal: record.currency.toLowerCase() === "ils" ? record.total : 0,
       currency: record.currency.toLowerCase() as PricedCart["currency"],
       shippingMethod: "standard",
     },
-    paymentProvider: record.paymentProvider === "stripe" ? "stripe" : "demo",
+    paymentProvider:
+      record.paymentProvider === "grow" || record.paymentProvider === "stripe"
+        ? record.paymentProvider
+        : "demo",
     paymentReference: record.paymentReference ?? undefined,
     createdAt: record.createdAt.toISOString(),
   };

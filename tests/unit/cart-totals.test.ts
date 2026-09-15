@@ -28,6 +28,7 @@ describe("priceCheckoutItems", () => {
     expect(cart.subtotal).toBe(62496);
     expect(cart.shippingTotal).toBe(4500);
     expect(cart.total).toBe(66996);
+    expect(cart.ilsTotal).toBe(66996);
     expect(cart.currency).toBe("ils");
     expect(cart.shippingMethod).toBe("standard");
   });
@@ -38,6 +39,7 @@ describe("priceCheckoutItems", () => {
     expect(cart.subtotal).toBe(convertCatalogCents(62496, "USD"));
     expect(cart.shippingTotal).toBe(convertCatalogCents(4500, "USD"));
     expect(cart.total).toBe(convertCatalogCents(66996, "USD"));
+    expect(cart.ilsTotal).toBe(66996);
   });
 
   it("rejects quantities above available stock", () => {

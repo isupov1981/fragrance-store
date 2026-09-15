@@ -1,5 +1,6 @@
 import { agentTokenConfigured } from "@/lib/agent/auth";
 import { databaseEnabled } from "@/lib/db/enabled";
+import { isGrowConfigured } from "@/lib/payments/grow";
 import { isS3Configured } from "@/lib/storage";
 
 export const runtime = "nodejs";
@@ -29,6 +30,12 @@ export async function GET() {
     storage: isS3Configured() ? "s3" : "local",
     database: databaseEnabled() ? "configured" : "missing",
     databaseReachable: reachable,
+    payments: isGrowConfigured()
+      ? "grow"
+      : process.env.STRIPE_SECRET_KEY
+        ? "stripe"
+        : "demo",
+    grow: isGrowConfigured() ? "configured" : "missing",
     stripe: process.env.STRIPE_SECRET_KEY ? "configured" : "demo",
     smtp: process.env.SMTP_HOST ? "configured" : "noop",
     hermesAgent: agentTokenConfigured() ? "configured" : "missing",

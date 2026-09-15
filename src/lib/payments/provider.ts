@@ -1,9 +1,10 @@
 import Stripe from "stripe";
 
 import type { Order } from "@/lib/checkout/orders";
+import { createGrowPaymentProcess, isGrowConfigured } from "./grow";
 
 export type PaymentSession = {
-  provider: "stripe" | "demo";
+  provider: "grow" | "stripe" | "demo";
   reference: string;
   redirectUrl: string;
   paid: boolean;
@@ -80,9 +81,22 @@ class StripePaymentProvider implements PaymentProvider {
   }
 }
 
+class GrowPaymentProvider implements PaymentProvider {
+  readonly name = "grow" as const;
+
+  async createSession(order: Order, origin: string): Promise<PaymentSession> {
+    const session = await createGrowPaymentProcess(order, origin);
+    return {
+      provider: this.name,
+      reference: session.reference,
+      redirectUrl: session.url,
+      paid: false,
+    };
+  }
+}
+
 export function getPaymentProvider(): PaymentProvider {
+  if (isGrowConfigured()) return new GrowPaymentProvider();
   const key = process.env.STRIPE_SECRET_KEY;
-  return key
-    ? new StripePaymentProvider(key)
-    : new DemoPaymentProvider();
+  return key ? new StripePaymentProvider(key) : new DemoPaymentProvider();
 }

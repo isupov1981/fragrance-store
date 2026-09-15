@@ -10,7 +10,7 @@ original placeholders.
 - Next.js App Router, React, TypeScript and Tailwind CSS
 - PostgreSQL and Prisma
 - Zustand cart persisted to `localStorage`
-- Stripe provider with signed webhook handling
+- Stripe or Grow provider with signed webhook handling
 - JWT-protected custom administration area
 - S3-compatible object storage (MinIO, R2, AWS) with a local disk fallback
 - Vitest, Playwright, ESLint and Lighthouse budgets
@@ -106,7 +106,17 @@ ADMIN_EMAIL=...
 ADMIN_PASSWORD=<rotated>
 ```
 
-### 4. Stripe webhook
+### 4. Payments
+
+Checkout uses **demo** until a provider is configured. Preferred live path is **Grow** (Israeli osek). Stripe is optional.
+
+Grow:
+
+1. Set `GROW_USER_ID`, `GROW_PAGE_CODE`, `GROW_WEBHOOK_SECRET`.
+2. Optional: `GROW_SANDBOX=true` against `sandbox.meshulam.co.il`.
+3. Notify URL (set automatically): `https://your-domain.com/api/webhooks/grow?secret=...`
+
+Stripe (fallback):
 
 1. Set `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET`.
 2. In Stripe Dashboard → Webhooks, add endpoint:
@@ -163,7 +173,7 @@ create drafts, upload photos, publish on command, and send a daily briefing.
 
 - Managed PostgreSQL + backups; `prisma migrate deploy` (`npm run db:deploy`).
 - Random `AUTH_SECRET`; rotated admin password; object storage for uploads.
-- Stripe live keys + webhook URL `/api/webhooks/stripe`.
+- Grow Light API when an Israeli osek is registered (`/api/webhooks/grow`); Stripe remains optional.
 - SMTP + domain authentication; optional GA4 / Meta Pixel IDs.
 - `NEXT_PUBLIC_SITE_URL`, DNS, SSL; then `npm run smoke`.
 - Checkout totals and stock stay server-authoritative.
