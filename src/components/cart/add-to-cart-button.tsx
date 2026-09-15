@@ -5,10 +5,10 @@ import { useState } from "react";
 import { trackCommerceEvent } from "@/components/analytics/consent-manager";
 import { useCurrency } from "@/components/i18n/currency-provider";
 import { useI18n } from "@/components/i18n/i18n-provider";
+import { useCommerce } from "@/components/commerce/commerce-provider";
 import type { StoreProduct, StoreVariant } from "@/lib/catalog";
 import { createCartItem } from "@/lib/cart/cart";
 import { useCartStore } from "@/lib/cart/store";
-import { ordersEnabled } from "@/lib/commerce";
 
 type AddToCartButtonProps = {
   product: StoreProduct;
@@ -27,6 +27,7 @@ export function AddToCartButton({
   const openDrawer = useCartStore((state) => state.openDrawer);
   const { dict } = useI18n();
   const { currency, convert } = useCurrency();
+  const { ordersEnabled } = useCommerce();
   const [added, setAdded] = useState(false);
   const soldOut = variant.stock < 1;
 

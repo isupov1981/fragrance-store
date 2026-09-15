@@ -1,15 +1,17 @@
 import Link from "next/link";
 
+import { OrdersEnabledForm } from "@/app/admin/(protected)/orders-enabled-form";
 import { formatAdminMessage, getAdminDictionary } from "@/lib/admin/i18n";
 import { getAdminLocale } from "@/lib/admin/get-locale";
 import { getAdminDashboard } from "@/lib/admin/queries";
+import { getOrdersEnabled } from "@/lib/commerce";
 import { requireAdminPage } from "@/lib/auth/server";
 
 export default async function AdminDashboard() {
   await requireAdminPage();
   const locale = await getAdminLocale();
   const dict = getAdminDictionary(locale);
-  const stats = await getAdminDashboard();
+  const [stats, ordersEnabled] = await Promise.all([getAdminDashboard(), getOrdersEnabled()]);
   const cards = [
     {
       label: dict.dashboard.products,
@@ -51,6 +53,9 @@ export default async function AdminDashboard() {
             <p className="text-sm text-slate-500">{card.note}</p>
           </Link>
         ))}
+      </section>
+      <section className="mt-8">
+        <OrdersEnabledForm initialEnabled={ordersEnabled} />
       </section>
     </>
   );

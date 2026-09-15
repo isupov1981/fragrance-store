@@ -9,7 +9,7 @@ import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { LocaleLink } from "@/components/i18n/locale-link";
 import { useCurrency } from "@/components/i18n/currency-provider";
 import { useI18n } from "@/components/i18n/i18n-provider";
-import { ordersEnabled } from "@/lib/commerce";
+import { useCommerce } from "@/components/commerce/commerce-provider";
 import { interpolate } from "@/lib/i18n/interpolate";
 import { localizedPath, stripLocalePrefix } from "@/lib/i18n/path";
 import { categories } from "@/lib/catalog";
@@ -19,6 +19,7 @@ export function Header() {
   const pathname = usePathname();
   const { locale, dict } = useI18n();
   const { format } = useCurrency();
+  const { ordersEnabled } = useCommerce();
   const isHome = stripLocalePrefix(pathname) === "/";
   const [scrolled, setScrolled] = useState(false);
 

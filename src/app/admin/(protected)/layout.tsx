@@ -20,6 +20,7 @@ export default async function AdminLayout({
     [dict.nav.customers, "/admin/customers"],
     [dict.nav.content, "/admin/content"],
     [dict.nav.shipping, "/admin/shipping"],
+    [dict.nav.settings, "/admin/settings"],
   ] as const;
 
   return (

@@ -1,5 +1,5 @@
 import { LocaleLink } from "@/components/i18n/locale-link";
-import { ordersEnabled } from "@/lib/commerce";
+import { getOrdersEnabled } from "@/lib/commerce";
 import { getDictionary, hasLocale } from "@/lib/i18n/get-dictionary";
 import { notFound } from "next/navigation";
 
@@ -12,6 +12,7 @@ export default async function CheckoutCancelPage({ params }: PageProps<"/[lang]/
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
   const dict = getDictionary(lang);
+  const ordersEnabled = await getOrdersEnabled();
 
   if (!ordersEnabled) {
     return (

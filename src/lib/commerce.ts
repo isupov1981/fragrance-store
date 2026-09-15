@@ -1,5 +1,47 @@
+import { cache } from "react";
+import { revalidatePath } from "next/cache";
+
+import { databaseEnabled } from "@/lib/db/enabled";
+
+export const ORDERS_ENABLED_KEY = "ordersEnabled";
+
+/** Build-time / env default used when no admin setting exists yet. */
+export function envOrdersEnabledDefault() {
+  return process.env.NEXT_PUBLIC_ORDERS_ENABLED === "true";
+}
+
+function parseOrdersEnabled(value: string | null | undefined) {
+  return value === "true";
+}
+
 /**
- * Purchasing is intentionally off while catalogue details are verified.
- * Set NEXT_PUBLIC_ORDERS_ENABLED=true and rebuild to re-enable cart/checkout.
+ * Runtime purchase flag. Admin can toggle this in the dashboard;
+ * when unset in the database, falls back to NEXT_PUBLIC_ORDERS_ENABLED.
  */
-export const ordersEnabled = process.env.NEXT_PUBLIC_ORDERS_ENABLED === "true";
+export const getOrdersEnabled = cache(async (): Promise<boolean> => {
+  if (!databaseEnabled()) return envOrdersEnabledDefault();
+  try {
+    const { prisma } = await import("@/lib/db/prisma");
+    const row = await prisma.storeSetting.findUnique({
+      where: { key: ORDERS_ENABLED_KEY },
+    });
+    if (!row) return envOrdersEnabledDefault();
+    return parseOrdersEnabled(row.value);
+  } catch {
+    return envOrdersEnabledDefault();
+  }
+});
+
+export async function setOrdersEnabled(enabled: boolean) {
+  if (!databaseEnabled()) {
+    throw new Error("Database is not configured");
+  }
+  const { prisma } = await import("@/lib/db/prisma");
+  await prisma.storeSetting.upsert({
+    where: { key: ORDERS_ENABLED_KEY },
+    create: { key: ORDERS_ENABLED_KEY, value: enabled ? "true" : "false" },
+    update: { value: enabled ? "true" : "false" },
+  });
+  revalidatePath("/", "layout");
+  revalidatePath("/admin");
+}

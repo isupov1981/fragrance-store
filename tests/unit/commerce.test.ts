@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-describe("ordersEnabled", () => {
+describe("envOrdersEnabledDefault", () => {
   const previous = process.env.NEXT_PUBLIC_ORDERS_ENABLED;
 
   afterEach(() => {
@@ -12,18 +12,18 @@ describe("ordersEnabled", () => {
   it("is false when the env flag is unset", async () => {
     delete process.env.NEXT_PUBLIC_ORDERS_ENABLED;
     vi.resetModules();
-    expect((await import("@/lib/commerce")).ordersEnabled).toBe(false);
+    expect((await import("@/lib/commerce")).envOrdersEnabledDefault()).toBe(false);
   });
 
   it("is false when the env flag is not exactly true", async () => {
     process.env.NEXT_PUBLIC_ORDERS_ENABLED = "false";
     vi.resetModules();
-    expect((await import("@/lib/commerce")).ordersEnabled).toBe(false);
+    expect((await import("@/lib/commerce")).envOrdersEnabledDefault()).toBe(false);
   });
 
   it("is true when NEXT_PUBLIC_ORDERS_ENABLED=true", async () => {
     process.env.NEXT_PUBLIC_ORDERS_ENABLED = "true";
     vi.resetModules();
-    expect((await import("@/lib/commerce")).ordersEnabled).toBe(true);
+    expect((await import("@/lib/commerce")).envOrdersEnabledDefault()).toBe(true);
   });
 });

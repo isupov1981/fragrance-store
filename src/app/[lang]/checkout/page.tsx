@@ -1,11 +1,12 @@
 import { LocaleLink } from "@/components/i18n/locale-link";
 import { CheckoutForm } from "@/components/checkout/checkout-form";
-import { ordersEnabled } from "@/lib/commerce";
+import { getOrdersEnabled } from "@/lib/commerce";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/checkout">) {
   const { lang } = await params;
   const dict = getDictionary(lang);
+  const ordersEnabled = await getOrdersEnabled();
   return { title: ordersEnabled ? dict.checkout.title : dict.browseOnly.title };
 }
 
@@ -13,6 +14,7 @@ export default async function CheckoutPage({ params, searchParams }: PageProps<"
   const { lang } = await params;
   const query = await searchParams;
   const dict = getDictionary(lang);
+  const ordersEnabled = await getOrdersEnabled();
 
   if (!ordersEnabled) {
     return (

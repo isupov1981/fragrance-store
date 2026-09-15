@@ -7,12 +7,13 @@ import { AddToCartButton } from "@/components/cart/add-to-cart-button";
 import { LocaleLink } from "@/components/i18n/locale-link";
 import { useCurrency } from "@/components/i18n/currency-provider";
 import { useI18n } from "@/components/i18n/i18n-provider";
+import { useCommerce } from "@/components/commerce/commerce-provider";
 import type { StoreProduct } from "@/lib/catalog";
-import { ordersEnabled } from "@/lib/commerce";
 
 export function ProductPurchase({ product }: { product: StoreProduct }) {
   const { dict } = useI18n();
   const { format, currency, convert } = useCurrency();
+  const { ordersEnabled } = useCommerce();
   const { variants } = product;
   const [variantId, setVariantId] = useState(variants[0]?.id ?? "");
   const [quantity, setQuantity] = useState(1);

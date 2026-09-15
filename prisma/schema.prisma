@@ -218,3 +218,10 @@ model WebhookEvent {
   provider    String
   processedAt DateTime @default(now())
 }
+
+/// Runtime store flags (e.g. ordersEnabled). Admin-editable without redeploy.
+model StoreSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
