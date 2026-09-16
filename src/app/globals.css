@@ -180,6 +180,39 @@ html[lang="he"] .font-display {
   font-family: var(--font-hebrew-display), var(--font-display), Georgia, serif;
 }
 
+/* Brand lockup: same typography on every locale (matches Hebrew look). */
+.site-brand {
+  display: inline-block;
+  text-align: center;
+  unicode-bidi: isolate;
+}
+
+.site-brand__title {
+  display: block;
+  font-family: var(--font-hebrew-display), var(--font-display), Georgia, "Times New Roman", serif;
+  font-size: 1.35rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.site-brand__subtitle {
+  display: block;
+  margin-top: 0.25rem;
+  font-family: var(--font-hebrew-sans), var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.48em;
+  text-transform: uppercase;
+}
+
+@media (min-width: 640px) {
+  .site-brand__title {
+    font-size: 1.75rem;
+  }
+}
+
 .skip-link {
   position: fixed;
   top: 0;

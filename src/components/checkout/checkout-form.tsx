@@ -8,12 +8,13 @@ import { useCurrency } from "@/components/i18n/currency-provider";
 import { useI18n } from "@/components/i18n/i18n-provider";
 import { calculateCartTotals } from "@/lib/cart/cart";
 import { useHydratedCart } from "@/lib/cart/use-hydrated-cart";
-import {
-  EXPRESS_SHIPPING_ILS_CENTS,
-  FREE_SHIPPING_ILS_CENTS,
-  STANDARD_SHIPPING_ILS_CENTS,
-} from "@/lib/currency";
+import { EXPRESS_SHIPPING_ILS_CENTS } from "@/lib/currency";
 import { defaultCountryForLocale, getCountryOptions } from "@/lib/i18n/countries";
+import {
+  getShippingZone,
+  quoteShippingIls,
+  SHIPPABLE_COUNTRY_CODES,
+} from "@/lib/shipping/international";
 
 type CheckoutResponse = {
   error?: string;
@@ -29,16 +30,17 @@ export function CheckoutForm() {
   const [error, setError] = useState<string>();
   const [submitting, setSubmitting] = useState(false);
   const [shippingMethod, setShippingMethod] = useState<"standard" | "express">("standard");
+  const [country, setCountry] = useState<string>(defaultCountryForLocale());
   const { dict, locale } = useI18n();
   const { currency, format } = useCurrency();
-  const countries = useMemo(() => getCountryOptions(locale), [locale]);
-  const defaultCountry = defaultCountryForLocale();
-  const shippingIls =
-    shippingMethod === "express"
-      ? EXPRESS_SHIPPING_ILS_CENTS
-      : totals.subtotal >= FREE_SHIPPING_ILS_CENTS
-        ? 0
-        : STANDARD_SHIPPING_ILS_CENTS;
+  const countries = useMemo(
+    () => getCountryOptions(locale, SHIPPABLE_COUNTRY_CODES),
+    [locale],
+  );
+  const zone = getShippingZone(country);
+  const isIsrael = zone === "israel";
+  const method = isIsrael ? shippingMethod : "standard";
+  const shippingIls = quoteShippingIls(country, totals.subtotal, method) ?? 0;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -73,9 +75,9 @@ export function CheckoutForm() {
             addressLine2: form.get("addressLine2") || undefined,
             city: form.get("city"),
             postalCode: form.get("postalCode"),
-            country: form.get("country"),
+            country,
           },
-          shippingMethod,
+          shippingMethod: method,
           currency,
           locale,
           acceptsTerms: form.get("acceptsTerms") === "on",
@@ -122,35 +124,71 @@ export function CheckoutForm() {
           <input className={`${fieldClass} sm:col-span-2`} name="addressLine2" placeholder={dict.checkout.apartment} autoComplete="address-line2" />
           <input className={fieldClass} name="city" placeholder={dict.checkout.city} autoComplete="address-level2" required />
           <input className={fieldClass} name="postalCode" placeholder={dict.checkout.postal} autoComplete="postal-code" required />
-          <label className="sr-only" htmlFor="checkout-country">
-            {dict.checkout.country}
-          </label>
-          <select
-            id="checkout-country"
-            className={fieldClass}
-            name="country"
-            autoComplete="country"
-            defaultValue={defaultCountry}
-            required
-          >
-            {countries.map((country) => (
-              <option key={country.code} value={country.code}>
-                {country.name}
-              </option>
-            ))}
-          </select>
+          <div className="sm:col-span-2">
+            <label className="mb-2 block text-sm text-zinc-600" htmlFor="checkout-country">
+              {dict.checkout.country}
+            </label>
+            <select
+              id="checkout-country"
+              className={`${fieldClass} w-full`}
+              name="country"
+              autoComplete="country"
+              value={country}
+              onChange={(event) => {
+                const next = event.target.value;
+                setCountry(next);
+                if (getShippingZone(next) !== "israel") setShippingMethod("standard");
+              }}
+              required
+            >
+              {countries.map((option) => (
+                <option key={option.code} value={option.code}>
+                  {option.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
         <fieldset className="mt-8">
           <legend className="text-xl font-medium">{dict.checkout.delivery}</legend>
           <div className="mt-4 grid gap-3">
             <label className="flex items-center justify-between rounded-lg border border-zinc-300 p-4">
-              <span><input className="me-3" type="radio" name="shippingMethod" value="standard" checked={shippingMethod === "standard"} onChange={() => setShippingMethod("standard")} />{dict.checkout.standard}</span>
-              <span>{totals.subtotal >= FREE_SHIPPING_ILS_CENTS ? dict.checkout.free : format(STANDARD_SHIPPING_ILS_CENTS)}</span>
+              <span>
+                <input
+                  className="me-3"
+                  type="radio"
+                  name="shippingMethod"
+                  value="standard"
+                  checked={method === "standard"}
+                  onChange={() => setShippingMethod("standard")}
+                />
+                {isIsrael ? dict.checkout.standard : dict.checkout.upsSaver}
+              </span>
+              <span>{shippingIls === 0 ? dict.checkout.free : format(shippingIls)}</span>
             </label>
-            <label className="flex items-center justify-between rounded-lg border border-zinc-300 p-4">
-              <span><input className="me-3" type="radio" name="shippingMethod" value="express" checked={shippingMethod === "express"} onChange={() => setShippingMethod("express")} />{dict.checkout.express}</span>
-              <span>{format(EXPRESS_SHIPPING_ILS_CENTS)}</span>
-            </label>
+            {isIsrael ? (
+              <label className="flex items-center justify-between rounded-lg border border-zinc-300 p-4">
+                <span>
+                  <input
+                    className="me-3"
+                    type="radio"
+                    name="shippingMethod"
+                    value="express"
+                    checked={shippingMethod === "express"}
+                    onChange={() => setShippingMethod("express")}
+                  />
+                  {dict.checkout.express}
+                </span>
+                <span>{format(EXPRESS_SHIPPING_ILS_CENTS)}</span>
+              </label>
+            ) : (
+              <p className="text-sm text-zinc-500">
+                {dict.checkout.intlNote}{" "}
+                <LocaleLink className="underline" href="/shipping">
+                  {dict.footer.delivery}
+                </LocaleLink>
+              </p>
+            )}
           </div>
         </fieldset>
         <label className="mt-6 flex items-start gap-3 text-sm">

@@ -75,6 +75,7 @@ export async function POST(request: Request) {
       parsed.data.items,
       parsed.data.shippingMethod,
       provider.name === "grow" ? "ILS" : parsed.data.currency,
+      parsed.data.customer.country,
     );
     const order: Order = {
       id: crypto.randomUUID(),

@@ -153,9 +153,9 @@ export function Header({ brands = [] }: { brands?: StoreBrand[] }) {
           </ul>
         </nav>
 
-        <LocaleLink className="shrink-0 text-center" href="/" aria-label={dict.nav.home}>
-          <span className="block font-display text-[1.35rem] leading-none tracking-[0.08em] sm:text-[1.75rem]">THE PERFUME</span>
-          <span className="mt-1 block text-[8px] font-semibold uppercase tracking-[0.48em]">Room</span>
+        <LocaleLink className="site-brand shrink-0" href="/" aria-label={dict.nav.home} dir="ltr" lang="en">
+          <span className="site-brand__title">THE PERFUME</span>
+          <span className="site-brand__subtitle">Room</span>
         </LocaleLink>
 
         <div className="flex flex-1 items-center justify-end gap-1 sm:gap-2">

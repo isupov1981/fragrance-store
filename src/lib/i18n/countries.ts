@@ -30,10 +30,19 @@ export function defaultCountryForLocale(): CountryCode {
   return "IL";
 }
 
-export function getCountryOptions(locale: string): { code: CountryCode; name: string }[] {
+export function getCountryOptions(
+  locale: string,
+  codes: readonly string[] = ISO_COUNTRY_CODES,
+): { code: string; name: string }[] {
   const displayNames = new Intl.DisplayNames([locale], { type: "region" });
-  return ISO_COUNTRY_CODES.map((code) => ({
-    code,
-    name: displayNames.of(code) ?? code,
-  })).sort((a, b) => a.name.localeCompare(b.name, locale));
+  return [...codes]
+    .map((code) => ({
+      code,
+      name: displayNames.of(code) ?? code,
+    }))
+    .sort((a, b) => {
+      if (a.code === "IL") return -1;
+      if (b.code === "IL") return 1;
+      return a.name.localeCompare(b.name, locale);
+    });
 }

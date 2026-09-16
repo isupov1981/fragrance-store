@@ -35,7 +35,7 @@ test("customer can complete demo checkout", async ({ page }) => {
   await page.getByPlaceholder("Address").fill("1 Atelier Lane");
   await page.getByPlaceholder("City").fill("Paris");
   await page.getByPlaceholder("Postal code").fill("75001");
-  await page.getByPlaceholder("Country code (US)").fill("FR");
+  await page.getByLabel("Country").selectOption("FR");
   await page.getByRole("checkbox").check();
   await page.getByRole("button", { name: /continue to payment/i }).click();
   await expect(page).toHaveURL(/\/en\/checkout\/success/, { timeout: 15_000 });

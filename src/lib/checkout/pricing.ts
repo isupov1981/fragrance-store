@@ -1,13 +1,8 @@
 import type { StoreProduct } from "@/lib/catalog";
 import { fallbackProducts } from "@/lib/catalog";
 import { listStoreProducts } from "@/lib/db/products";
-import {
-  convertCatalogCents,
-  EXPRESS_SHIPPING_ILS_CENTS,
-  FREE_SHIPPING_ILS_CENTS,
-  STANDARD_SHIPPING_ILS_CENTS,
-  type Currency,
-} from "@/lib/currency";
+import { convertCatalogCents, type Currency } from "@/lib/currency";
+import { quoteShippingIls } from "@/lib/shipping/international";
 
 import type { CheckoutInput } from "./schema";
 
@@ -38,6 +33,7 @@ export function priceCatalogItems(
   items: CheckoutInput["items"],
   shippingMethod: CheckoutInput["shippingMethod"],
   currency: Currency = "ILS",
+  country = "IL",
 ): PricedCart {
   const quantities = new Map<string, number>();
   for (const item of items) {
@@ -77,12 +73,10 @@ export function priceCatalogItems(
     (total, line) => total + line.unitPrice * line.quantity,
     0,
   );
-  const shippingIls =
-    shippingMethod === "express"
-      ? EXPRESS_SHIPPING_ILS_CENTS
-      : subtotalIls >= FREE_SHIPPING_ILS_CENTS
-        ? 0
-        : STANDARD_SHIPPING_ILS_CENTS;
+  const shippingIls = quoteShippingIls(country, subtotalIls, shippingMethod);
+  if (shippingIls === null) {
+    throw new CheckoutPricingError("We do not ship to this destination");
+  }
 
   return {
     lines: lines.map((line) => ({
@@ -102,8 +96,9 @@ export async function priceCheckoutItems(
   items: CheckoutInput["items"],
   shippingMethod: CheckoutInput["shippingMethod"],
   currency: Currency = "ILS",
+  country = "IL",
 ) {
-  return priceCatalogItems(await listStoreProducts(), items, shippingMethod, currency);
+  return priceCatalogItems(await listStoreProducts(), items, shippingMethod, currency, country);
 }
 
 /** Synchronous helper for tests against the fallback catalogue. */
@@ -111,6 +106,7 @@ export function priceCheckoutItemsSync(
   items: CheckoutInput["items"],
   shippingMethod: CheckoutInput["shippingMethod"],
   currency: Currency = "ILS",
+  country = "IL",
 ) {
-  return priceCatalogItems(fallbackProducts, items, shippingMethod, currency);
+  return priceCatalogItems(fallbackProducts, items, shippingMethod, currency, country);
 }

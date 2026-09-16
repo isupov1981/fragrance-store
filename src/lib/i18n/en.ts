@@ -248,6 +248,8 @@ export const en = {
     delivery: "Delivery",
     standard: "Standard delivery",
     express: "Express delivery",
+    upsSaver: "UPS Express Saver",
+    intlNote: "International delivery takes up to 5 business days, or 7 for remote areas.",
     free: "Free",
     terms: "I agree to the terms, shipping policy and returns policy.",
     summary: "Order summary",
@@ -352,9 +354,28 @@ export const en = {
     us: "Israel",
     usCopy:
       "Standard delivery takes 3–5 business days and is complimentary on orders over {amount}, provided the original signature packaging remains unopened. Express options are shown at checkout where available.",
-    intl: "International",
-    intlCopy:
-      "We deliver to selected international destinations. Available services, timing and cost are calculated at checkout. Duties and local taxes may be due on arrival.",
+    worldwide: "Worldwide Deliveries",
+    worldwideIntro: "International deliveries are handled by UPS via the Express Saver service.",
+    worldwideTransit:
+      "Delivery to the customer's address within up to 5 business days, and up to 7 business days for remote areas.",
+    duties: "Duties and local taxes may be due on arrival.",
+    ratesHeading: "Shipping rates",
+    zone1: "Europe — Zone 1",
+    zone2: "Europe — Zone 2",
+    unitedStates: "United States",
+    freeOver: "Free shipping on purchases over {amount}",
+    destinations: "Destinations by zone",
+    pleaseNote: "Please note",
+    noteAttempts: "UPS makes up to 3 delivery attempts to the customer's address (home/office delivery).",
+    noteReturn:
+      "If the customer is unavailable, the address is incorrect, or the delivery address is not within UPS's service area, the package will be returned to The Perfume Room after three delivery attempts.",
+    noteResend:
+      "If the shipment is returned under these circumstances, the customer will be charged a return fee equal to the shipping cost listed above, and a resend fee equal to the shipping cost listed above, regardless of the original purchase amount.",
+    noteCancel:
+      "If the customer cancels the order after the package is returned, and no later than 14 days from order confirmation, a cancellation fee of 5% of the purchase amount (but no more than {cap}) will be deducted from the refund, in accordance with the law.",
+    noteDeductionsIntro: "In addition, the following will also be deducted from the refund:",
+    noteOriginalShipping: "Original shipping cost to home/office (if the customer received free shipping).",
+    noteReturnShipping: "Return shipping cost, both equal to the rates listed above.",
     transit: "Fragrance in transit",
     transitCopy:
       "Because fragrance is classed as a restricted item, certain destinations and expedited air services may be unavailable. We will contact you promptly if your order is affected.",
