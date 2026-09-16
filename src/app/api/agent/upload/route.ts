@@ -2,12 +2,20 @@ import { NextResponse } from "next/server";
 
 import { assertAgentRequest, jsonAgentError } from "@/lib/agent/tools";
 import { MAX_UPLOAD_BYTES, StorageError, storeImage } from "@/lib/storage";
+import {
+  enforceRateLimit,
+  rateLimitPolicies,
+  rateLimitResponse,
+} from "@/lib/security/rate-limit";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
     assertAgentRequest(request);
+    const limited = await enforceRateLimit(request, rateLimitPolicies.agent);
+    if (!limited.ok) return rateLimitResponse(limited.result);
+
     if (Number(request.headers.get("content-length") ?? 0) > MAX_UPLOAD_BYTES + 96_000) {
       return NextResponse.json({ error: "Image exceeds 5 MB" }, { status: 413 });
     }

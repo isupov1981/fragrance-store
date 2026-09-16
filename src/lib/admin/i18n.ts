@@ -44,6 +44,9 @@ const en = {
     enabledOk: "Ordering is now enabled on the storefront.",
     disabledOk: "Ordering is now disabled. Catalogue remains browse-only.",
     saveFailed: "Could not update ordering setting",
+    paymentProvider: "Payment provider",
+    demoPaymentsBlocked:
+      "Ordering cannot be enabled in production until Grow or Stripe credentials are configured. Demo checkout marks orders as paid without charging.",
   },
   section: {
     eyebrow: "Records from PostgreSQL",
@@ -210,6 +213,9 @@ const he: typeof en = {
     enabledOk: "ההזמנות מופעלות כעת בחנות.",
     disabledOk: "ההזמנות כבויות. הקטלוג נשאר לצפייה בלבד.",
     saveFailed: "לא ניתן לעדכן את הגדרת ההזמנות",
+    paymentProvider: "ספק תשלום",
+    demoPaymentsBlocked:
+      "לא ניתן להפעיל הזמנות בפרודקשן לפני הגדרת Grow או Stripe. מצב הדגמה מסמן הזמנות כשולמו בלי חיוב אמיתי.",
   },
   section: {
     eyebrow: "רשומות מ־PostgreSQL",

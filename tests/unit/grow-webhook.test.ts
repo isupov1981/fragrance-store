@@ -41,6 +41,16 @@ describe("interpretGrowNotify", () => {
     ).toEqual({ kind: "unauthorized" });
   });
 
+  it("never marks paid when authorization failed even with matching payload", () => {
+    const action = interpretGrowNotify({
+      authorized: false,
+      alreadyProcessed: false,
+      payload,
+      order: { id: "ord_1", status: "pending", ilsTotal: 66996 },
+    });
+    expect(action.kind).toBe("unauthorized");
+  });
+
   it("marks a matching pending order paid", () => {
     expect(
       interpretGrowNotify({

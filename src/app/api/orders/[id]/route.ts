@@ -1,12 +1,20 @@
 import { NextResponse } from "next/server";
 
 import { findOrder } from "@/lib/checkout/orders";
+import {
+  enforceRateLimit,
+  rateLimitPolicies,
+  rateLimitResponse,
+} from "@/lib/security/rate-limit";
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
+  const limited = await enforceRateLimit(request, rateLimitPolicies.orderLookup, id);
+  if (!limited.ok) return rateLimitResponse(limited.result);
+
   const email = new URL(request.url).searchParams.get("email")?.trim().toLowerCase();
   if (!email) {
     return NextResponse.json({ error: "Email is required" }, { status: 400 });

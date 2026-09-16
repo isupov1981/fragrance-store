@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { requireAdminRole, requireResourceMutation, type AdminResource } from "@/lib/auth/rbac";
 import { hasSameOrigin, requireAdminRequest } from "@/lib/auth/server";
+import { auditLog } from "@/lib/security/audit";
 
 const resourceSchema = z.enum(["products", "categories", "brands", "orders", "customers", "content", "shipping"]);
 
@@ -9,10 +11,24 @@ export async function PATCH(
   { params }: { params: Promise<{ resource: string; id: string }> },
 ) {
   if (!hasSameOrigin(request)) return NextResponse.json({ error: "Invalid request origin" }, { status: 403 });
-  if (!(await requireAdminRequest(request))) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const route = await params;
   const resource = resourceSchema.safeParse(route.resource);
   if (!resource.success) return NextResponse.json({ error: "Unknown resource" }, { status: 404 });
+
+  const auth = requireResourceMutation(
+    await requireAdminRequest(request),
+    resource.data as AdminResource,
+  );
+  if (!auth.ok) {
+    auditLog({
+      event: "admin_rbac_denied",
+      level: "warn",
+      outcome: "blocked",
+      meta: { resource: resource.data, method: "PATCH", status: auth.status },
+    });
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
+  }
+
   const input = await request.json().catch(() => null);
   if (!process.env.DATABASE_URL || process.env.DATABASE_URL.includes("placeholder")) {
     return NextResponse.json({ error: "Database is not configured" }, { status: 503 });
@@ -61,9 +77,16 @@ export async function DELETE(
   { params }: { params: Promise<{ resource: string; id: string }> },
 ) {
   if (!hasSameOrigin(request)) return NextResponse.json({ error: "Invalid request origin" }, { status: 403 });
-  const session = await requireAdminRequest(request);
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (session.role !== "ADMIN") return NextResponse.json({ error: "Administrator role required" }, { status: 403 });
+  const roleCheck = requireAdminRole(await requireAdminRequest(request));
+  if (!roleCheck.ok) {
+    auditLog({
+      event: "admin_rbac_denied",
+      level: "warn",
+      outcome: "blocked",
+      meta: { method: "DELETE", status: roleCheck.status },
+    });
+    return NextResponse.json({ error: roleCheck.error }, { status: roleCheck.status });
+  }
   const route = await params;
   const resource = resourceSchema.safeParse(route.resource);
   if (!resource.success) return NextResponse.json({ error: "Unknown resource" }, { status: 404 });

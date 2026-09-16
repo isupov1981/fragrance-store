@@ -97,6 +97,28 @@ class GrowPaymentProvider implements PaymentProvider {
 
 export function getPaymentProvider(): PaymentProvider {
   if (isGrowConfigured()) return new GrowPaymentProvider();
-  const key = process.env.STRIPE_SECRET_KEY;
+  const key = process.env.STRIPE_SECRET_KEY?.trim();
   return key ? new StripePaymentProvider(key) : new DemoPaymentProvider();
+}
+
+/** True when a real acquirer (Grow or Stripe) is configured. */
+export function hasLivePaymentProvider() {
+  return getPaymentProvider().name !== "demo";
+}
+
+/**
+ * Production must never accept orders through the demo provider
+ * (which marks orders paid without charging).
+ */
+export function assertLivePaymentsForOrders(enabled: boolean) {
+  if (!enabled) return;
+  if (process.env.NODE_ENV !== "production") return;
+  if (hasLivePaymentProvider()) return;
+  throw new Error(
+    "Cannot enable ordering in production without Grow or Stripe credentials",
+  );
+}
+
+export function ordersBlockedByDemoPayments() {
+  return process.env.NODE_ENV === "production" && !hasLivePaymentProvider();
 }

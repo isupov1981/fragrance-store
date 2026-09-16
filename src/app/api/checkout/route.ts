@@ -10,12 +10,31 @@ import { checkoutSchema } from "@/lib/checkout/schema";
 import { getOrdersEnabled } from "@/lib/commerce";
 import { getOrderMailer } from "@/lib/email/mailer";
 import { GrowCheckoutError } from "@/lib/payments/grow";
-import { getPaymentProvider } from "@/lib/payments/provider";
+import {
+  getPaymentProvider,
+  ordersBlockedByDemoPayments,
+} from "@/lib/payments/provider";
+import { auditLog } from "@/lib/security/audit";
+import {
+  enforceRateLimit,
+  rateLimitPolicies,
+  rateLimitResponse,
+} from "@/lib/security/rate-limit";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  if (!(await getOrdersEnabled())) {
+  const limited = await enforceRateLimit(request, rateLimitPolicies.checkout);
+  if (!limited.ok) return rateLimitResponse(limited.result);
+
+  if (!(await getOrdersEnabled()) || ordersBlockedByDemoPayments()) {
+    if (ordersBlockedByDemoPayments()) {
+      auditLog({
+        event: "checkout_blocked_demo_payments",
+        level: "warn",
+        outcome: "blocked",
+      });
+    }
     return NextResponse.json(
       { error: "Ordering is temporarily unavailable" },
       { status: 503 },
@@ -41,6 +60,17 @@ export async function POST(request: Request) {
     }
 
     const provider = getPaymentProvider();
+    if (provider.name === "demo" && process.env.NODE_ENV === "production") {
+      auditLog({
+        event: "checkout_blocked_demo_payments",
+        level: "error",
+        outcome: "blocked",
+      });
+      return NextResponse.json(
+        { error: "Ordering is temporarily unavailable" },
+        { status: 503 },
+      );
+    }
     const cart = await priceCheckoutItems(
       parsed.data.items,
       parsed.data.shippingMethod,

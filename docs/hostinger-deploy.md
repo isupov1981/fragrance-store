@@ -81,14 +81,14 @@ Re-run when migrations change. Skip seed on repeat if data already exists (omit 
    - `ADMIN_EMAIL`, `ADMIN_PASSWORD`
    - `NEXT_PUBLIC_STORE_CURRENCY=ILS`
 
-5. Deploy / rebuild. Open the preview URL → `/en` and `/api/health`.  
-   Expect `database: "configured"` and `databaseReachable: true`. `storage` will be `"local"` until R2/S3 is set.
+5. Deploy / rebuild. Open the preview URL → `/en` and `/api/health`.
+   Public `/api/health` should return `{ "ok": true }` only. For readiness details use `/api/admin/health` (admin session or `HEALTH_CHECK_TOKEN` bearer) and confirm `databaseReachable: true`. `storage` will be `"local"` until R2/S3 is set.
 
    **Browse-only / ordering:** `NEXT_PUBLIC_ORDERS_ENABLED` is only the *default* until an admin saves the Ordering toggle under **Overview** or **Settings**. After that, the database value controls cart/checkout with no rebuild. After each `git push` to `main`, confirm hPanel shows a fresh deploy (Redeploy if the site still serves the previous build).
 
 ### 4. Object storage (recommended)
 
-On Business Node hosting, **local `uploads/` is wiped on redeploy**. Configure **Cloudflare R2** (or another S3 API) and all `S3_*` vars. After deploy, `/api/health` should show `"storage":"s3"`.
+On Business Node hosting, **local `uploads/` is wiped on redeploy**. Configure **Cloudflare R2** (or another S3 API) and all `S3_*` vars. After deploy, `/api/admin/health` should show `"storage":"s3"`.
 
 ---
 
@@ -115,13 +115,15 @@ Preferred: **Grow Light API** after an Israeli business (osek) is registered.
 - Checkout stays in **demo** until those variables are set.
 - Stripe remains an optional fallback (`/api/webhooks/stripe`) if a non-IL Stripe entity exists.
 
-Without a payment provider, `/api/health` shows `"payments":"demo"`.
+Without a payment provider, `/api/admin/health` shows `"payments":"demo"`. Ordering cannot be enabled in production until Grow or Stripe is configured.
 
 ### 7. Hermes agent (optional)
 
-- Set `HERMES_AGENT_TOKEN` (24+ chars).
-- Point Hermes at `https://parfums.cloud/api/agent`.
-- `/api/health` → `hermesAgent: "configured"`.
+- Set `HERMES_AGENT_TOKEN` (24+ chars) on Hostinger.
+- Run Hermes on a **separate host/VPS** with profile **`the-perfume-room`** (not the Hostinger Node app).
+- Point that profile at `https://parfums.cloud/api/agent/mcp` (Bearer same token).
+- `/api/admin/health` → `hermesAgent: "configured"`, `service: "the-perfume-room"`.
+- Setup details: [`hermes/README.md`](../hermes/README.md).
 
 ---
 
@@ -131,7 +133,8 @@ Without a payment provider, `/api/health` shows `"payments":"demo"`.
 NEXT_PUBLIC_SITE_URL=https://parfums.cloud npm run smoke
 ```
 
-Manual: `/en`, `/he`, `/admin`, checkout country default Israel / ILS.
+Manual: `/en`, `/he`, `/ru`, `/admin`, Brands / Categories menus, checkout country default Israel / ILS.
+Free shipping threshold: ₪499 (unopened original packaging).
 
 ---
 
@@ -142,7 +145,7 @@ Manual: `/en`, `/he`, `/admin`, checkout country default Israel / ILS.
 | Build: `Environment variable not found: DATABASE_URL` | Unlikely now (`npm run build` uses a placeholder for generate). Still set real URLs for **runtime**. |
 | Build: `Environment variable not found: DATABASE_URL_UNPOOLED` | Add the direct Neon URI, or omit it — build falls back to `DATABASE_URL`. |
 | `Prisma Client could not locate the Query Engine` | Standalone copy failed; check build logs for `Copied node_modules/.prisma`. |
-| Catalogue is the hardcoded demo | Neon unreachable or migrations not applied: `npm run db:bootstrap:prod`. Check `/api/health` `databaseReachable`. |
+| Catalogue is the hardcoded demo | Neon unreachable or migrations not applied: `npm run db:bootstrap:prod`. Check `/api/admin/health` `databaseReachable`. |
 | Migrate fails through PgBouncer | `DATABASE_URL_UNPOOLED` still has `-pooler`. |
 | Uploads disappear after redeploy | No S3/R2. |
 | Images broken | `S3_PUBLIC_BASE_URL` wrong (also used for `next/image` remote patterns). |

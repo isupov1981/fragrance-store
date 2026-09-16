@@ -50,7 +50,7 @@ async function handle(message) {
       result: {
         protocolVersion: "2024-11-05",
         capabilities: { tools: {} },
-        serverInfo: { name: "prive-atelier", version: "0.1.0" },
+        serverInfo: { name: "the-perfume-room", version: "0.1.0" },
       },
     };
   }

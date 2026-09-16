@@ -1,4 +1,4 @@
-import { timingSafeEqual } from "node:crypto";
+import { safeEqualString } from "@/lib/security/timing-safe";
 
 const MIN_TOKEN_LENGTH = 24;
 
@@ -14,15 +14,5 @@ export function requireAgentToken(request: Request) {
   const provided = header.toLowerCase().startsWith("bearer ")
     ? header.slice(7).trim()
     : "";
-  return safeEqual(provided, expected);
-}
-
-function safeEqual(left: string, right: string) {
-  const a = Buffer.from(left);
-  const b = Buffer.from(right);
-  if (a.length !== b.length) {
-    timingSafeEqual(a.length ? a : Buffer.from("x"), a.length ? a : Buffer.from("x"));
-    return false;
-  }
-  return timingSafeEqual(a, b);
+  return safeEqualString(provided, expected);
 }

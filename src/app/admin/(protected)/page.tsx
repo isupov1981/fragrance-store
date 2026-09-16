@@ -6,6 +6,10 @@ import { getAdminLocale } from "@/lib/admin/get-locale";
 import { getAdminDashboard } from "@/lib/admin/queries";
 import { getOrdersEnabled } from "@/lib/commerce";
 import { requireAdminPage } from "@/lib/auth/server";
+import {
+  getPaymentProvider,
+  ordersBlockedByDemoPayments,
+} from "@/lib/payments/provider";
 
 export default async function AdminDashboard() {
   await requireAdminPage();
@@ -55,7 +59,11 @@ export default async function AdminDashboard() {
         ))}
       </section>
       <section className="mt-8">
-        <OrdersEnabledForm initialEnabled={ordersEnabled} />
+        <OrdersEnabledForm
+          initialEnabled={ordersEnabled}
+          canEnableOrders={!ordersBlockedByDemoPayments()}
+          paymentProvider={getPaymentProvider().name}
+        />
       </section>
     </>
   );

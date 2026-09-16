@@ -51,7 +51,7 @@ Architecture overview: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
    npm run smoke
    ```
 
-Storefront: `http://localhost:3000` (`/en`, `/he`). Admin: `/admin`
+Storefront: `http://localhost:3000` (`/en`, `/he`, `/ru`). Admin: `/admin`
 (`admin@example.com` / `AtelierAdmin2026!` from `.env.example` until you rotate it).
 
 Without `S3_BUCKET` + keys, uploads fall back to `uploads/` and `/api/media/...`.
@@ -165,11 +165,13 @@ The storefront reads **ACTIVE** products from Postgres. A Bearer-token Agent API
 [Nous Hermes](https://hermes-agent.nousresearch.com/docs/user-guide/messaging/telegram)
 create drafts, upload photos, publish on command, and send a daily briefing.
 
+Use a dedicated Hermes profile **`the-perfume-room`** (separate from any other Hermes bots on the same host).
+
 1. Set `HERMES_AGENT_TOKEN` (24+ random characters).
-2. Follow [hermes/README.md](hermes/README.md) to connect Telegram + MCP.
+2. Follow [hermes/README.md](hermes/README.md) to connect Telegram + MCP (`hermes -p the-perfume-room …`).
 3. Products stay `DRAFT` until you say «опубликуй» in Telegram.
 
-`GET /api/health` reports `"hermesAgent":"configured"` when the token is set.
+`GET /api/health` reports `"hermesAgent":"configured"` when the token is set and `"service":"the-perfume-room"`.
 
 ## Production checklist
 

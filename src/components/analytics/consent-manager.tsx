@@ -6,8 +6,8 @@ import { useI18n } from "@/components/i18n/i18n-provider";
 
 type Consent = "accepted" | "declined" | null;
 
-const CONSENT_KEY = "prive-atelier-cookie-consent";
-const CONSENT_EVENT = "prive-atelier-consent-change";
+const CONSENT_KEY = "the-perfume-room-cookie-consent";
+const CONSENT_EVENT = "the-perfume-room-consent-change";
 
 function subscribe(onChange: () => void) {
   window.addEventListener("storage", onChange);
@@ -22,11 +22,17 @@ function getConsent() {
   return localStorage.getItem(CONSENT_KEY) as Consent;
 }
 
+function readNonce() {
+  if (typeof document === "undefined") return undefined;
+  return document.body.dataset.nonce || undefined;
+}
+
 export function ConsentManager() {
   const { dict } = useI18n();
   const consent = useSyncExternalStore(subscribe, getConsent, () => null);
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
   const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
+  const nonce = readNonce();
 
   function choose(value: Exclude<Consent, null>) {
     localStorage.setItem(CONSENT_KEY, value);
@@ -37,15 +43,19 @@ export function ConsentManager() {
     <>
       {consent === "accepted" && gaId ? (
         <>
-          <Script src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} strategy="afterInteractive" />
-          <Script id="ga4" strategy="afterInteractive">
+          <Script
+            src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+            strategy="afterInteractive"
+            nonce={nonce}
+          />
+          <Script id="ga4" strategy="afterInteractive" nonce={nonce}>
             {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}
 gtag('js',new Date());gtag('config','${gaId}',{anonymize_ip:true});`}
           </Script>
         </>
       ) : null}
       {consent === "accepted" && pixelId ? (
-        <Script id="meta-pixel" strategy="afterInteractive">
+        <Script id="meta-pixel" strategy="afterInteractive" nonce={nonce}>
           {`!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
 n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
 n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;

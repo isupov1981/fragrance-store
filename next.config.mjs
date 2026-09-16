@@ -22,6 +22,24 @@ function storageImagePatterns() {
   return patterns;
 }
 
+const securityHeaders = [
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "X-Frame-Options", value: "SAMEORIGIN" },
+  {
+    key: "Permissions-Policy",
+    value: "camera=(), microphone=(), geolocation=()",
+  },
+];
+
+if (process.env.NODE_ENV === "production") {
+  const preload = process.env.HSTS_PRELOAD === "true" ? "; preload" : "";
+  securityHeaders.push({
+    key: "Strict-Transport-Security",
+    value: `max-age=31536000; includeSubDomains${preload}`,
+  });
+}
+
 const nextConfig = {
   output: "standalone",
   serverExternalPackages: ["@aws-sdk/client-s3", "@prisma/client", "sharp"],
@@ -39,15 +57,7 @@ const nextConfig = {
     return [
       {
         source: "/(.*)",
-        headers: [
-          { key: "X-Content-Type-Options", value: "nosniff" },
-          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-          { key: "X-Frame-Options", value: "SAMEORIGIN" },
-          {
-            key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=()",
-          },
-        ],
+        headers: securityHeaders,
       },
     ];
   },

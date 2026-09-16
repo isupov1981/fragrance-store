@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getOrderMailer } from "@/lib/email/mailer";
+import {
+  enforceRateLimit,
+  rateLimitPolicies,
+  rateLimitResponse,
+} from "@/lib/security/rate-limit";
 
 const schema = z.object({
   name: z.string().trim().min(2).max(100),
@@ -10,6 +15,9 @@ const schema = z.object({
 });
 
 export async function POST(request: Request) {
+  const limited = await enforceRateLimit(request, rateLimitPolicies.contact);
+  if (!limited.ok) return rateLimitResponse(limited.result);
+
   const parsed = schema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid enquiry" }, { status: 400 });

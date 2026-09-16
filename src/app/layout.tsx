@@ -38,7 +38,9 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const localeHeader = (await headers()).get("x-locale");
+  const headerList = await headers();
+  const localeHeader = headerList.get("x-locale");
+  const nonce = headerList.get("x-nonce") ?? undefined;
   const locale = isLocale(localeHeader) ? localeHeader : "en";
   const meta = localeMeta[locale];
 
@@ -50,7 +52,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       data-scroll-behavior="smooth"
       className={`${geistSans.variable} ${display.variable} ${hebrewSans.variable} ${hebrewDisplay.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col" data-nonce={nonce}>
+        {children}
+      </body>
     </html>
   );
 }

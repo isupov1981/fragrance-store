@@ -23,12 +23,12 @@ describe("calculateCartTotals", () => {
 });
 
 describe("priceCheckoutItems", () => {
-  it("uses server catalogue ILS prices and adds standard shipping", () => {
+  it("uses server catalogue ILS prices and waives standard shipping above the free threshold", () => {
     const cart = priceCheckoutItems([{ variantId: "v-amber-50", quantity: 1 }], "standard");
     expect(cart.subtotal).toBe(62496);
-    expect(cart.shippingTotal).toBe(4500);
-    expect(cart.total).toBe(66996);
-    expect(cart.ilsTotal).toBe(66996);
+    expect(cart.shippingTotal).toBe(0);
+    expect(cart.total).toBe(62496);
+    expect(cart.ilsTotal).toBe(62496);
     expect(cart.currency).toBe("ils");
     expect(cart.shippingMethod).toBe("standard");
   });
@@ -37,9 +37,9 @@ describe("priceCheckoutItems", () => {
     const cart = priceCheckoutItems([{ variantId: "v-amber-50", quantity: 1 }], "standard", "USD");
     expect(cart.currency).toBe("usd");
     expect(cart.subtotal).toBe(convertCatalogCents(62496, "USD"));
-    expect(cart.shippingTotal).toBe(convertCatalogCents(4500, "USD"));
-    expect(cart.total).toBe(convertCatalogCents(66996, "USD"));
-    expect(cart.ilsTotal).toBe(66996);
+    expect(cart.shippingTotal).toBe(0);
+    expect(cart.total).toBe(convertCatalogCents(62496, "USD"));
+    expect(cart.ilsTotal).toBe(62496);
   });
 
   it("rejects quantities above available stock", () => {

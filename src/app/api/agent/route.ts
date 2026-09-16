@@ -3,6 +3,11 @@ import { z } from "zod";
 
 import { agentTokenConfigured } from "@/lib/agent/auth";
 import { assertAgentRequest, agentTools, dispatchAgentTool, jsonAgentError } from "@/lib/agent/tools";
+import {
+  enforceRateLimit,
+  rateLimitPolicies,
+  rateLimitResponse,
+} from "@/lib/security/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -21,6 +26,9 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     assertAgentRequest(request);
+    const limited = await enforceRateLimit(request, rateLimitPolicies.agent);
+    if (!limited.ok) return rateLimitResponse(limited.result);
+
     const parsed = bodySchema.safeParse(await request.json());
     if (!parsed.success) {
       return NextResponse.json({ error: "Expected { tool, arguments }" }, { status: 400 });

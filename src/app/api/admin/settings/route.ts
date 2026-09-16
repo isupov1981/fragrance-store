@@ -2,7 +2,14 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getOrdersEnabled, setOrdersEnabled } from "@/lib/commerce";
+import { requireAdminRole } from "@/lib/auth/rbac";
 import { hasSameOrigin, requireAdminRequest } from "@/lib/auth/server";
+import {
+  getPaymentProvider,
+  hasLivePaymentProvider,
+  ordersBlockedByDemoPayments,
+} from "@/lib/payments/provider";
+import { auditLog } from "@/lib/security/audit";
 
 export const runtime = "nodejs";
 
@@ -11,18 +18,27 @@ const patchSchema = z.object({
 });
 
 export async function GET(request: Request) {
-  if (!(await requireAdminRequest(request))) {
+  const session = await requireAdminRequest(request);
+  if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  return NextResponse.json({ ordersEnabled: await getOrdersEnabled() });
+  const provider = getPaymentProvider().name;
+  return NextResponse.json({
+    ordersEnabled: await getOrdersEnabled(),
+    paymentProvider: provider,
+    canEnableOrders: !ordersBlockedByDemoPayments(),
+    livePayments: hasLivePaymentProvider(),
+  });
 }
 
 export async function PATCH(request: Request) {
   if (!hasSameOrigin(request)) {
+    auditLog({ event: "admin_settings_origin_rejected", level: "warn", outcome: "blocked" });
     return NextResponse.json({ error: "Invalid request origin" }, { status: 403 });
   }
-  if (!(await requireAdminRequest(request))) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const roleCheck = requireAdminRole(await requireAdminRequest(request));
+  if (!roleCheck.ok) {
+    return NextResponse.json({ error: roleCheck.error }, { status: roleCheck.status });
   }
 
   const parsed = patchSchema.safeParse(await request.json().catch(() => null));
@@ -32,9 +48,18 @@ export async function PATCH(request: Request) {
 
   try {
     await setOrdersEnabled(parsed.data.ordersEnabled);
-    return NextResponse.json({ ordersEnabled: parsed.data.ordersEnabled });
+    return NextResponse.json({
+      ordersEnabled: parsed.data.ordersEnabled,
+      paymentProvider: getPaymentProvider().name,
+      canEnableOrders: !ordersBlockedByDemoPayments(),
+      livePayments: hasLivePaymentProvider(),
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to update settings";
-    return NextResponse.json({ error: message }, { status: 503 });
+    const blockedDemo = message.includes("without Grow or Stripe");
+    return NextResponse.json(
+      { error: message, code: blockedDemo ? "demo_payments" : "settings_error" },
+      { status: blockedDemo ? 409 : 503 },
+    );
   }
 }

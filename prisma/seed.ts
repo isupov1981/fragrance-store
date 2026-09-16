@@ -147,7 +147,7 @@ async function main() {
     {
       code: "standard",
       name: "Standard delivery",
-      description: "Complimentary over ₪930, otherwise ₪45.",
+      description: "Complimentary over ₪499 (unopened original packaging), otherwise ₪45.",
       price: 4500,
     },
     {

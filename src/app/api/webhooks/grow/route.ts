@@ -7,6 +7,8 @@ import {
 import { getOrderMailer } from "@/lib/email/mailer";
 import { applyGrowWebhookAction, interpretGrowNotify, parseGrowNotify } from "@/lib/payments/grow-event";
 import { approveGrowTransaction, isGrowConfigured } from "@/lib/payments/grow";
+import { auditLog } from "@/lib/security/audit";
+import { safeEqualString } from "@/lib/security/timing-safe";
 
 export const runtime = "nodejs";
 
@@ -23,14 +25,33 @@ async function readNotifyBody(request: Request) {
   return record;
 }
 
+function authorizeGrowWebhook(request: Request) {
+  const expected = process.env.GROW_WEBHOOK_SECRET?.trim() ?? "";
+  if (!expected) return false;
+  const provided = new URL(request.url).searchParams.get("secret") ?? "";
+  return safeEqualString(provided, expected);
+}
+
 export async function POST(request: Request) {
   if (!isGrowConfigured()) {
+    auditLog({
+      event: "grow_webhook_rejected",
+      level: "warn",
+      outcome: "blocked",
+      meta: { reason: "not_configured" },
+    });
     return Response.json({ error: "Grow webhook is not configured" }, { status: 503 });
   }
 
-  const expected = process.env.GROW_WEBHOOK_SECRET?.trim();
-  const provided = new URL(request.url).searchParams.get("secret") ?? "";
-  const authorized = !expected || provided === expected;
+  const authorized = authorizeGrowWebhook(request);
+  if (!authorized) {
+    auditLog({
+      event: "grow_webhook_rejected",
+      level: "warn",
+      outcome: "failure",
+      meta: { reason: "invalid_secret" },
+    });
+  }
 
   try {
     const payload = parseGrowNotify(await readNotifyBody(request));

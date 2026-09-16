@@ -1,6 +1,6 @@
 # Архитектура — The Perfume Room
 
-Документ описывает текущую архитектуру интернет-магазина ароматов **The Perfume Room** (`prive-atelier-store`): слои приложения, потоки данных, интеграции и границы ответственности.
+Документ описывает текущую архитектуру интернет-магазина ароматов **The Perfume Room** (`the-perfume-room-store`): слои приложения, потоки данных, интеграции и границы ответственности.
 
 ## 1. Обзор
 
@@ -16,7 +16,9 @@
 | Авторизация админки | JWT в httpOnly cookie (`jose`) |
 | Агент | Hermes (Telegram) → Bearer API / MCP |
 
-Витрина двуязычная: **en** (LTR) и **he** (RTL). Покупка включается флагом `NEXT_PUBLIC_ORDERS_ENABLED=true`; иначе каталог доступен, а checkout отключён.
+Витрина трёхъязычная: **en** / **ru** (LTR) и **he** (RTL). Покупка включается флагом `NEXT_PUBLIC_ORDERS_ENABLED=true`; иначе каталог доступен, а checkout отключён.
+
+Бесплатная доставка от **₪499** (`FREE_SHIPPING_ILS_CENTS` в `src/lib/currency.ts`), при условии невскрытой фирменной упаковки.
 
 ## 2. Высокоуровневая схема
 
@@ -73,7 +75,7 @@ tests/               # vitest unit (+ playwright e2e)
 
 ### Локализация
 
-- URL: `/{lang}/…` где `lang ∈ {en, he}`.
+- URL: `/{lang}/…` где `lang ∈ {en, he, ru}`.
 - `src/proxy.ts` (Next.js proxy):
   - редирект без локали с учётом cookie / `Accept-Language`;
   - выставляет cookie `fragrance_locale` и заголовок `x-locale`;
@@ -85,11 +87,14 @@ tests/               # vitest unit (+ playwright e2e)
 |------|------------|
 | `/[lang]` | Главная |
 | `/[lang]/products`, `/products/[slug]` | Каталог и карточка |
-| `/[lang]/collections`, `/collections/[slug]` | Коллекции / категории |
+| `/[lang]/brands` | Brands A–Z (из БД) |
+| `/[lang]/collections`, `/collections/[slug]` | Коллекции / категории / merchandising |
 | `/[lang]/cart` | Корзина |
 | `/[lang]/checkout` (+ success/cancel) | Оформление |
 | `/[lang]/account` | Поиск заказа |
 | `/[lang]/(content)/*` | About, FAQ, contact, shipping, refund |
+
+Навигация **Categories** использует merchandising-теги (`back-in-stock`, `testers-refills`, `additional-products`) через `ProductCategory`, отдельно от ольфакторного семейства (`woody` / `floral` / …).
 
 SEO: `sitemap.ts`, `robots.ts`, JSON-LD товаров (`src/lib/seo`).
 
@@ -97,7 +102,7 @@ SEO: `sitemap.ts`, `robots.ts`, JSON-LD товаров (`src/lib/seo`).
 
 | Модуль | Ответственность |
 |--------|-----------------|
-| `catalog`, `catalog/*`, `db/products` | Чтение ACTIVE-каталога, browse/slug |
+| `catalog`, `catalog/*`, `db/products` | Чтение ACTIVE-каталога, browse/slug, brands, merchandising |
 | `cart/*` | Типы корзины + Zustand store |
 | `checkout/*` | Схема, серверный расчёт цен, сохранение заказа |
 | `payments/*` | Выбор провайдера (grow → stripe → demo), Grow/Stripe адаптеры |
@@ -180,13 +185,13 @@ Uploads: /api/admin/uploads → storeImage (S3 | local)
 
 ### 7.4 Hermes Agent
 
-Внешний процесс Hermes в Telegram вызывает:
+Внешний процесс Hermes в Telegram (отдельный **профиль** `the-perfume-room`, не default FA) вызывает:
 
 - `POST/GET /api/agent` — операции над черновиками/публикацией;
-- `/api/agent/mcp` — MCP-инструменты;
+- `/api/agent/mcp` — MCP-инструменты (serverInfo: `the-perfume-room`);
 - `/api/agent/upload` — фото.
 
-Авторизация: `Authorization: Bearer ${HERMES_AGENT_TOKEN}`. Продукты создаются как `DRAFT` до явной публикации.
+Авторизация: `Authorization: Bearer ${HERMES_AGENT_TOKEN}`. Продукты создаются как `DRAFT` до явной публикации. Скилл и gateway: см. [`hermes/README.md`](../hermes/README.md).
 
 ## 8. Платежи
 
@@ -227,7 +232,7 @@ Uploads: /api/admin/uploads → storeImage (S3 | local)
 
 ## 11. Границы и расширения
 
-**Уже заложено:** двуязычная витрина, серверный checkout, два платёжных провайдера, админка, CSV-импорт, object storage, Telegram-оператор через Hermes.
+**Уже заложено:** трёхъязычная витрина (en/he/ru), Brands A–Z и Categories merchandising, серверный checkout, два платёжных провайдера, админка, CSV-импорт, object storage, Telegram-оператор через Hermes (`the-perfume-room`).
 
 **Не усложнять без нужды:** клиентская «истина» по ценам/остаткам; прямой доступ к Prisma из компонентов UI; обход JWT для admin API; публикация товаров без явного статуса `ACTIVE`.
 

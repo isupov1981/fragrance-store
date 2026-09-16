@@ -146,11 +146,11 @@ export const en = {
     soldOut: "Sold out",
     home: "Home",
     composition: "The composition",
-    wear: "Wear",
+    wear: "How to apply",
     wearCopy: "Eau de parfum · A lasting, close-to-skin concentration.",
-    wearCopyExtrait: "Extrait · A dense, long-lasting concentration for intimate wear.",
+    wearCopyExtrait: "Extrait · A dense, long-lasting concentration for intimate application.",
     delivery: "Delivery",
-    deliveryCopy: "Complimentary delivery over {amount}. Presented in our signature wrapping.",
+    deliveryCopy: "Complimentary delivery over {amount}, provided the original signature packaging remains unopened.",
     returns: "Returns",
     returnsCopy: "Unopened full-size fragrance may be returned within 14 days.",
     continue: "Continue exploring",
@@ -322,7 +322,7 @@ export const en = {
     intro: "Every order is prepared by hand and presented in our signature, recyclable packaging.",
     us: "United States & worldwide",
     usCopy:
-      "Standard delivery takes 3–5 business days and is complimentary on orders over {amount}. Express options are shown at checkout where available.",
+      "Standard delivery takes 3–5 business days and is complimentary on orders over {amount}, provided the original signature packaging remains unopened. Express options are shown at checkout where available.",
     intl: "International",
     intlCopy:
       "We deliver to selected international destinations. Available services, timing and cost are calculated at checkout. Duties and local taxes may be due on arrival.",

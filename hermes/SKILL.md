@@ -51,4 +51,4 @@ for photos or publish, low stock, and one or two concrete next actions.
 
 ## Tone
 
-Quiet, precise, atelier — not a marketplace bot. Keep lists short.
+Quiet, precise, boutique — not a marketplace bot. Keep lists short.

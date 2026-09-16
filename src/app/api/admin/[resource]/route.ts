@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createDraftProduct, parseAdminProductInput } from "@/lib/agent/products";
+import { requireResourceMutation, type AdminResource } from "@/lib/auth/rbac";
 import { hasSameOrigin, requireAdminRequest } from "@/lib/auth/server";
+import { auditLog } from "@/lib/security/audit";
 
 export const runtime = "nodejs";
 
@@ -26,9 +28,23 @@ export async function POST(
   { params }: { params: Promise<{ resource: string }> },
 ) {
   if (!hasSameOrigin(request)) return NextResponse.json({ error: "Invalid request origin" }, { status: 403 });
-  if (!(await requireAdminRequest(request))) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const parsedResource = resourceSchema.safeParse((await params).resource);
   if (!parsedResource.success) return NextResponse.json({ error: "Unknown resource" }, { status: 404 });
+
+  const auth = requireResourceMutation(
+    await requireAdminRequest(request),
+    parsedResource.data as AdminResource,
+  );
+  if (!auth.ok) {
+    auditLog({
+      event: "admin_rbac_denied",
+      level: "warn",
+      outcome: "blocked",
+      meta: { resource: parsedResource.data, method: "POST", status: auth.status },
+    });
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
+  }
+
   if (!process.env.DATABASE_URL || process.env.DATABASE_URL.includes("placeholder")) {
     return NextResponse.json({ error: "Database is not configured" }, { status: 503 });
   }

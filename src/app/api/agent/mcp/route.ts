@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 
 import { agentTokenConfigured } from "@/lib/agent/auth";
 import { assertAgentRequest, agentTools, dispatchAgentTool, jsonAgentError } from "@/lib/agent/tools";
+import {
+  enforceRateLimit,
+  rateLimitPolicies,
+  rateLimitResponse,
+} from "@/lib/security/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -24,6 +29,9 @@ export async function POST(request: Request) {
   let id: JsonRpc["id"] = null;
   try {
     assertAgentRequest(request);
+    const limited = await enforceRateLimit(request, rateLimitPolicies.agent);
+    if (!limited.ok) return rateLimitResponse(limited.result);
+
     const message = (await request.json()) as JsonRpc;
     id = message.id ?? null;
 
@@ -31,7 +39,7 @@ export async function POST(request: Request) {
       return rpcResult(id, {
         protocolVersion: "2024-11-05",
         capabilities: { tools: {} },
-        serverInfo: { name: "prive-atelier", version: "0.1.0" },
+        serverInfo: { name: "the-perfume-room", version: "0.1.0" },
       });
     }
 

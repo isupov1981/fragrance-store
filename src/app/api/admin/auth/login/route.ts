@@ -7,6 +7,12 @@ import {
   signAdminSession,
 } from "@/lib/auth/session";
 import { hasSameOrigin } from "@/lib/auth/server";
+import { auditLog } from "@/lib/security/audit";
+import {
+  enforceRateLimit,
+  rateLimitPolicies,
+  rateLimitResponse,
+} from "@/lib/security/rate-limit";
 
 const credentialsSchema = z.object({
   email: z.email().trim().toLowerCase(),
@@ -15,12 +21,22 @@ const credentialsSchema = z.object({
 
 export async function POST(request: Request) {
   if (!hasSameOrigin(request)) {
+    auditLog({ event: "admin_login_origin_rejected", level: "warn", outcome: "blocked" });
     return NextResponse.json({ error: "Invalid request origin" }, { status: 403 });
   }
 
   const parsed = credentialsSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid credentials" }, { status: 400 });
+  }
+
+  const limited = await enforceRateLimit(
+    request,
+    rateLimitPolicies.adminLogin,
+    parsed.data.email,
+  );
+  if (!limited.ok) {
+    return rateLimitResponse(limited.result, "Too many login attempts");
   }
 
   if (!process.env.AUTH_SECRET) {
@@ -51,6 +67,12 @@ export async function POST(request: Request) {
     parsed.data.email !== identity.email ||
     !(await compare(parsed.data.password, identity.passwordHash))
   ) {
+    auditLog({
+      event: "admin_login_failed",
+      level: "warn",
+      outcome: "failure",
+      meta: { reason: "invalid_credentials" },
+    });
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
   }
 
@@ -58,6 +80,11 @@ export async function POST(request: Request) {
     sub: identity.email,
     name: identity.name,
     role: identity.role,
+  });
+  auditLog({
+    event: "admin_login_success",
+    outcome: "success",
+    meta: { role: identity.role },
   });
   const response = NextResponse.json({ ok: true });
   response.cookies.set(ADMIN_COOKIE, token, adminCookieOptions);

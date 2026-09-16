@@ -4,8 +4,13 @@ import { growMajorAmount, type GrowNotifyPayload } from "./grow-event";
 const SANDBOX_BASE = "https://sandbox.meshulam.co.il/api/light/server/1.0";
 const LIVE_BASE = "https://secure.meshulam.co.il/api/light/server/1.0";
 
+/** Grow is ready only when merchant credentials *and* a webhook secret exist. */
 export function isGrowConfigured() {
-  return Boolean(process.env.GROW_USER_ID?.trim() && process.env.GROW_PAGE_CODE?.trim());
+  return Boolean(
+    process.env.GROW_USER_ID?.trim() &&
+      process.env.GROW_PAGE_CODE?.trim() &&
+      process.env.GROW_WEBHOOK_SECRET?.trim(),
+  );
 }
 
 export function growApiBase() {

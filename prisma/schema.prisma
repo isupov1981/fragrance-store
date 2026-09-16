@@ -225,3 +225,11 @@ model StoreSetting {
   value     String
   updatedAt DateTime @updatedAt
 }
+
+/// Sliding / fixed-window rate limit counters for abuse controls.
+model RateLimitBucket {
+  key       String   @id
+  count     Int      @default(0)
+  resetAt   DateTime
+  updatedAt DateTime @updatedAt
+}

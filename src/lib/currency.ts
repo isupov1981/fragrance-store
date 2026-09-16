@@ -19,7 +19,7 @@ export const ILS_PER_USD = Number(process.env.NEXT_PUBLIC_FX_ILS ?? 3.72);
 /** How many euros equal one US dollar. */
 export const EUR_PER_USD = Number(process.env.NEXT_PUBLIC_FX_EUR ?? 0.92);
 
-export const FREE_SHIPPING_ILS_CENTS = 93000;
+export const FREE_SHIPPING_ILS_CENTS = 49900;
 export const STANDARD_SHIPPING_ILS_CENTS = 4500;
 export const EXPRESS_SHIPPING_ILS_CENTS = 9300;
 

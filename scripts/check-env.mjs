@@ -9,6 +9,7 @@ const growKeys = ["GROW_USER_ID", "GROW_PAGE_CODE", "GROW_WEBHOOK_SECRET"];
 const stripeKeys = ["STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET", "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY"];
 const smtpKeys = ["SMTP_HOST", "SMTP_PORT", "EMAIL_FROM"];
 const hermesKeys = ["HERMES_AGENT_TOKEN"];
+const healthKeys = ["HEALTH_CHECK_TOKEN"];
 
 function present(name) {
   const value = process.env[name];
@@ -28,11 +29,20 @@ function report(label, keys) {
 const missing = [
   ...report("Core", requiredAlways),
   ...report("Object storage (MinIO / S3)", s3Keys),
-  ...report("Grow Light API (empty = skip; preferred Israeli acquirer)", growKeys),
+  ...report("Grow Light API (all three required; empty = skip)", growKeys),
   ...report("Stripe (empty = unused)", stripeKeys),
   ...report("SMTP (empty SMTP_HOST = noop mailer)", smtpKeys),
   ...report("Hermes Agent (empty = Telegram operator disabled)", hermesKeys),
+  ...report("Health probe token (optional; admin session also works)", healthKeys),
 ];
+
+if (present("GROW_USER_ID") || present("GROW_PAGE_CODE") || present("GROW_WEBHOOK_SECRET")) {
+  const growMissing = growKeys.filter((key) => !present(key));
+  if (growMissing.length) {
+    console.log(`\nWARN  Grow is partially configured; missing: ${growMissing.join(", ")}`);
+    console.log("      Grow is treated as unconfigured until all three values are set.");
+  }
+}
 
 if (present("DATABASE_URL") && process.env.DATABASE_URL.includes("-pooler") && !present("DATABASE_URL_UNPOOLED")) {
   console.log("\nWARN  DATABASE_URL is Neon pooled; set DATABASE_URL_UNPOOLED (direct host, no -pooler) for migrations.");
