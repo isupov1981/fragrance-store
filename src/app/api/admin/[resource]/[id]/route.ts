@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAdminRole, requireResourceMutation, type AdminResource } from "@/lib/auth/rbac";
 import { hasSameOrigin, requireAdminRequest } from "@/lib/auth/server";
+import { announceNewArrivalIfNeeded } from "@/lib/email/new-arrivals";
 import { auditLog } from "@/lib/security/audit";
 
 const resourceSchema = z.enum(["products", "categories", "brands", "orders", "customers", "content", "shipping"]);
@@ -38,8 +39,20 @@ export async function PATCH(
   try {
     switch (resource.data) {
       case "products": {
-        const data = z.object({ name: z.string().min(2).optional(), description: z.string().min(1).optional(), status: z.enum(["DRAFT", "ACTIVE", "ARCHIVED"]).optional(), featured: z.boolean().optional(), seoTitle: z.string().nullable().optional(), seoDescription: z.string().nullable().optional() }).parse(input);
-        return NextResponse.json({ data: await prisma.product.update({ where: { id: route.id }, data }) });
+        const data = z
+          .object({
+            name: z.string().min(2).optional(),
+            description: z.string().min(1).optional(),
+            status: z.enum(["DRAFT", "ACTIVE", "ARCHIVED"]).optional(),
+            featured: z.boolean().optional(),
+            newArrival: z.boolean().optional(),
+            seoTitle: z.string().nullable().optional(),
+            seoDescription: z.string().nullable().optional(),
+          })
+          .parse(input);
+        const updated = await prisma.product.update({ where: { id: route.id }, data });
+        await announceNewArrivalIfNeeded(updated.id).catch(console.error);
+        return NextResponse.json({ data: updated });
       }
       case "categories": {
         const data = z.object({ name: z.string().min(2).optional(), description: z.string().nullable().optional(), seoTitle: z.string().nullable().optional(), seoDescription: z.string().nullable().optional() }).parse(input);

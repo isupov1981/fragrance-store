@@ -12,6 +12,7 @@ describe("parseProductCsv", () => {
     expect(result.rows).toHaveLength(1);
     expect(result.rows[0]?.price).toBe(16800);
     expect(result.rows[0]?.featured).toBe(true);
+    expect(result.rows[0]?.newArrival).toBe(false);
   });
 
   it("reports row-level validation errors", () => {
@@ -38,6 +39,7 @@ describe("importProducts", () => {
           stock: 1,
           status: "ACTIVE",
           featured: false,
+          newArrival: false,
           brand: "",
           category: "",
           imageUrl: "",
@@ -52,6 +54,7 @@ describe("importProducts", () => {
           stock: 2,
           status: "ACTIVE",
           featured: false,
+          newArrival: false,
           brand: "",
           category: "",
           imageUrl: "",

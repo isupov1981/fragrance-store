@@ -14,7 +14,7 @@ import { ResourceForm } from "./resource-form";
 import { UploadPanel } from "./upload-panel";
 
 const sectionFieldKeys = {
-  products: ["name", "slug", "description", "sku", "price", "stock", "imageUrl"],
+  products: ["name", "slug", "description", "sku", "price", "stock", "imageUrl", "newArrival"],
   categories: ["name", "slug", "description"],
   brands: ["name", "slug", "description"],
   orders: ["number", "email", "status"],

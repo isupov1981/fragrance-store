@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { NewsletterForm } from "./newsletter-form";
+import { SocialLinks } from "./social-links";
 import type { Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { interpolate } from "@/lib/i18n/interpolate";
@@ -36,6 +37,7 @@ export function Footer({ locale }: { locale: Locale }) {
           <h2 className="mt-5 font-display text-3xl leading-tight sm:text-4xl">{dict.footer.notesTitle}</h2>
           <p className="mt-4 max-w-md text-sm leading-6 text-ivory/65">{dict.footer.notesCopy}</p>
           <NewsletterForm />
+          <SocialLinks className="mt-8" />
         </div>
         {footerGroups.map((group) => (
           <nav key={group.title} aria-label={group.title}>
@@ -52,10 +54,7 @@ export function Footer({ locale }: { locale: Locale }) {
       </div>
       <div className="shell flex flex-col gap-5 border-t border-ivory/15 py-7 text-[11px] text-ivory/50 sm:flex-row sm:items-center sm:justify-between">
         <p>{interpolate(dict.footer.rights, { year: new Date().getFullYear() })}</p>
-        <div className="flex items-center gap-6">
-          <span>{dict.footer.cities}</span>
-          <a className="font-semibold uppercase tracking-[0.15em] transition hover:text-white" href="https://instagram.com" aria-label="Instagram">IG</a>
-        </div>
+        <span>{dict.footer.cities}</span>
       </div>
     </footer>
   );

@@ -14,6 +14,7 @@ import {
 import { merchandisingCategoryDefs, isMerchCategorySlug } from "@/lib/catalog/merchandising";
 import { toSlug } from "@/lib/catalog/slug";
 import { databaseEnabled } from "@/lib/db/enabled";
+import { announceNewArrivalIfNeeded } from "@/lib/email/new-arrivals";
 
 export class AgentCatalogError extends Error {
   constructor(
@@ -128,6 +129,7 @@ export function parseAdminProductInput(input: unknown): CreateProductInput {
     descriptionHe: data.descriptionHe,
     brand: data.brand || undefined,
     category: data.category || undefined,
+    newArrival: data.newArrival,
     images: data.imageUrl ? [{ url: data.imageUrl, alt: data.name }] : [],
     variants: [
       {
@@ -192,6 +194,9 @@ export async function createDraftProduct(input: CreateProductInput) {
       include: productInclude,
     });
     return serializeProduct(full);
+  }).then(async (serialized) => {
+    await announceNewArrivalIfNeeded(serialized.id).catch(console.error);
+    return serialized;
   });
 }
 
@@ -289,6 +294,9 @@ export async function updateProduct(input: UpdateProductInput) {
       include: productInclude,
     });
     return serializeProduct(full);
+  }).then(async (serialized) => {
+    await announceNewArrivalIfNeeded(serialized.id).catch(console.error);
+    return serialized;
   });
 }
 
@@ -311,6 +319,7 @@ export async function publishProduct(input: { id?: string; slug?: string }) {
     data: { status: "ACTIVE" },
     include: productInclude,
   });
+  await announceNewArrivalIfNeeded(updated.id).catch(console.error);
   return serializeProduct(updated);
 }
 

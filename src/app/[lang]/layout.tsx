@@ -7,6 +7,8 @@ import { CartDrawer } from "@/components/cart/cart-drawer";
 import { StoreProviders } from "@/components/i18n/store-providers";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
+import { WhatsAppButton } from "@/components/layout/whatsapp-button";
+import { AccessibilityWidget } from "@/components/layout/accessibility-widget";
 import { listStoreBrands } from "@/lib/catalog/brands";
 import { getOrdersEnabled } from "@/lib/commerce";
 import { defaultCurrency, isCurrency, CURRENCY_COOKIE } from "@/lib/currency";
@@ -56,6 +58,8 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
       {children}
       <Footer locale={lang} />
       {ordersEnabled ? <CartDrawer /> : null}
+      <WhatsAppButton label={dict.whatsapp.label} message={dict.whatsapp.message} />
+      <AccessibilityWidget />
       <ConsentManager />
     </StoreProviders>
   );

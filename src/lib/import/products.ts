@@ -19,6 +19,7 @@ export const productCsvRowSchema = z.object({
   stock: z.coerce.number().int().min(0).max(1_000_000),
   status: z.enum(["DRAFT", "ACTIVE", "ARCHIVED"]).default("DRAFT"),
   featured: booleanFromCsv.default(false),
+  newArrival: booleanFromCsv.default(false),
   brand: z.string().trim().max(120).optional().default(""),
   category: z.string().trim().max(120).optional().default(""),
   imageUrl: z.union([z.url(), z.literal("")]).optional().default(""),

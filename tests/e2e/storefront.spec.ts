@@ -72,3 +72,33 @@ test("cancelled payment returns the customer to a recovery page", async ({ page 
   await page.getByRole("link", { name: /return to checkout/i }).click();
   await expect(page).toHaveURL(/\/en\/checkout/);
 });
+
+test("whatsapp button opens a localized chat link", async ({ page }) => {
+  await page.goto("/en", { waitUntil: "domcontentloaded" });
+  const enButton = page.getByTestId("whatsapp-button");
+  await expect(enButton).toBeVisible();
+  await expect(enButton).toHaveAttribute("aria-label", "Chat with us on WhatsApp");
+  const enHref = await enButton.getAttribute("href");
+  expect(enHref).toMatch(/^https:\/\/wa\.me\/972535324510\?text=/);
+  expect(decodeURIComponent(enHref ?? "")).toContain(
+    "Hello! I'd like to ask about a fragrance from The Perfume Room.",
+  );
+
+  await page.goto("/ru", { waitUntil: "domcontentloaded" });
+  const ruButton = page.getByTestId("whatsapp-button");
+  await expect(ruButton).toHaveAttribute("aria-label", "Написать в WhatsApp");
+  const ruHref = await ruButton.getAttribute("href");
+  expect(decodeURIComponent(ruHref ?? "")).toContain(
+    "Здравствуйте! Хочу спросить об аромате из The Perfume Room.",
+  );
+});
+
+test("accessibility tools panel can open and toggle a setting", async ({ page }) => {
+  await page.goto("/en", { waitUntil: "domcontentloaded" });
+  await page.getByTestId("accessibility-button").click();
+  await expect(page.getByRole("dialog", { name: /accessibility tools/i })).toBeVisible();
+  await page.getByRole("button", { name: /block animations/i }).click();
+  await expect(page.locator("html")).toHaveClass(/a11y-reduce-motion/);
+  await page.getByRole("button", { name: /reset accessibility/i }).click();
+  await expect(page.locator("html")).not.toHaveClass(/a11y-reduce-motion/);
+});

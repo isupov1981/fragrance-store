@@ -5,25 +5,29 @@ import { ArrowRight } from "lucide-react";
 import { useI18n } from "@/components/i18n/i18n-provider";
 
 export function NewsletterForm() {
-  const { dict } = useI18n();
+  const { locale, dict } = useI18n();
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(false);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitting(true);
+    setError(false);
     const form = event.currentTarget;
     const email = String(new FormData(form).get("email") ?? "");
     const response = await fetch("/api/newsletter", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email, locale }),
     });
     setSubmitting(false);
     if (response.ok) {
       form.reset();
       setSent(true);
+      return;
     }
+    setError(true);
   }
 
   if (sent) {
@@ -45,6 +49,11 @@ export function NewsletterForm() {
       <button className="grid size-11 place-items-center transition hover:text-bronze rtl:rotate-180" type="submit" disabled={submitting} aria-label={dict.footer.subscribe}>
         <ArrowRight aria-hidden="true" size={19} />
       </button>
+      {error ? (
+        <span className="sr-only" role="alert">
+          {dict.footer.subscribe}
+        </span>
+      ) : null}
     </form>
   );
 }

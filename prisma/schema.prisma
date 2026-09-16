@@ -63,9 +63,10 @@ model Product {
   descriptionHe  String?
   excerpt        String?
   status         ProductStatus     @default(DRAFT)
-  featured       Boolean           @default(false)
-  newArrival     Boolean           @default(false)
-  concentration  String?
+  featured              Boolean           @default(false)
+  newArrival            Boolean           @default(false)
+  newArrivalAnnouncedAt DateTime?
+  concentration         String?
   notes          Json?
   seoTitle       String?
   seoDescription String?
@@ -232,4 +233,16 @@ model RateLimitBucket {
   count     Int      @default(0)
   resetAt   DateTime
   updatedAt DateTime @updatedAt
+}
+
+/// Customers subscribed to new-arrival emails from the storefront footer.
+model NewsletterSubscriber {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  locale           String    @default("en")
+  unsubscribeToken String    @unique @default(cuid())
+  createdAt        DateTime  @default(now())
+  unsubscribedAt   DateTime?
+
+  @@index([unsubscribedAt])
 }

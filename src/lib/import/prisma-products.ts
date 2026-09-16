@@ -1,13 +1,14 @@
 import type { Prisma } from "@prisma/client";
 import type { ProductImportRepository, ProductImportRow } from "./products";
 import { toSlug } from "../catalog/slug";
+import { announceNewArrivalIfNeeded } from "@/lib/email/new-arrivals";
 
 export async function createPrismaProductRepository(): Promise<ProductImportRepository> {
   const { prisma } = await import("../db/prisma");
 
   return {
     async upsert(row: ProductImportRow) {
-      return prisma.$transaction(async (tx: Prisma.TransactionClient): Promise<"created" | "updated"> => {
+      const result = await prisma.$transaction(async (tx: Prisma.TransactionClient): Promise<{ outcome: "created" | "updated"; productId: string }> => {
         const existing = await tx.productVariant.findUnique({
           where: { sku: row.sku },
           select: { productId: true },
@@ -34,6 +35,7 @@ export async function createPrismaProductRepository(): Promise<ProductImportRepo
             description: row.description,
             status: row.status,
             featured: row.featured,
+            newArrival: row.newArrival,
             brandId: brand?.id ?? null,
           },
           create: {
@@ -42,6 +44,7 @@ export async function createPrismaProductRepository(): Promise<ProductImportRepo
             description: row.description,
             status: row.status,
             featured: row.featured,
+            newArrival: row.newArrival,
             brandId: brand?.id,
           },
         });
@@ -88,8 +91,11 @@ export async function createPrismaProductRepository(): Promise<ProductImportRepo
             create: { productId: product.id, categoryId: category.id },
           });
         }
-        return existing ? "updated" : "created";
+        return { outcome: existing ? "updated" : "created", productId: product.id };
       });
+
+      await announceNewArrivalIfNeeded(result.productId).catch(console.error);
+      return result.outcome;
     },
   };
 }

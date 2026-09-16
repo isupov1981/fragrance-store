@@ -67,6 +67,7 @@ const en = {
         price: "Price in agorot (ILS)",
         stock: "Stock",
         imageUrl: "Image URL",
+        newArrival: "Mark as new arrival (emails subscribers when published)",
       },
     },
     categories: {
@@ -236,6 +237,7 @@ const he: typeof en = {
         price: "מחיר באגורות (ILS)",
         stock: "מלאי",
         imageUrl: "כתובת תמונה",
+        newArrival: "סמנו כחדש באתר (שולח מייל למנויים כשמפורסם)",
       },
     },
     categories: {

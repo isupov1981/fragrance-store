@@ -4,6 +4,8 @@ import { FormEvent, useState } from "react";
 
 import { useAdminI18n } from "@/components/admin/admin-i18n-provider";
 
+const checkboxFields = new Set(["newArrival"]);
+
 export function ResourceForm({
   section,
   fields,
@@ -20,7 +22,13 @@ export function ResourceForm({
     event.preventDefault();
     setSaving(true);
     setMessage(undefined);
-    const values = Object.fromEntries(new FormData(event.currentTarget));
+    const formData = new FormData(event.currentTarget);
+    const values: Record<string, FormDataEntryValue | boolean> = Object.fromEntries(formData);
+    for (const key of checkboxFields) {
+      if (fields.some(([name]) => name === key)) {
+        values[key] = formData.get(key) === "on";
+      }
+    }
     const response = await fetch(`/api/admin/${section}`, {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -38,19 +46,26 @@ export function ResourceForm({
 
   return (
     <form className="grid gap-4 md:grid-cols-3" onSubmit={submit}>
-      {fields.map(([name, label]) => (
-        <div key={name}>
-          <label htmlFor={`${section}-${name}`} className="mb-1 block text-sm font-medium">
-            {label}
+      {fields.map(([name, label]) =>
+        checkboxFields.has(name) ? (
+          <label key={name} className="flex items-start gap-3 md:col-span-3" htmlFor={`${section}-${name}`}>
+            <input id={`${section}-${name}`} name={name} type="checkbox" className="mt-1 size-4" />
+            <span className="text-sm font-medium">{label}</span>
           </label>
-          <input
-            id={`${section}-${name}`}
-            name={name}
-            required={name !== "imageUrl" && name !== "phone" && name !== "description"}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2"
-          />
-        </div>
-      ))}
+        ) : (
+          <div key={name}>
+            <label htmlFor={`${section}-${name}`} className="mb-1 block text-sm font-medium">
+              {label}
+            </label>
+            <input
+              id={`${section}-${name}`}
+              name={name}
+              required={name !== "imageUrl" && name !== "phone" && name !== "description"}
+              className="w-full rounded-lg border border-slate-300 px-3 py-2"
+            />
+          </div>
+        ),
+      )}
       <div className="md:col-span-3">
         <button
           type="submit"
