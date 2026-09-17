@@ -134,11 +134,14 @@ summary::-webkit-details-marker {
   color: var(--ivory);
 }
 
-.icon-button {
-  display: grid;
-  width: 2.6rem;
-  height: 2.6rem;
-  place-items: center;
+@layer components {
+  /* Keep in @layer so Tailwind display utilities (e.g. xl:hidden) can override. */
+  .icon-button {
+    display: grid;
+    width: 2.6rem;
+    height: 2.6rem;
+    place-items: center;
+  }
 }
 
 .nav-link {
