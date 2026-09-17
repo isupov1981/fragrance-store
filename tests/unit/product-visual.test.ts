@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 
+import { sanitizeImageBase64 } from "@/lib/marketing/gemini-image";
 import {
   buildBeautifyPrompt,
   buildFlyerPrompt,
@@ -12,6 +13,17 @@ const originalKey = process.env.GEMINI_API_KEY;
 afterEach(() => {
   if (originalKey === undefined) delete process.env.GEMINI_API_KEY;
   else process.env.GEMINI_API_KEY = originalKey;
+});
+
+describe("sanitizeImageBase64", () => {
+  it("strips data-URI and whitespace", () => {
+    const raw = "data:image/jpeg;base64,YWJj\nZGVm";
+    expect(sanitizeImageBase64(raw)).toBe("YWJjZGVm");
+  });
+
+  it("rejects truncated junk", () => {
+    expect(() => sanitizeImageBase64("/9j/4AAQ...truncated")).toThrow(/Invalid base64/);
+  });
 });
 
 describe("product visual prompts", () => {
@@ -56,5 +68,13 @@ describe("generateProductVisual config", () => {
         contentType: "image/jpeg",
       }),
     ).rejects.toMatchObject({ status: 503, name: "GeminiImageError" });
+  });
+
+  it("returns 400 when neither imageUrl nor data is provided", async () => {
+    process.env.GEMINI_API_KEY = "test-key-not-used";
+    await expect(generateProductVisual({ mode: "flyer" })).rejects.toMatchObject({
+      status: 400,
+      name: "GeminiImageError",
+    });
   });
 });

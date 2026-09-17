@@ -134,14 +134,21 @@ export const agentTools = [
   {
     name: "generate_product_visual",
     description:
-      "Beautify a perfume photo or compose a story/flyer with Gemini. Returns a stored URL — do not auto-attach or publish until the admin confirms. Never invent prices for flyer mode.",
+      "Beautify a perfume photo or compose a story/flyer with Gemini. Prefer imageUrl from upload_product_image (do NOT pass large Telegram photo base64 — it gets truncated). Returns a stored URL — do not auto-attach or publish until the admin confirms. Never invent prices for flyer mode.",
     inputSchema: {
       type: "object",
-      required: ["data", "mode"],
+      required: ["mode"],
       properties: {
-        data: { type: "string", description: "Raw image bytes encoded as base64" },
-        contentType: { type: "string", description: "image/jpeg, image/png or image/webp" },
         mode: { type: "string", enum: ["beautify", "flyer"] },
+        imageUrl: {
+          type: "string",
+          description: "Preferred. Public URL returned by upload_product_image (store/S3 media).",
+        },
+        data: {
+          type: "string",
+          description: "Fallback only for tiny images. Raw base64 — avoid for Telegram photos.",
+        },
+        contentType: { type: "string", description: "Used with data: image/jpeg, image/png or image/webp" },
         productName: { type: "string" },
         brand: { type: "string" },
         priceLabel: {
@@ -196,14 +203,18 @@ export async function dispatchAgentTool(name: string, args: unknown) {
     case "generate_product_visual": {
       const payload = z
         .object({
-          data: z.string().min(1),
-          contentType: z.string().default("image/jpeg"),
           mode: z.enum(["beautify", "flyer"]),
+          imageUrl: z.string().url().optional(),
+          data: z.string().min(1).optional(),
+          contentType: z.string().default("image/jpeg"),
           productName: z.string().optional(),
           brand: z.string().optional(),
           priceLabel: z.string().optional(),
           language: z.enum(["he", "ru", "en"]).optional(),
           styleHint: z.string().max(200).optional(),
+        })
+        .refine((v) => Boolean(v.imageUrl || v.data), {
+          message: "Provide imageUrl (preferred) or data",
         })
         .parse(args ?? {});
       return generateProductVisual(payload);

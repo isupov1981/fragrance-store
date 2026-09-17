@@ -18,6 +18,18 @@ function imageModel() {
   return process.env.GEMINI_IMAGE_MODEL?.trim() || "gemini-2.5-flash-image";
 }
 
+/** Strip data-URI prefix / whitespace so Gemini TYPE_BYTES accepts the payload. */
+export function sanitizeImageBase64(raw: string) {
+  let value = raw.trim();
+  const dataUri = /^data:image\/[a-zA-Z0-9.+-]+;base64,([\s\S]+)$/.exec(value);
+  if (dataUri) value = dataUri[1];
+  value = value.replace(/\s+/g, "");
+  if (!value || !/^[A-Za-z0-9+/]+=*$/.test(value)) {
+    throw new GeminiImageError("Invalid base64 image data", 400);
+  }
+  return value;
+}
+
 export async function editProductImage(input: {
   imageBase64: string;
   mimeType: string;
@@ -27,6 +39,7 @@ export async function editProductImage(input: {
     throw new GeminiImageError("Gemini image API is not configured (GEMINI_API_KEY)", 503);
   }
 
+  const imageBase64 = sanitizeImageBase64(input.imageBase64);
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
   let response;
@@ -40,7 +53,7 @@ export async function editProductImage(input: {
             {
               inlineData: {
                 mimeType: input.mimeType,
-                data: input.imageBase64,
+                data: imageBase64,
               },
             },
             { text: input.prompt },

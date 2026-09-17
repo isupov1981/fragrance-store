@@ -1,6 +1,11 @@
 import sharp from "sharp";
 
-import { editProductImage, GeminiImageError, isGeminiConfigured } from "@/lib/marketing/gemini-image";
+import {
+  editProductImage,
+  GeminiImageError,
+  isGeminiConfigured,
+  sanitizeImageBase64,
+} from "@/lib/marketing/gemini-image";
 import {
   ALLOWED_IMAGE_TYPES,
   assertImageUpload,
@@ -11,16 +16,20 @@ import {
   type AllowedImageType,
 } from "@/lib/storage";
 
-export { GeminiImageError, isGeminiConfigured };
+export { GeminiImageError, isGeminiConfigured, sanitizeImageBase64 };
 
 export type VisualMode = "beautify" | "flyer";
 export type VisualLanguage = "he" | "ru" | "en";
 
 const MAX_EDGE_PX = 1600;
+const FETCH_TIMEOUT_MS = 30_000;
 
 export type GenerateProductVisualInput = {
   mode: VisualMode;
-  data: string;
+  /** Preferred: public URL from upload_product_image (avoids truncated MCP base64). */
+  imageUrl?: string;
+  /** Fallback only for tiny images — prefer imageUrl. */
+  data?: string;
   contentType?: string;
   productName?: string;
   brand?: string;
@@ -83,6 +92,109 @@ export function buildFlyerPrompt(input: {
     .join(" ");
 }
 
+function allowedFetchOrigins(): Set<string> {
+  const origins = new Set<string>();
+  const site = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (site) {
+    try {
+      origins.add(new URL(site).origin);
+    } catch {
+      /* ignore */
+    }
+  }
+  const s3 = process.env.S3_PUBLIC_BASE_URL?.trim();
+  if (s3) {
+    try {
+      origins.add(new URL(s3).origin);
+    } catch {
+      /* ignore */
+    }
+  }
+  origins.add("http://localhost:3000");
+  origins.add("http://127.0.0.1:3000");
+  return origins;
+}
+
+function sniffContentType(buffer: Buffer, headerType: string | null): AllowedImageType {
+  if (headerType && isAllowedImageType(headerType.split(";")[0].trim())) {
+    return headerType.split(";")[0].trim() as AllowedImageType;
+  }
+  if (buffer[0] === 0xff && buffer[1] === 0xd8) return "image/jpeg";
+  if (buffer[0] === 0x89 && buffer[1] === 0x50) return "image/png";
+  if (buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46) return "image/webp";
+  throw new GeminiImageError("Fetched file is not a JPEG, PNG or WebP image", 415);
+}
+
+async function fetchSourceImage(imageUrl: string): Promise<{ buffer: Buffer; contentType: AllowedImageType }> {
+  let url: URL;
+  try {
+    url = new URL(imageUrl);
+  } catch {
+    throw new GeminiImageError("Invalid imageUrl", 400);
+  }
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    throw new GeminiImageError("imageUrl must be http(s)", 400);
+  }
+  const allowed = allowedFetchOrigins();
+  if (!allowed.has(url.origin)) {
+    throw new GeminiImageError("imageUrl host is not an allowed store media origin", 400);
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  let response: Response;
+  try {
+    response = await fetch(url.toString(), {
+      signal: controller.signal,
+      redirect: "follow",
+      headers: { Accept: "image/jpeg,image/png,image/webp,*/*" },
+    });
+  } catch {
+    throw new GeminiImageError("Failed to fetch imageUrl", 502);
+  } finally {
+    clearTimeout(timer);
+  }
+
+  if (!response.ok) {
+    throw new GeminiImageError(`Failed to fetch imageUrl (${response.status})`, 502);
+  }
+
+  const arrayBuffer = await response.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+  if (buffer.byteLength <= 0 || buffer.byteLength > MAX_UPLOAD_BYTES) {
+    throw new GeminiImageError("Fetched image must be between 1 byte and 5 MB", 413);
+  }
+  const contentType = sniffContentType(buffer, response.headers.get("content-type"));
+  return { buffer, contentType };
+}
+
+async function resolveSourceImage(input: GenerateProductVisualInput): Promise<{
+  buffer: Buffer;
+  contentType: AllowedImageType;
+  imageBase64: string;
+}> {
+  if (input.imageUrl?.trim()) {
+    const fetched = await fetchSourceImage(input.imageUrl.trim());
+    return {
+      ...fetched,
+      imageBase64: fetched.buffer.toString("base64"),
+    };
+  }
+
+  if (input.data?.trim()) {
+    const imageBase64 = sanitizeImageBase64(input.data);
+    const contentType = (input.contentType || "image/jpeg") as string;
+    if (!isAllowedImageType(contentType)) {
+      throw new GeminiImageError("Only JPEG, PNG and WebP images are allowed", 415);
+    }
+    const buffer = Buffer.from(imageBase64, "base64");
+    assertImageUpload({ type: contentType, size: buffer.byteLength });
+    return { buffer, contentType, imageBase64 };
+  }
+
+  throw new GeminiImageError("Provide imageUrl (preferred) or data (base64)", 400);
+}
+
 async function normalizeForStore(buffer: Buffer, preferredType: string) {
   let pipeline = sharp(buffer).rotate().resize({
     width: MAX_EDGE_PX,
@@ -104,9 +216,7 @@ async function normalizeForStore(buffer: Buffer, preferredType: string) {
 
   let out = await pipeline.toBuffer();
   if (out.byteLength > MAX_UPLOAD_BYTES) {
-    out = await sharp(out)
-      .jpeg({ quality: 75, mozjpeg: true })
-      .toBuffer();
+    out = await sharp(out).jpeg({ quality: 75, mozjpeg: true }).toBuffer();
     contentType = "image/jpeg";
   }
   if (out.byteLength > MAX_UPLOAD_BYTES) {
@@ -120,13 +230,7 @@ export async function generateProductVisual(input: GenerateProductVisualInput) {
     throw new GeminiImageError("Gemini image API is not configured (GEMINI_API_KEY)", 503);
   }
 
-  const contentType = input.contentType || "image/jpeg";
-  if (!isAllowedImageType(contentType)) {
-    throw new GeminiImageError("Only JPEG, PNG and WebP images are allowed", 415);
-  }
-
-  const body = Buffer.from(input.data, "base64");
-  assertImageUpload({ type: contentType, size: body.byteLength });
+  const source = await resolveSourceImage(input);
 
   const prompt =
     input.mode === "flyer"
@@ -140,8 +244,8 @@ export async function generateProductVisual(input: GenerateProductVisualInput) {
       : buildBeautifyPrompt({ styleHint: input.styleHint });
 
   const edited = await editProductImage({
-    imageBase64: input.data,
-    mimeType: contentType,
+    imageBase64: source.imageBase64,
+    mimeType: source.contentType,
     prompt,
   });
 
@@ -162,6 +266,7 @@ export async function generateProductVisual(input: GenerateProductVisualInput) {
     key: stored.key,
     mode: input.mode,
     contentType: normalized.contentType,
+    source: input.imageUrl?.trim() ? "imageUrl" : "data",
   };
 }
 

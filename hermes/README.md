@@ -93,7 +93,9 @@ See [cron.example.json](cron.example.json).
 - «Что по заказам за сутки?»
 - «Что посоветуешь?»
 
-Beautify and flyer use `generate_product_visual` (Gemini on the store). Attach the
-returned URL to a product only after you confirm; products stay **draft** until you
-explicitly publish. Live pages only show `ACTIVE` rows from Postgres. Merchandising
-tags for the Categories menu: `back-in-stock`, `testers-refills`, `additional-products`.
+Beautify and flyer use `generate_product_visual` (Gemini on the store). Always
+`upload_product_image` first, then pass the returned URL as `imageUrl` — do not send
+large Telegram photos as tool base64. Attach the result only after you confirm;
+products stay **draft** until you explicitly publish. Live pages only show `ACTIVE`
+rows from Postgres. Merchandising tags for the Categories menu:
+`back-in-stock`, `testers-refills`, `additional-products`.

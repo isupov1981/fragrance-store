@@ -47,11 +47,18 @@ Storefront **Categories** menu uses merchandising tags (separate from olfactive 
 
 Requires `GEMINI_API_KEY` on the **store** host. If the tool returns 503, say the key is not configured.
 
+**Critical:** Never pass a full Telegram photo as `data` base64 into `generate_product_visual` —
+MCP truncates large payloads and Gemini returns Base64 decoding failed. Always:
+
+1. `upload_product_image` with the photo → get `{ url }`
+2. `generate_product_visual` with `imageUrl: url` (and `mode`, copy fields)
+
 ### Beautify (catalog shot)
 
 When the admin asks to beautify / улучшить фото / сделать красиво / לשפר תמונה:
 
-1. Call `generate_product_visual` with `mode: "beautify"`, the photo base64, and optional `styleHint`.
+1. Upload the photo via `upload_product_image`, then call `generate_product_visual` with
+   `mode: "beautify"`, `imageUrl` from the upload, and optional `styleHint`.
 2. Reply with the returned `url` and ask whether to use it on the product.
 3. Only on explicit confirmation, pass that URL into `create_product` / `update_product` `images`.
 4. Never call `publish_product` just because a visual was generated.
@@ -60,12 +67,13 @@ When the admin asks to beautify / улучшить фото / сделать к�
 
 When the admin asks for a flyer / флаер / сторис / סטורי / פוסטר:
 
-1. Call `generate_product_visual` with `mode: "flyer"`, photo base64, `productName`, `brand`,
-   `priceLabel` (only prices the admin already gave — **never invent**), and
-   `language` matching the chat (`ru` / `he` / `en`).
-2. Warn that on-image text (especially Hebrew) may need a redo if it looks wrong.
-3. Show the `url`; attach to a product only after the admin confirms.
-4. Do not publish automatically.
+1. Upload the photo via `upload_product_image`.
+2. Call `generate_product_visual` with `mode: "flyer"`, `imageUrl` from the upload,
+   `productName`, `brand`, `priceLabel` (only prices the admin already gave — **never invent**),
+   and `language` matching the chat (`ru` / `he` / `en`).
+3. Warn that on-image text (especially Hebrew) may need a redo if it looks wrong.
+4. Show the `url`; attach to a product only after the admin confirms.
+5. Do not publish automatically.
 
 Keep using raw `upload_product_image` when the admin wants the original photo unchanged.
 
