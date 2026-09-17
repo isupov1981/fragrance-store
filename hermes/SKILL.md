@@ -48,45 +48,49 @@ Storefront **Categories** menu uses merchandising tags (separate from olfactive 
 Telegram photos arrive as a **local file path** in the message
 (`[Image attached at: /root/.hermes/profiles/the-perfume-room/cache/images/img_….jpg]`).
 
+When the admin says **сделай флаер / beautify / сделай красиво / флаер без текста**
+(with a photo), **immediately** run the terminal script below — do not wait for them
+to name `generate-visual-from-file`.
+
+### Mode choice
+
+| Admin intent | `--mode` |
+|---|---|
+| флаер, красивое фото, без текста, только фото, catalog shot | **`beautify`** (default) |
+| флаер с названием / ценой / слоганом on the image | **`flyer`** |
+
+Default for bare «сделай флаер» = **`beautify`** (photo only, no overlays).
+
 ### Hard bans (do not violate)
 
 - **Never** put photo bytes / base64 into MCP (`upload_product_image` / `generate_product_visual`).
 - **Never** use `execute_code` to base64-encode or upload Telegram photos.
-- **Never** tell the admin a flyer is ready if `visual.url` is missing or the file is under ~8 KB
-  (gray stub). Only show `visual.url` from the script JSON.
+- **Never** tell the admin a visual is ready if `visual.url` is missing or under ~8 KB
+  (gray stub). Only show `visual.url` / `flyerUrl` from the script JSON.
 - Truncated base64 produces a **gray square** — that is a failure, not a flyer.
+- Do not send `upload.url` (`products/`) as the finished visual.
 
 Requires `GEMINI_API_KEY` on the **store** host. Profile env must have
 `FRAGRANCE_API_URL` and `HERMES_AGENT_TOKEN`.
 
-### Beautify or flyer — only this path
-
-1. Take the absolute path from `Image attached at: …` (must exist under `cache/images/`).
-2. Run with the **terminal** tool (not execute_code):
+### Run this (terminal tool only)
 
 ```bash
 set -a && source ~/.hermes/profiles/the-perfume-room/.env && set +a
 node ~/.hermes/profiles/the-perfume-room/bin/generate-visual-from-file.mjs \
   --file "/ABS/PATH/FROM/IMAGE_ATTACHED.jpg" \
-  --mode flyer \
-  --language ru \
-  --productName "Bleu de Chanel" \
-  --brand "Chanel" \
-  --priceLabel "from ₪32"
+  --mode beautify
 ```
 
-For catalog beautify only, use `--mode beautify` (price/name optional).
+Only if the admin asked for text on the image, use `--mode flyer` plus
+`--productName`, `--brand`, `--priceLabel`, `--language`.
 
-3. Parse stdout JSON. Reply with **only** `visual.url` (path contains `marketing/`).
-   Do not send `upload.url` (`products/`) as the flyer.
-4. Warn that flyer text (especially Hebrew) may need a redo.
-5. Attach to a product only after explicit confirmation via `create_product` / `update_product`.
-6. Never invent prices. Never publish automatically.
+1. Parse stdout JSON. Reply with **only** `visual.url` or `flyerUrl` (path contains `marketing/`).
+2. For `flyer` mode, warn that on-image text may need a redo.
+3. Attach to a product only after explicit confirmation.
+4. Never invent prices. Never publish automatically.
 
 If the script exits non-zero, say generation failed and do not invent a success link.
-
-If the script is missing, copy it from the store repo `hermes/generate-visual-from-file.mjs`
-(and `upload-local-image.mjs`) into `~/.hermes/profiles/the-perfume-room/bin/`.
 
 ## Daily briefing
 

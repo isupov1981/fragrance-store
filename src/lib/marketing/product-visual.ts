@@ -43,12 +43,14 @@ export type GenerateProductVisualInput = {
 export function buildBeautifyPrompt(opts?: { styleHint?: string }) {
   const hint = opts?.styleHint?.trim();
   return [
-    "Edit this perfume bottle product photo into a boutique catalog shot.",
+    "Edit this perfume bottle product photo into a boutique catalog / Instagram visual.",
     "Replace the background with a soft luxury scene (subtle marble, velvet, or muted gradient).",
     "Improve lighting gently — soft highlights on glass, natural reflections.",
-    "CRITICAL: Preserve the bottle silhouette, glass color, cap, and all label text exactly. Do not invent or distort branding.",
-    "No watermarks, no extra logos, no floating badges, no UI chrome.",
-    "Square-friendly product composition with the bottle centered.",
+    "CRITICAL: Preserve the bottle silhouette, glass color, cap, and all label text on the bottle exactly. Do not invent or distort branding.",
+    "NO on-image typography: no headlines, slogans, prices, store name overlays, watermarks, stickers, or captions.",
+    "The output must be photo-only — the bottle is the only subject.",
+    "No floating badges, no UI chrome.",
+    "Square-friendly composition with the bottle centered.",
     hint ? `Style hint: ${hint}` : "",
   ]
     .filter(Boolean)

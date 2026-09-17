@@ -27,9 +27,10 @@ describe("sanitizeImageBase64", () => {
 });
 
 describe("product visual prompts", () => {
-  it("beautify prompt preserves bottle fidelity rules", () => {
+  it("beautify prompt preserves bottle fidelity and forbids overlays", () => {
     const prompt = buildBeautifyPrompt({ styleHint: "dark amber" });
     expect(prompt).toMatch(/Preserve the bottle silhouette/i);
+    expect(prompt).toMatch(/NO on-image typography/i);
     expect(prompt).toMatch(/dark amber/);
   });
 
