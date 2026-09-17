@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { MAX_UPLOAD_BYTES, assertImageUpload, createObjectKey, resolveStoredPath, StorageError } from "@/lib/storage/validate";
+import {
+  MAX_UPLOAD_BYTES,
+  assertImageUpload,
+  createMarketingObjectKey,
+  createObjectKey,
+  resolveStoredPath,
+  StorageError,
+} from "@/lib/storage/validate";
 
 describe("assertImageUpload", () => {
   it("accepts a jpeg under the size cap", () => {
@@ -16,6 +23,11 @@ describe("createObjectKey", () => {
   it("uses a dated product prefix and the mime extension", () => {
     const key = createObjectKey("image/webp", new Date("2026-09-13T00:00:00.000Z"), "id-1");
     expect(key).toBe("products/2026-09-13/id-1.webp");
+  });
+
+  it("createMarketingObjectKey uses marketing prefix", () => {
+    const key = createMarketingObjectKey("image/jpeg", new Date("2026-09-13T00:00:00.000Z"), "id-2");
+    expect(key).toBe("marketing/2026-09-13/id-2.jpg");
   });
 });
 

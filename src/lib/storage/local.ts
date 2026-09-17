@@ -20,8 +20,13 @@ export function absoluteUploadPath(key: string) {
   return absolute;
 }
 
-export async function putLocalObject(input: { body: Buffer; contentType: string; origin: string }) {
-  const key = createObjectKey(input.contentType);
+export async function putLocalObject(input: {
+  body: Buffer;
+  contentType: string;
+  origin: string;
+  key?: string;
+}) {
+  const key = input.key ?? createObjectKey(input.contentType);
   const absolute = absoluteUploadPath(key);
   await mkdir(path.dirname(absolute), { recursive: true });
   await writeFile(absolute, input.body);

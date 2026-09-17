@@ -43,6 +43,32 @@ Storefront **Categories** menu uses merchandising tags (separate from olfactive 
 4. After `publish_product`, the live URLs are `/he/products/{slug}`, `/en/products/{slug}`,
    `/ru/products/{slug}`.
 
+## Product visuals (Gemini)
+
+Requires `GEMINI_API_KEY` on the **store** host. If the tool returns 503, say the key is not configured.
+
+### Beautify (catalog shot)
+
+When the admin asks to beautify / улучшить фото / сделать красиво / לשפר תמונה:
+
+1. Call `generate_product_visual` with `mode: "beautify"`, the photo base64, and optional `styleHint`.
+2. Reply with the returned `url` and ask whether to use it on the product.
+3. Only on explicit confirmation, pass that URL into `create_product` / `update_product` `images`.
+4. Never call `publish_product` just because a visual was generated.
+
+### Flyer / story
+
+When the admin asks for a flyer / флаер / сторис / סטורי / פוסטר:
+
+1. Call `generate_product_visual` with `mode: "flyer"`, photo base64, `productName`, `brand`,
+   `priceLabel` (only prices the admin already gave — **never invent**), and
+   `language` matching the chat (`ru` / `he` / `en`).
+2. Warn that on-image text (especially Hebrew) may need a redo if it looks wrong.
+3. Show the `url`; attach to a product only after the admin confirms.
+4. Do not publish automatically.
+
+Keep using raw `upload_product_image` when the admin wants the original photo unchanged.
+
 ## Daily briefing
 
 When asked for a report, or when a cron job runs, call `get_daily_report` and

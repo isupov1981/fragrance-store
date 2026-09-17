@@ -120,9 +120,10 @@ Without a payment provider, `/api/admin/health` shows `"payments":"demo"`. Order
 ### 7. Hermes agent (optional)
 
 - Set `HERMES_AGENT_TOKEN` (24+ chars) on Hostinger.
+- For beautify/flyer: set `GEMINI_API_KEY` (and optionally `GEMINI_IMAGE_MODEL`) on Hostinger — the store runs Gemini, not the Hermes VPS.
 - Run Hermes on a **separate host/VPS** with profile **`the-perfume-room`** (not the Hostinger Node app).
 - Point that profile at `https://parfums.cloud/api/agent/mcp` (Bearer same token).
-- `/api/admin/health` → `hermesAgent: "configured"`, `service: "the-perfume-room"`.
+- `/api/admin/health` → `hermesAgent: "configured"`, `geminiImage: "configured"` when the key is set, `service: "the-perfume-room"`.
 - Setup details: [`hermes/README.md`](../hermes/README.md).
 
 ---

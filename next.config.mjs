@@ -42,7 +42,7 @@ if (process.env.NODE_ENV === "production") {
 
 const nextConfig = {
   output: "standalone",
-  serverExternalPackages: ["@aws-sdk/client-s3", "@prisma/client", "sharp"],
+  serverExternalPackages: ["@aws-sdk/client-s3", "@prisma/client", "sharp", "@google/genai"],
   outputFileTracingIncludes: {
     "/*": ["./node_modules/.prisma/client/**/*", "./node_modules/@prisma/client/**/*"],
   },

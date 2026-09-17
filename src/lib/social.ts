@@ -8,7 +8,7 @@ const defaults = {
   instagram: "https://www.instagram.com/",
   facebook: "https://www.facebook.com/",
   youtube: "https://www.youtube.com/",
-  tiktok: "https://www.tiktok.com/",
+  tiktok: "https://vt.tiktok.com/ZSqsLVEJf",
 } as const;
 
 function socialUrl(envValue: string | undefined, fallback: string) {

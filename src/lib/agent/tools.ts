@@ -15,6 +15,10 @@ import {
   updateProductInputSchema,
 } from "@/lib/agent/schema";
 import { buildDailyBriefing, getDailyReport, getRecommendations, AgentReportError } from "@/lib/agent/reports";
+import {
+  generateProductVisual,
+  GeminiImageError,
+} from "@/lib/marketing/product-visual";
 import { StorageError, storeImage } from "@/lib/storage";
 
 export const agentTools = [
@@ -128,6 +132,28 @@ export const agentTools = [
     },
   },
   {
+    name: "generate_product_visual",
+    description:
+      "Beautify a perfume photo or compose a story/flyer with Gemini. Returns a stored URL — do not auto-attach or publish until the admin confirms. Never invent prices for flyer mode.",
+    inputSchema: {
+      type: "object",
+      required: ["data", "mode"],
+      properties: {
+        data: { type: "string", description: "Raw image bytes encoded as base64" },
+        contentType: { type: "string", description: "image/jpeg, image/png or image/webp" },
+        mode: { type: "string", enum: ["beautify", "flyer"] },
+        productName: { type: "string" },
+        brand: { type: "string" },
+        priceLabel: {
+          type: "string",
+          description: "Human price text already known, e.g. ₪32–₪219 — never invent",
+        },
+        language: { type: "string", enum: ["he", "ru", "en"] },
+        styleHint: { type: "string", description: "Optional mood, e.g. dark amber, floral soft" },
+      },
+    },
+  },
+  {
     name: "get_daily_report",
     description: "Orders, revenue, drafts and low stock for the last 24 hours.",
     inputSchema: { type: "object", properties: {} },
@@ -167,6 +193,21 @@ export async function dispatchAgentTool(name: string, args: unknown) {
         origin,
       });
     }
+    case "generate_product_visual": {
+      const payload = z
+        .object({
+          data: z.string().min(1),
+          contentType: z.string().default("image/jpeg"),
+          mode: z.enum(["beautify", "flyer"]),
+          productName: z.string().optional(),
+          brand: z.string().optional(),
+          priceLabel: z.string().optional(),
+          language: z.enum(["he", "ru", "en"]).optional(),
+          styleHint: z.string().max(200).optional(),
+        })
+        .parse(args ?? {});
+      return generateProductVisual(payload);
+    }
     case "get_daily_report": {
       const report = await getDailyReport();
       const recs = await getRecommendations();
@@ -187,6 +228,9 @@ export function assertAgentRequest(request: Request) {
 
 export function jsonAgentError(error: unknown) {
   if (error instanceof StorageError) {
+    return { error: error.message, status: error.status };
+  }
+  if (error instanceof GeminiImageError) {
     return { error: error.message, status: error.status };
   }
   if (error instanceof AgentCatalogError || error instanceof AgentReportError) {

@@ -2,7 +2,15 @@ import { putLocalObject } from "./local";
 import { isS3Configured, putS3Object } from "./s3";
 import { assertImageUpload } from "./validate";
 
-export { StorageError, assertImageUpload, MAX_UPLOAD_BYTES } from "./validate";
+export {
+  StorageError,
+  assertImageUpload,
+  MAX_UPLOAD_BYTES,
+  ALLOWED_IMAGE_TYPES,
+  createMarketingObjectKey,
+  isAllowedImageType,
+  type AllowedImageType,
+} from "./validate";
 export { isS3Configured } from "./s3";
 
 export async function storeImage(input: {
@@ -16,5 +24,10 @@ export async function storeImage(input: {
   if (isS3Configured()) {
     return putS3Object({ body: input.body, contentType: input.contentType, key: input.key });
   }
-  return putLocalObject({ body: input.body, contentType: input.contentType, origin: input.origin });
+  return putLocalObject({
+    body: input.body,
+    contentType: input.contentType,
+    origin: input.origin,
+    key: input.key,
+  });
 }

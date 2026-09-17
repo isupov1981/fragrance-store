@@ -1,5 +1,6 @@
 import { agentTokenConfigured } from "@/lib/agent/auth";
 import { databaseEnabled } from "@/lib/db/enabled";
+import { isGeminiConfigured } from "@/lib/marketing/gemini-image";
 import { isGrowConfigured } from "@/lib/payments/grow";
 import { isS3Configured } from "@/lib/storage";
 
@@ -21,6 +22,7 @@ export async function collectReadiness() {
     stripe: process.env.STRIPE_SECRET_KEY ? "configured" : "demo",
     smtp: process.env.SMTP_HOST ? "configured" : "noop",
     hermesAgent: agentTokenConfigured() ? "configured" : "missing",
+    geminiImage: isGeminiConfigured() ? "configured" : "missing",
   };
 }
 

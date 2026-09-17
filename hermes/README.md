@@ -17,9 +17,14 @@ Add to `.env` (see `.env.example`):
 ```bash
 HERMES_AGENT_TOKEN="generate-a-long-random-token-24-chars-min"
 NEXT_PUBLIC_SITE_URL="http://localhost:3000"
+# Optional — product beautify / flyer (store host)
+GEMINI_API_KEY=""
+GEMINI_IMAGE_MODEL="gemini-2.5-flash-image"
 ```
 
 Confirm `GET /api/health` shows `"hermesAgent":"configured"` and `"service":"the-perfume-room"`.
+For product beautify/flyer tools, also set `GEMINI_API_KEY` on the **store** host
+(see `.env.example`); health then reports `"geminiImage":"configured"`.
 
 ## 2. Install Hermes and Telegram
 
@@ -81,11 +86,14 @@ See [cron.example.json](cron.example.json).
 ## 5. Example messages
 
 - «Добавь Filippo Sorcinelli X, 1/3/5/10 мл, вот фото»
+- «Сделай фото красивее» / «Beautify this bottle»
+- «Сделай флаер: X, от ₪32» / «Story flyer for X»
 - «Опубликуй X»
 - «Повесь в Back In Stock / Testers»
 - «Что по заказам за сутки?»
 - «Что посоветуешь?»
 
-Products stay **draft** until you explicitly publish. Live pages only show `ACTIVE`
-rows from Postgres. Merchandising tags for the Categories menu:
-`back-in-stock`, `testers-refills`, `additional-products`.
+Beautify and flyer use `generate_product_visual` (Gemini on the store). Attach the
+returned URL to a product only after you confirm; products stay **draft** until you
+explicitly publish. Live pages only show `ACTIVE` rows from Postgres. Merchandising
+tags for the Categories menu: `back-in-stock`, `testers-refills`, `additional-products`.

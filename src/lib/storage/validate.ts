@@ -31,13 +31,22 @@ export function assertImageUpload(input: { type: string; size: number }) {
   }
 }
 
-export function createObjectKey(mime: string, now = new Date(), id = crypto.randomUUID()) {
+export function createObjectKey(
+  mime: string,
+  now = new Date(),
+  id = crypto.randomUUID(),
+  prefix = "products",
+) {
   if (!isAllowedImageType(mime)) {
     throw new StorageError("Only JPEG, PNG and WebP images are allowed", 415);
   }
   const ext = ALLOWED_IMAGE_TYPES[mime];
   const stamp = now.toISOString().slice(0, 10);
-  return `products/${stamp}/${id}.${ext}`;
+  return `${prefix}/${stamp}/${id}.${ext}`;
+}
+
+export function createMarketingObjectKey(mime: string, now = new Date(), id = crypto.randomUUID()) {
+  return createObjectKey(mime, now, id, "marketing");
 }
 
 export function resolveStoredPath(root: string, key: string) {
