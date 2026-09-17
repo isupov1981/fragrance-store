@@ -30,8 +30,8 @@ if (token.length < 24) {
 }
 
 const buf = readFileSync(filePath);
-if (buf.byteLength === 0 || buf.byteLength > 5 * 1024 * 1024) {
-  console.error("Image must be between 1 byte and 5 MB");
+if (buf.byteLength < 8 * 1024 || buf.byteLength > 5 * 1024 * 1024) {
+  console.error("Image must be between 8 KB and 5 MB");
   process.exit(1);
 }
 

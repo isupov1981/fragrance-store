@@ -48,16 +48,21 @@ Storefront **Categories** menu uses merchandising tags (separate from olfactive 
 Telegram photos arrive as a **local file path** in the message
 (`[Image attached at: /root/.hermes/profiles/the-perfume-room/cache/images/img_….jpg]`).
 
-**Never** put photo bytes / base64 into MCP tool arguments (`upload_product_image` `data`
-or `generate_product_visual`). MCP truncates large payloads.
+### Hard bans (do not violate)
+
+- **Never** put photo bytes / base64 into MCP (`upload_product_image` / `generate_product_visual`).
+- **Never** use `execute_code` to base64-encode or upload Telegram photos.
+- **Never** tell the admin a flyer is ready if `visual.url` is missing or the file is under ~8 KB
+  (gray stub). Only show `visual.url` from the script JSON.
+- Truncated base64 produces a **gray square** — that is a failure, not a flyer.
 
 Requires `GEMINI_API_KEY` on the **store** host. Profile env must have
 `FRAGRANCE_API_URL` and `HERMES_AGENT_TOKEN`.
 
-### Beautify or flyer
+### Beautify or flyer — only this path
 
-1. Take the absolute path from `Image attached at: …`.
-2. Run in the **terminal** (load profile env first):
+1. Take the absolute path from `Image attached at: …` (must exist under `cache/images/`).
+2. Run with the **terminal** tool (not execute_code):
 
 ```bash
 set -a && source ~/.hermes/profiles/the-perfume-room/.env && set +a
@@ -72,16 +77,16 @@ node ~/.hermes/profiles/the-perfume-room/bin/generate-visual-from-file.mjs \
 
 For catalog beautify only, use `--mode beautify` (price/name optional).
 
-3. The script prints JSON with `upload.url` and `visual.url`. Show `visual.url` to the admin.
+3. Parse stdout JSON. Reply with **only** `visual.url` (path contains `marketing/`).
+   Do not send `upload.url` (`products/`) as the flyer.
 4. Warn that flyer text (especially Hebrew) may need a redo.
 5. Attach to a product only after explicit confirmation via `create_product` / `update_product`.
 6. Never invent prices. Never publish automatically.
 
+If the script exits non-zero, say generation failed and do not invent a success link.
+
 If the script is missing, copy it from the store repo `hermes/generate-visual-from-file.mjs`
 (and `upload-local-image.mjs`) into `~/.hermes/profiles/the-perfume-room/bin/`.
-
-Optional MCP: only call `generate_product_visual` with `imageUrl` **after** a successful
-multipart upload that already returned a store URL.
 
 ## Daily briefing
 

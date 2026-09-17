@@ -1,4 +1,7 @@
 export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+/** Reject truncated MCP/base64 stubs (e.g. 455-byte gray JPEGs). */
+export const MIN_UPLOAD_BYTES = 8 * 1024;
+export const MIN_IMAGE_EDGE_PX = 64;
 
 export const ALLOWED_IMAGE_TYPES = {
   "image/jpeg": "jpg",
@@ -26,8 +29,11 @@ export function assertImageUpload(input: { type: string; size: number }) {
   if (!isAllowedImageType(input.type)) {
     throw new StorageError("Only JPEG, PNG and WebP images are allowed", 415);
   }
-  if (input.size <= 0 || input.size > MAX_UPLOAD_BYTES) {
-    throw new StorageError("Image must be between 1 byte and 5 MB", 413);
+  if (input.size < MIN_UPLOAD_BYTES || input.size > MAX_UPLOAD_BYTES) {
+    throw new StorageError(
+      `Image must be between ${MIN_UPLOAD_BYTES} bytes and 5 MB (got ${input.size})`,
+      413,
+    );
   }
 }
 

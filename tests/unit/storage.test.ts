@@ -10,11 +10,12 @@ import {
 
 describe("assertImageUpload", () => {
   it("accepts a jpeg under the size cap", () => {
-    expect(() => assertImageUpload({ type: "image/jpeg", size: 1200 })).not.toThrow();
+    expect(() => assertImageUpload({ type: "image/jpeg", size: 12_000 })).not.toThrow();
   });
 
-  it("rejects unsupported types and oversized files", () => {
-    expect(() => assertImageUpload({ type: "image/gif", size: 100 })).toThrow(StorageError);
+  it("rejects unsupported types, tiny stubs, and oversized files", () => {
+    expect(() => assertImageUpload({ type: "image/gif", size: 12_000 })).toThrow(StorageError);
+    expect(() => assertImageUpload({ type: "image/jpeg", size: 455 })).toThrow(StorageError);
     expect(() => assertImageUpload({ type: "image/png", size: MAX_UPLOAD_BYTES + 1 })).toThrow(StorageError);
   });
 });

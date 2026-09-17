@@ -8,11 +8,13 @@ import {
 } from "@/lib/marketing/gemini-image";
 import {
   ALLOWED_IMAGE_TYPES,
+  assertDecodableImage,
   assertImageUpload,
   createMarketingObjectKey,
   isAllowedImageType,
   MAX_UPLOAD_BYTES,
   storeImage,
+  StorageError,
   type AllowedImageType,
 } from "@/lib/storage";
 
@@ -161,10 +163,16 @@ async function fetchSourceImage(imageUrl: string): Promise<{ buffer: Buffer; con
 
   const arrayBuffer = await response.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
-  if (buffer.byteLength <= 0 || buffer.byteLength > MAX_UPLOAD_BYTES) {
-    throw new GeminiImageError("Fetched image must be between 1 byte and 5 MB", 413);
-  }
   const contentType = sniffContentType(buffer, response.headers.get("content-type"));
+  try {
+    assertImageUpload({ type: contentType, size: buffer.byteLength });
+    await assertDecodableImage(buffer);
+  } catch (error) {
+    if (error instanceof StorageError) {
+      throw new GeminiImageError(error.message, error.status);
+    }
+    throw error;
+  }
   return { buffer, contentType };
 }
 

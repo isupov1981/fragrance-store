@@ -106,4 +106,10 @@ if (!response.ok) {
   process.exit(1);
 }
 
-process.stdout.write(JSON.stringify({ upload: uploaded, visual: json.result ?? json }) + "\n");
+process.stdout.write(
+  JSON.stringify({
+    upload: uploaded,
+    visual: json.result ?? json,
+    flyerUrl: (json.result ?? json)?.url,
+  }) + "\n",
+);
