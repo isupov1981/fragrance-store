@@ -51,13 +51,14 @@ FRAGRANCE_API_URL="https://parfums.cloud"
 Merge [config.example.yaml](config.example.yaml) into the profile `config.yaml`
 (HTTP MCP against `/api/agent/mcp` with the same Bearer token is preferred in production).
 
-Copy [SKILL.md](SKILL.md) into the profile skills folder:
+Copy [SKILL.md](SKILL.md) into the profile skills folder, and copy the helper
+scripts into the profile `bin/`:
 
 ```text
 ~/.hermes/profiles/the-perfume-room/skills/the-perfume-room/SKILL.md
+~/.hermes/profiles/the-perfume-room/bin/upload-local-image.mjs
+~/.hermes/profiles/the-perfume-room/bin/generate-visual-from-file.mjs
 ```
-
-(also fine under `~/.hermes/skills/the-perfume-room/SKILL.md` for shared skills).
 
 ## 3. Start
 
@@ -93,9 +94,8 @@ See [cron.example.json](cron.example.json).
 - «Что по заказам за сутки?»
 - «Что посоветуешь?»
 
-Beautify and flyer use `generate_product_visual` (Gemini on the store). Always
-`upload_product_image` first, then pass the returned URL as `imageUrl` — do not send
-large Telegram photos as tool base64. Attach the result only after you confirm;
+Beautify and flyer: run `bin/generate-visual-from-file.mjs` with the Telegram
+local image path (never MCP base64). Attach the result only after you confirm;
 products stay **draft** until you explicitly publish. Live pages only show `ACTIVE`
 rows from Postgres. Merchandising tags for the Categories menu:
 `back-in-stock`, `testers-refills`, `additional-products`.

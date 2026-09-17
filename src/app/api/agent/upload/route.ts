@@ -39,11 +39,15 @@ export async function POST(request: Request) {
       contentType = file.type;
     }
 
+    const publicOrigin =
+      (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "") ||
+      new URL(request.url).origin;
+
     const stored = await storeImage({
       body,
       contentType,
       size: body.byteLength,
-      origin: new URL(request.url).origin,
+      origin: publicOrigin,
     });
     return NextResponse.json(stored, { status: 201 });
   } catch (error) {

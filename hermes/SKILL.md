@@ -34,8 +34,8 @@ Storefront **Categories** menu uses merchandising tags (separate from olfactive 
 
 ## Adding a product
 
-1. If the admin sends photos, call `upload_product_image` with base64 (JPEG/PNG/WebP, ≤5 MB)
-   or POST `{FRAGRANCE_API_URL}/api/agent/upload` with `Authorization: Bearer …`.
+1. If the admin sends photos, upload via **multipart from the local path** (see below),
+   not MCP base64. Then `create_product` with the returned image URL.
 2. Call `create_product` with brand, category (woody / floral / amber / citrus or a new family),
    optional `merchandising`, notes, variants, and image URLs.
 3. Reply with the slug, that it is a **draft**, merchandising tags if any, and wait for an
@@ -43,39 +43,45 @@ Storefront **Categories** menu uses merchandising tags (separate from olfactive 
 4. After `publish_product`, the live URLs are `/he/products/{slug}`, `/en/products/{slug}`,
    `/ru/products/{slug}`.
 
-## Product visuals (Gemini)
+## Product visuals (Gemini) — REQUIRED flow
 
-Requires `GEMINI_API_KEY` on the **store** host. If the tool returns 503, say the key is not configured.
+Telegram photos arrive as a **local file path** in the message
+(`[Image attached at: /root/.hermes/profiles/the-perfume-room/cache/images/img_….jpg]`).
 
-**Critical:** Never pass a full Telegram photo as `data` base64 into `generate_product_visual` —
-MCP truncates large payloads and Gemini returns Base64 decoding failed. Always:
+**Never** put photo bytes / base64 into MCP tool arguments (`upload_product_image` `data`
+or `generate_product_visual`). MCP truncates large payloads.
 
-1. `upload_product_image` with the photo → get `{ url }`
-2. `generate_product_visual` with `imageUrl: url` (and `mode`, copy fields)
+Requires `GEMINI_API_KEY` on the **store** host. Profile env must have
+`FRAGRANCE_API_URL` and `HERMES_AGENT_TOKEN`.
 
-### Beautify (catalog shot)
+### Beautify or flyer
 
-When the admin asks to beautify / улучшить фото / сделать красиво / לשפר תמונה:
+1. Take the absolute path from `Image attached at: …`.
+2. Run in the **terminal** (load profile env first):
 
-1. Upload the photo via `upload_product_image`, then call `generate_product_visual` with
-   `mode: "beautify"`, `imageUrl` from the upload, and optional `styleHint`.
-2. Reply with the returned `url` and ask whether to use it on the product.
-3. Only on explicit confirmation, pass that URL into `create_product` / `update_product` `images`.
-4. Never call `publish_product` just because a visual was generated.
+```bash
+set -a && source ~/.hermes/profiles/the-perfume-room/.env && set +a
+node ~/.hermes/profiles/the-perfume-room/bin/generate-visual-from-file.mjs \
+  --file "/ABS/PATH/FROM/IMAGE_ATTACHED.jpg" \
+  --mode flyer \
+  --language ru \
+  --productName "Bleu de Chanel" \
+  --brand "Chanel" \
+  --priceLabel "from ₪32"
+```
 
-### Flyer / story
+For catalog beautify only, use `--mode beautify` (price/name optional).
 
-When the admin asks for a flyer / флаер / сторис / סטורי / פוסטר:
+3. The script prints JSON with `upload.url` and `visual.url`. Show `visual.url` to the admin.
+4. Warn that flyer text (especially Hebrew) may need a redo.
+5. Attach to a product only after explicit confirmation via `create_product` / `update_product`.
+6. Never invent prices. Never publish automatically.
 
-1. Upload the photo via `upload_product_image`.
-2. Call `generate_product_visual` with `mode: "flyer"`, `imageUrl` from the upload,
-   `productName`, `brand`, `priceLabel` (only prices the admin already gave — **never invent**),
-   and `language` matching the chat (`ru` / `he` / `en`).
-3. Warn that on-image text (especially Hebrew) may need a redo if it looks wrong.
-4. Show the `url`; attach to a product only after the admin confirms.
-5. Do not publish automatically.
+If the script is missing, copy it from the store repo `hermes/generate-visual-from-file.mjs`
+(and `upload-local-image.mjs`) into `~/.hermes/profiles/the-perfume-room/bin/`.
 
-Keep using raw `upload_product_image` when the admin wants the original photo unchanged.
+Optional MCP: only call `generate_product_visual` with `imageUrl` **after** a successful
+multipart upload that already returned a store URL.
 
 ## Daily briefing
 

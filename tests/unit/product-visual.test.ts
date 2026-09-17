@@ -70,7 +70,7 @@ describe("generateProductVisual config", () => {
     ).rejects.toMatchObject({ status: 503, name: "GeminiImageError" });
   });
 
-  it("returns 400 when neither imageUrl nor data is provided", async () => {
+  it("returns 400 when imageUrl is missing", async () => {
     process.env.GEMINI_API_KEY = "test-key-not-used";
     await expect(generateProductVisual({ mode: "flyer" })).rejects.toMatchObject({
       status: 400,
