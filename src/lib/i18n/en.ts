@@ -488,6 +488,8 @@ export const en = {
     "cedar-after-rain": "Wet cedar, black tea and moss: cool, meditative and quietly persistent.",
     "notre-dame":
       "Memento Extrait by Filippo Sorcinelli — Notre-Dame 15.4.2019. An artistic unisex incense scent inspired by Notre-Dame after the fire of 15 April 2019: smoke and incense, damp stone, precious woods and light cutting through the nave. Deep, mysterious and meditative.",
+    "anfas-ishq":
+      "ANFAS Ishq is a unisex fragrance with a rich, warm gourmand character — fruity sweetness, soft florals and creamy depth. Luxurious and enveloping, with an elegant, sensual presence. Juicy raspberry and white flowers meet sweet creamy tones for lasting warmth on skin.",
   },
   variants: {
     "50 ml": "50 ml",
