@@ -1,10 +1,8 @@
 import { CinematicBand } from "@/components/home/cinematic-band";
-import { CollectionPair } from "@/components/home/collection-pair";
 import { EditorialTrio } from "@/components/home/editorial-trio";
 import { FeaturedStory } from "@/components/home/featured-story";
 import { HomeHero } from "@/components/home/home-hero";
 import { HomeTrust } from "@/components/home/home-trust";
-import { PerfumerSpotlight } from "@/components/home/perfumer-spotlight";
 import { ProductCarousel } from "@/components/home/product-carousel";
 import { Reveal } from "@/components/home/reveal";
 import type { Metadata } from "next";
@@ -69,15 +67,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
       </Reveal>
 
       <Reveal>
-        <CollectionPair />
-      </Reveal>
-
-      <Reveal>
         <FeaturedStory product={cabinet[0]} />
-      </Reveal>
-
-      <Reveal>
-        <PerfumerSpotlight products={catalog} />
       </Reveal>
 
       <CinematicBand />

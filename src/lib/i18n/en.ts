@@ -57,7 +57,7 @@ export const en = {
     additionalProducts: "Additional Products",
   },
   footer: {
-    correspondence: "Private correspondence",
+    correspondence: "Subscribe for updates",
     notesTitle: "Notes from the room",
     notesCopy: "New compositions, quiet rituals and invitations to our private edits, delivered occasionally.",
     email: "Email address",
@@ -494,6 +494,8 @@ export const en = {
       "Rabbit by Zoologist is a unisex fragrance — green, sweetly gourmand, inspired by the soft, playful world of the rabbit. Planty freshness meets warm creamy sweetness for a cozy, fluffy, comforting wear.",
     "le-labo-santal-33":
       "Santal 33 by Le Labo is a unisex fragrance — woody, dry and smoky, inspired by open spaces, nature and freedom. Deep warmth meets aromatic freshness in a minimalist, elegant, slightly rugged profile. Sandalwood and cedar sit at the heart with cardamom, iris, violet and leather — creamy woods with dry, smoky, leathery facets that soften into an addictive warmth on skin. A signature scent from the New York niche house.",
+    "couleur-primaire":
+      "Couleur Primaire by Les Eaux Primordiales is a unisex fragrance — clean, soft and musky, like fresh white laundry and clean skin. Airy freshness meets gentle warmth in a minimalist, elegant, enveloping profile. Built around white musk and aldehydes with soft florals and pale woods — a clean, lightly powdery, creamy effect of freshly washed sheets, cotton and a quiet soap-on-skin trail. A French niche house by Arnaud Poulain.",
   },
   variants: {
     "50 ml": "50 ml",
