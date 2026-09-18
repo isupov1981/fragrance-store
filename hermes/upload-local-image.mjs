@@ -65,4 +65,18 @@ if (!response.ok) {
   process.exit(1);
 }
 
+// Hostinger may return an internal bind origin; rewrite to public API URL.
+try {
+  const parsed = new URL(json.url);
+  if (
+    parsed.hostname === "0.0.0.0" ||
+    parsed.hostname === "127.0.0.1" ||
+    parsed.hostname === "localhost"
+  ) {
+    json.url = `${api}${parsed.pathname}${parsed.search}`;
+  }
+} catch {
+  /* keep as-is */
+}
+
 process.stdout.write(JSON.stringify(json) + "\n");

@@ -27,6 +27,7 @@ export function ProductCard({ product, priority = false }: { product: StoreProdu
             fill
             sizes="(max-width: 640px) 78vw, (max-width: 1024px) 45vw, 25vw"
             priority={priority}
+            unoptimized={product.images[0]?.includes("/api/media/")}
           />
           {product.images[1] ? (
             <Image
@@ -35,6 +36,7 @@ export function ProductCard({ product, priority = false }: { product: StoreProdu
               alt=""
               fill
               sizes="(max-width: 640px) 78vw, (max-width: 1024px) 45vw, 25vw"
+              unoptimized={product.images[1].includes("/api/media/")}
             />
           ) : null}
           <div className="absolute start-3 top-3 flex flex-col items-start gap-1.5">

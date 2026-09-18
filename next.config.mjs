@@ -3,21 +3,25 @@ function storageImagePatterns() {
   const patterns = [
     { protocol: "https", hostname: "images.unsplash.com", pathname: "/**" },
     { protocol: "https", hostname: "media.parfums.cloud", pathname: "/**" },
+    { protocol: "https", hostname: "parfums.cloud", pathname: "/api/media/**" },
     { protocol: "http", hostname: "localhost", port: "9000", pathname: "/**" },
     { protocol: "http", hostname: "127.0.0.1", port: "9000", pathname: "/**" },
+    { protocol: "http", hostname: "localhost", port: "3000", pathname: "/api/media/**" },
+    { protocol: "http", hostname: "127.0.0.1", port: "3000", pathname: "/api/media/**" },
   ];
-  const base = process.env.S3_PUBLIC_BASE_URL;
-  if (!base) return patterns;
-  try {
-    const url = new URL(base);
-    patterns.push({
-      protocol: url.protocol === "http:" ? "http" : "https",
-      hostname: url.hostname,
-      ...(url.port ? { port: url.port } : {}),
-      pathname: "/**",
-    });
-  } catch {
-    return patterns;
+  for (const raw of [process.env.NEXT_PUBLIC_SITE_URL, process.env.S3_PUBLIC_BASE_URL]) {
+    if (!raw) continue;
+    try {
+      const url = new URL(raw);
+      patterns.push({
+        protocol: url.protocol === "http:" ? "http" : "https",
+        hostname: url.hostname,
+        ...(url.port ? { port: url.port } : {}),
+        pathname: "/**",
+      });
+    } catch {
+      /* ignore bad env */
+    }
   }
   return patterns;
 }

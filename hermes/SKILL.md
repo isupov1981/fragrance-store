@@ -32,48 +32,40 @@ Storefront **Categories** menu uses merchandising tags (separate from olfactive 
 - To remove from all merchandising sections: `merchandising: []`.
 - To list products in a section: `list_products` with `merchandising: "testers-refills"`.
 
-## Adding a product
+## Adding a product (photo + description) — DEFAULT, NO generation
 
-1. If the admin sends photos, upload via **multipart from the local path** (see below),
-   not MCP base64. Then `create_product` with the returned image URL.
-2. Call `create_product` with brand, category (woody / floral / amber / citrus or a new family),
-   optional `merchandising`, notes, variants, and image URLs.
-3. Reply with the slug, that it is a **draft**, merchandising tags if any, and wait for an
-   explicit publish command.
-4. After `publish_product`, the live URLs are `/he/products/{slug}`, `/en/products/{slug}`,
+When the admin sends a **photo + product description** (new item for the catalogue):
+
+1. Take the absolute path from `Image attached at: …`
+   (`~/.hermes/profiles/the-perfume-room/cache/images/img_….jpg`).
+2. Upload the **original** photo with the **terminal** tool (not MCP, not execute_code):
+
+```bash
+set -a && source ~/.hermes/profiles/the-perfume-room/.env && set +a
+node ~/.hermes/profiles/the-perfume-room/bin/upload-local-image.mjs \
+  "/ABS/PATH/FROM/IMAGE_ATTACHED.jpg"
+```
+
+3. Parse stdout JSON `{ url, key }`. The `url` must be a full `https://parfums.cloud/...`
+   link and the file must be **> 8 KB**. If upload fails, stop and say so.
+4. Call `create_product` with brand, name, slug, descriptions, category, variants,
+   and `images: [{ url }]` from step 3. **Do not** run beautify/flyer generation.
+5. Reply with the slug, that it is a **draft**, and wait for an explicit publish command.
+6. After `publish_product`, live URLs are `/he/products/{slug}`, `/en/products/{slug}`,
    `/ru/products/{slug}`.
 
-## Product visuals (Gemini) — REQUIRED flow
+### Hard bans for catalogue photos
 
-Telegram photos arrive as a **local file path** in the message
-(`[Image attached at: /root/.hermes/profiles/the-perfume-room/cache/images/img_….jpg]`).
+- **Never** `upload_product_image` with Telegram photo base64 — MCP truncates it into a
+  gray square that breaks the storefront.
+- **Never** use `execute_code` to base64-encode photos.
+- **Never** call `generate_product_visual` / `generate-visual-from-file` when adding a
+  normal catalogue product — only when the admin explicitly asks for флаер / beautify.
+
+## Product visuals (Gemini) — only on explicit request
 
 When the admin says **сделай флаер / beautify / сделай красиво / флаер без текста**
-(with a photo), **immediately** run the terminal script below — do not wait for them
-to name `generate-visual-from-file`.
-
-### Mode choice
-
-| Admin intent | `--mode` |
-|---|---|
-| флаер, красивое фото, без текста, только фото, catalog shot | **`beautify`** (default) |
-| флаер с названием / ценой / слоганом on the image | **`flyer`** |
-
-Default for bare «сделай флаер» = **`beautify`** (photo only, no overlays).
-
-### Hard bans (do not violate)
-
-- **Never** put photo bytes / base64 into MCP (`upload_product_image` / `generate_product_visual`).
-- **Never** use `execute_code` to base64-encode or upload Telegram photos.
-- **Never** tell the admin a visual is ready if `visual.url` is missing or under ~8 KB
-  (gray stub). Only show `visual.url` / `flyerUrl` from the script JSON.
-- Truncated base64 produces a **gray square** — that is a failure, not a flyer.
-- Do not send `upload.url` (`products/`) as the finished visual.
-
-Requires `GEMINI_API_KEY` on the **store** host. Profile env must have
-`FRAGRANCE_API_URL` and `HERMES_AGENT_TOKEN`.
-
-### Run this (terminal tool only)
+(with a photo), **immediately** run:
 
 ```bash
 set -a && source ~/.hermes/profiles/the-perfume-room/.env && set +a
@@ -82,15 +74,14 @@ node ~/.hermes/profiles/the-perfume-room/bin/generate-visual-from-file.mjs \
   --mode beautify
 ```
 
-Only if the admin asked for text on the image, use `--mode flyer` plus
-`--productName`, `--brand`, `--priceLabel`, `--language`.
+| Admin intent | `--mode` |
+|---|---|
+| флаер, красивое фото, без текста, только фото | **`beautify`** (default) |
+| флаер с названием / ценой / слоганом on the image | **`flyer`** |
 
-1. Parse stdout JSON. Reply with **only** `visual.url` or `flyerUrl` (path contains `marketing/`).
-2. For `flyer` mode, warn that on-image text may need a redo.
-3. Attach to a product only after explicit confirmation.
-4. Never invent prices. Never publish automatically.
+Show only `visual.url` / `flyerUrl` (`marketing/` in the path). Never show a gray stub.
 
-If the script exits non-zero, say generation failed and do not invent a success link.
+Requires `GEMINI_API_KEY` on the **store** host.
 
 ## Daily briefing
 

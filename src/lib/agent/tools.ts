@@ -121,13 +121,14 @@ export const agentTools = [
   },
   {
     name: "upload_product_image",
-    description: "Store a JPEG/PNG/WebP product image (base64, max 5 MB) and return its public URL for create_product/update_product.",
+    description:
+      "Store a JPEG/PNG/WebP product image (base64, max 5 MB). DO NOT use for Telegram photos — MCP truncates base64 into gray stubs. On the Hermes VPS use terminal: node …/bin/upload-local-image.mjs <Image attached path>, then pass the returned url to create_product/update_product.",
     inputSchema: {
       type: "object",
       required: ["data"],
       properties: {
         contentType: { type: "string", description: "image/jpeg, image/png or image/webp" },
-        data: { type: "string", description: "Raw image bytes encoded as base64" },
+        data: { type: "string", description: "Raw image bytes encoded as base64 — tiny images only" },
       },
     },
   },

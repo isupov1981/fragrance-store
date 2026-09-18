@@ -94,8 +94,9 @@ See [cron.example.json](cron.example.json).
 - «Что по заказам за сутки?»
 - «Что посоветуешь?»
 
-Beautify and flyer: run `bin/generate-visual-from-file.mjs` with the Telegram
-local image path (never MCP base64). Attach the result only after you confirm;
-products stay **draft** until you explicitly publish. Live pages only show `ACTIVE`
-rows from Postgres. Merchandising tags for the Categories menu:
+Beautify and flyer: only when asked — run `bin/generate-visual-from-file.mjs`.
+For new catalogue products (photo + description): run `bin/upload-local-image.mjs`
+then `create_product` with that URL — never MCP base64. Attach / publish only after
+you confirm; products stay **draft** until you explicitly publish. Live pages only
+show `ACTIVE` rows from Postgres. Merchandising tags for the Categories menu:
 `back-in-stock`, `testers-refills`, `additional-products`.
