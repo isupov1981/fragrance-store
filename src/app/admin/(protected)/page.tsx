@@ -1,11 +1,15 @@
 import Link from "next/link";
 
+import { NewArrivalBlastForm } from "@/app/admin/(protected)/new-arrival-blast-form";
 import { OrdersEnabledForm } from "@/app/admin/(protected)/orders-enabled-form";
 import { formatAdminMessage, getAdminDictionary } from "@/lib/admin/i18n";
 import { getAdminLocale } from "@/lib/admin/get-locale";
 import { getAdminDashboard } from "@/lib/admin/queries";
 import { getOrdersEnabled } from "@/lib/commerce";
 import { requireAdminPage } from "@/lib/auth/server";
+import { countUnannouncedNewArrivals } from "@/lib/email/new-arrivals";
+import { isSmtpConfigured } from "@/lib/email/mailer";
+import { listActiveSubscribers } from "@/lib/newsletter/subscribers";
 import {
   getPaymentProvider,
   ordersBlockedByDemoPayments,
@@ -15,7 +19,12 @@ export default async function AdminDashboard() {
   await requireAdminPage();
   const locale = await getAdminLocale();
   const dict = getAdminDictionary(locale);
-  const [stats, ordersEnabled] = await Promise.all([getAdminDashboard(), getOrdersEnabled()]);
+  const [stats, ordersEnabled, pendingProducts, subscribers] = await Promise.all([
+    getAdminDashboard(),
+    getOrdersEnabled(),
+    countUnannouncedNewArrivals(),
+    listActiveSubscribers(),
+  ]);
   const cards = [
     {
       label: dict.dashboard.products,
@@ -58,11 +67,16 @@ export default async function AdminDashboard() {
           </Link>
         ))}
       </section>
-      <section className="mt-8">
+      <section className="mt-8 grid gap-6 lg:grid-cols-2">
         <OrdersEnabledForm
           initialEnabled={ordersEnabled}
           canEnableOrders={!ordersBlockedByDemoPayments()}
           paymentProvider={getPaymentProvider().name}
+        />
+        <NewArrivalBlastForm
+          pendingProducts={pendingProducts}
+          subscribers={subscribers.length}
+          smtpConfigured={isSmtpConfigured()}
         />
       </section>
     </>

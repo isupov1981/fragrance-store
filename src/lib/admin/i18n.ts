@@ -48,6 +48,24 @@ const en = {
     demoPaymentsBlocked:
       "Ordering cannot be enabled in production until Grow or Stripe credentials are configured. Demo checkout marks orders as paid without charging.",
   },
+  newsletterBlast: {
+    eyebrow: "Newsletter",
+    title: "New-arrival emails",
+    copy: "Email every active subscriber about each unannounced new arrival — one message per product, using the original product photo.",
+    pendingProducts: "{count} products ready to announce",
+    pendingNone: "No unannounced new arrivals right now.",
+    subscribers: "{count} active subscribers",
+    smtpOk: "SMTP is configured.",
+    smtpMissing: "SMTP is not configured — emails cannot be sent.",
+    send: "Send new-arrival emails",
+    sending: "Sending…",
+    confirm:
+      "Email all subscribers about every unannounced new arrival? This cannot be undone for those products.",
+    emptyOk: "Nothing to send — no unannounced new arrivals.",
+    success:
+      "Sent for {products} products to {subscribers} subscribers ({emails} emails). Failed: {failed}.",
+    failed: "Could not send the newsletter blast",
+  },
   section: {
     eyebrow: "Records from PostgreSQL",
     caption: "{title}: database records",
@@ -217,6 +235,23 @@ const he: typeof en = {
     paymentProvider: "ספק תשלום",
     demoPaymentsBlocked:
       "לא ניתן להפעיל הזמנות בפרודקשן לפני הגדרת Grow או Stripe. מצב הדגמה מסמן הזמנות כשולמו בלי חיוב אמיתי.",
+  },
+  newsletterBlast: {
+    eyebrow: "ניוזלטר",
+    title: "מיילים על חדשים",
+    copy: "שולחים לכל המנויים הפעילים על כל חידוש שטרם הוכרז — מייל נפרד לכל מוצר, עם צילום המוצר המקורי.",
+    pendingProducts: "{count} מוצרים מוכנים להכרזה",
+    pendingNone: "אין כרגע חידושים שטרם הוכרזו.",
+    subscribers: "{count} מנויים פעילים",
+    smtpOk: "SMTP מוגדר.",
+    smtpMissing: "SMTP אינו מוגדר — לא ניתן לשלוח מיילים.",
+    send: "שליחת מיילים על חדשים",
+    sending: "שולח…",
+    confirm: "לשלוח לכל המנויים על כל החידושים שטרם הוכרזו? לא ניתן לבטל עבור מוצרים אלה.",
+    emptyOk: "אין מה לשלוח — אין חידושים שטרם הוכרזו.",
+    success:
+      "נשלח עבור {products} מוצרים ל־{subscribers} מנויים ({emails} מיילים). נכשלו: {failed}.",
+    failed: "לא ניתן לשלוח את דיוור החידושים",
   },
   section: {
     eyebrow: "רשומות מ־PostgreSQL",

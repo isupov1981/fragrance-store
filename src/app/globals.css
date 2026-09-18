@@ -653,17 +653,7 @@ html[data-a11y-cursor="white"] * {
 
 .home-hero-video {
   display: block;
-  background: transparent;
-}
-
-.home-hero-video--backdrop {
-  transform: scale(1.12);
-  filter: blur(28px) saturate(1.08) brightness(0.92);
-  opacity: 0.9;
-}
-
-.home-hero-video--focus {
-  filter: none;
+  background: var(--ink);
 }
 
 .home-hero-frame,
@@ -689,7 +679,7 @@ html[data-a11y-cursor="white"] * {
 
 .home-hero-veil--video {
   background:
-    linear-gradient(180deg, rgb(32 29 25 / 12%) 0%, transparent 38%, rgb(32 29 25 / 16%) 100%);
+    linear-gradient(180deg, rgb(32 29 25 / 10%) 0%, transparent 40%, rgb(32 29 25 / 14%) 100%);
 }
 
 .home-hero-veil--video::after {
