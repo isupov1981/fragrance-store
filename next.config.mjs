@@ -53,6 +53,9 @@ const nextConfig = {
     "/*": ["./node_modules/.prisma/client/**/*", "./node_modules/@prisma/client/**/*"],
   },
   images: {
+    // Hostinger's /_next/image rejects most remote CDNs (jsDelivr/GitHub) with 400.
+    // Catalogue photos often live on those hosts while public/ static lag behind deploys.
+    unoptimized: true,
     remotePatterns: storageImagePatterns(),
   },
   poweredByHeader: false,
