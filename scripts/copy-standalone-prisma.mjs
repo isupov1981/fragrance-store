@@ -23,6 +23,10 @@ const copies = [
   ["node_modules/.prisma", join(standalone, "node_modules", ".prisma")],
   ["node_modules/@prisma/client", join(standalone, "node_modules", "@prisma", "client")],
   ["prisma", join(standalone, "prisma")],
+  // Standalone output does not include public/ by default; without this, new
+  // catalogue photos 404 on Hostinger until a manual static sync.
+  ["public", join(standalone, "public")],
+  [".next/static", join(standalone, ".next", "static")],
 ];
 
 let copied = 0;
