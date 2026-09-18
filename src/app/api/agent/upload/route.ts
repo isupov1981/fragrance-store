@@ -36,7 +36,13 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "Choose an image file" }, { status: 400 });
       }
       body = Buffer.from(await file.arrayBuffer());
-      contentType = file.type;
+      contentType =
+        file.type ||
+        (file.name?.toLowerCase().endsWith(".png")
+          ? "image/png"
+          : file.name?.toLowerCase().endsWith(".webp")
+            ? "image/webp"
+            : "image/jpeg");
     }
 
     const publicOrigin =
