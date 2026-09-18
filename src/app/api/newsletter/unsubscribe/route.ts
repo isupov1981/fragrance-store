@@ -51,7 +51,7 @@ async function handleUnsubscribe(token: string) {
   return new Response(
     htmlPage(
       "You are unsubscribed",
-      "You will no longer receive new-arrival notes from Privé Atelier. You can subscribe again from the website footer at any time.",
+      "You will no longer receive new-arrival notes from The Perfume Room. You can subscribe again from the website footer at any time.",
     ),
     { status: 200, headers: { "content-type": "text/html; charset=utf-8" } },
   );

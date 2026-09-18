@@ -496,6 +496,8 @@ export const en = {
       "Santal 33 by Le Labo is a unisex fragrance — woody, dry and smoky, inspired by open spaces, nature and freedom. Deep warmth meets aromatic freshness in a minimalist, elegant, slightly rugged profile. Sandalwood and cedar sit at the heart with cardamom, iris, violet and leather — creamy woods with dry, smoky, leathery facets that soften into an addictive warmth on skin. A signature scent from the New York niche house.",
     "couleur-primaire":
       "Couleur Primaire by Les Eaux Primordiales is a unisex fragrance — clean, soft and musky, like fresh white laundry and clean skin. Airy freshness meets gentle warmth in a minimalist, elegant, enveloping profile. Built around white musk and aldehydes with soft florals and pale woods — a clean, lightly powdery, creamy effect of freshly washed sheets, cotton and a quiet soap-on-skin trail. A French niche house by Arnaud Poulain.",
+    "fugazzi-angel-dust":
+      "Angel Dust by FUGAZZI is a soft, warm, enveloping woody-musk fragrance. Quiet confidence rather than projection — intimate, sensual and addictive close to skin. Cashmeran sits at the heart with Calabrian bergamot, pepper, translucent woods and white amber — clean soft musk-woods with a lightly spiced warmth and an almost fluffy, cashmere feel. A modern Dutch niche house; the EDP is dosed at 20%.",
   },
   variants: {
     "50 ml": "50 ml",

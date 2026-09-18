@@ -57,7 +57,7 @@ class SmtpOrderMailer implements OrderMailer {
   }
 
   async sendConfirmation(order: Order) {
-    const from = process.env.EMAIL_FROM ?? process.env.ORDER_FROM_EMAIL ?? "orders@example.com";
+    const from = process.env.EMAIL_FROM ?? process.env.ORDER_FROM_EMAIL ?? "The Perfume Room <noreply@parfums.cloud>";
     const admin = process.env.ORDER_ADMIN_EMAIL;
     await this.transport().sendMail({
       from,
@@ -73,7 +73,7 @@ class SmtpOrderMailer implements OrderMailer {
   }
 
   async sendEnquiry(input: { name: string; email: string; subject: string; message: string }) {
-    const from = process.env.EMAIL_FROM ?? process.env.ORDER_FROM_EMAIL ?? "concierge@example.com";
+    const from = process.env.EMAIL_FROM ?? process.env.ORDER_FROM_EMAIL ?? "The Perfume Room <noreply@parfums.cloud>";
     await this.transport().sendMail({
       from,
       to: process.env.ORDER_ADMIN_EMAIL ?? from,
@@ -84,7 +84,7 @@ class SmtpOrderMailer implements OrderMailer {
   }
 
   async sendNewArrival(input: NewArrivalMail) {
-    const from = process.env.EMAIL_FROM ?? process.env.ORDER_FROM_EMAIL ?? "notes@example.com";
+    const from = process.env.EMAIL_FROM ?? process.env.ORDER_FROM_EMAIL ?? "The Perfume Room <noreply@parfums.cloud>";
     const showPrice = input.showPrice !== false && Boolean(input.priceLabel.trim());
     const copy = newArrivalCopy(input.locale, input.productName, input.priceLabel, showPrice);
     const brand = input.brand?.trim();
@@ -137,7 +137,7 @@ function newArrivalCopy(locale: Locale, productName: string, priceLabel: string,
     return {
       subject: `חדש באטלייה: ${productName}`,
       greeting: "שלום,",
-      body: `נוסף ניחוח חדש לקולקציה — ${productName}.`,
+      body: `נוסף ניחוח חדש לקולקציה — \u200F${productName}.`,
       price: showPrice ? `החל מ־${priceLabel}` : "",
       cta: "לצפייה בניחוח",
       unsubscribe: "להסרה מרשימת התפוצה",
@@ -176,27 +176,44 @@ function buildNewArrivalHtml(input: {
   unsubscribeUrl: string;
   locale: Locale;
 }) {
-  const dir = input.locale === "he" ? "rtl" : "ltr";
+  const isHe = input.locale === "he";
+  const dir = isHe ? "rtl" : "ltr";
+  const textAlign = isHe ? "right" : "left";
+  /** Elegant Hebrew stack + Latin fallbacks; Google Fonts load where clients allow. */
+  const bodyFont = isHe
+    ? "'Frank Ruhl Libre','Noto Serif Hebrew',David,'Times New Roman',Georgia,serif"
+    : "Georgia,'Times New Roman',serif";
+  const uiFont = isHe
+    ? "'Assistant','Noto Sans Hebrew',Arial,Helvetica,sans-serif"
+    : "Arial,Helvetica,sans-serif";
+  const fontLink = isHe
+    ? `<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600&family=Frank+Ruhl+Libre:wght@400;500;700&display=swap" rel="stylesheet">`
+    : "";
+
   const brandLine = input.brand
-    ? `<p style="margin:0 0 6px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#8a8178;">${escapeHtml(input.brand)}</p>`
+    ? `<p style="margin:0 0 6px;font-family:${uiFont};font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#8a8178;text-align:center;">${escapeHtml(input.brand)}</p>`
     : "";
   const priceLine = input.showPrice
-    ? `<p style="margin:12px 0 0;font-size:14px;color:#5c534a;">${escapeHtml(input.copy.price)}</p>`
+    ? `<p dir="${dir}" style="margin:12px 0 0;font-family:${bodyFont};font-size:15px;color:#5c534a;text-align:center;">${escapeHtml(input.copy.price)}</p>`
     : "";
 
   return `<!DOCTYPE html>
 <html lang="${escapeAttr(input.locale)}" dir="${dir}">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f6f3ed;color:#201d19;font-family:Georgia,'Times New Roman',serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f3ed;padding:32px 16px;">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  ${fontLink}
+</head>
+<body dir="${dir}" style="margin:0;padding:0;background:#f6f3ed;color:#201d19;font-family:${bodyFont};direction:${dir};">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" dir="${dir}" style="background:#f6f3ed;padding:32px 16px;direction:${dir};">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#fffcf7;border:1px solid #e6e0d6;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" dir="${dir}" style="max-width:560px;background:#fffcf7;border:1px solid #e6e0d6;direction:${dir};">
           <tr>
-            <td style="padding:28px 28px 12px;text-align:center;">
-              <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#9a8570;">${escapeHtml(input.copy.eyebrow)}</p>
-              <p style="margin:14px 0 0;font-size:15px;line-height:1.6;color:#5c534a;">${escapeHtml(input.copy.greeting)}</p>
-              <p style="margin:10px 0 0;font-size:15px;line-height:1.7;color:#5c534a;">${escapeHtml(input.copy.body)}</p>
+            <td dir="${dir}" align="${isHe ? "right" : "left"}" style="padding:28px 28px 12px;text-align:${textAlign};direction:${dir};font-family:${bodyFont};">
+              <p dir="${dir}" style="margin:0;font-family:${uiFont};font-size:11px;letter-spacing:${isHe ? "0.08em" : "0.2em"};text-transform:uppercase;color:#9a8570;text-align:${textAlign};direction:${dir};">${escapeHtml(input.copy.eyebrow)}</p>
+              <p dir="${dir}" style="margin:14px 0 0;font-family:${bodyFont};font-size:17px;line-height:1.65;color:#5c534a;text-align:${textAlign};direction:${dir};">${escapeHtml(input.copy.greeting)}</p>
+              <p dir="${dir}" style="margin:10px 0 0;font-family:${bodyFont};font-size:17px;line-height:1.75;color:#5c534a;text-align:${textAlign};direction:${dir};">${escapeHtml(input.copy.body)}</p>
             </td>
           </tr>
           <tr>
@@ -207,20 +224,20 @@ function buildNewArrivalHtml(input: {
             </td>
           </tr>
           <tr>
-            <td style="padding:22px 28px 8px;text-align:center;">
+            <td align="center" style="padding:22px 28px 8px;text-align:center;font-family:${bodyFont};">
               ${brandLine}
-              <h1 style="margin:0;font-size:28px;line-height:1.2;font-weight:normal;color:#201d19;">${escapeHtml(input.productName)}</h1>
+              <h1 style="margin:0;font-family:${bodyFont};font-size:30px;line-height:1.25;font-weight:500;color:#201d19;text-align:center;">${escapeHtml(input.productName)}</h1>
               ${priceLine}
             </td>
           </tr>
           <tr>
-            <td align="center" style="padding:18px 28px 28px;">
-              <a href="${escapeAttr(input.productUrl)}" style="display:inline-block;background:#201d19;color:#fffcf7;font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:0.16em;text-transform:uppercase;text-decoration:none;padding:14px 28px;">${escapeHtml(input.copy.cta)}</a>
+            <td align="center" style="padding:18px 28px 28px;text-align:center;">
+              <a href="${escapeAttr(input.productUrl)}" style="display:inline-block;background:#201d19;color:#fffcf7;font-family:${uiFont};font-size:13px;letter-spacing:${isHe ? "0.06em" : "0.16em"};${isHe ? "" : "text-transform:uppercase;"};text-decoration:none;padding:14px 28px;">${escapeHtml(input.copy.cta)}</a>
             </td>
           </tr>
           <tr>
-            <td style="padding:0 28px 28px;text-align:center;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#8a8178;">
-              <a href="${escapeAttr(input.unsubscribeUrl)}" style="color:#8a8178;">${escapeHtml(input.copy.unsubscribe)}</a>
+            <td dir="${dir}" align="center" style="padding:0 28px 28px;text-align:center;font-family:${uiFont};font-size:13px;color:#8a8178;direction:${dir};">
+              <a href="${escapeAttr(input.unsubscribeUrl)}" style="color:#8a8178;font-family:${uiFont};text-decoration:underline;">${escapeHtml(input.copy.unsubscribe)}</a>
             </td>
           </tr>
         </table>
