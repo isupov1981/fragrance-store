@@ -4,6 +4,7 @@ function storageImagePatterns() {
     { protocol: "https", hostname: "images.unsplash.com", pathname: "/**" },
     { protocol: "https", hostname: "media.parfums.cloud", pathname: "/**" },
     { protocol: "https", hostname: "parfums.cloud", pathname: "/**" },
+    { protocol: "https", hostname: "raw.githubusercontent.com", pathname: "/**" },
     { protocol: "http", hostname: "localhost", port: "9000", pathname: "/**" },
     { protocol: "http", hostname: "127.0.0.1", port: "9000", pathname: "/**" },
     { protocol: "http", hostname: "localhost", port: "3000", pathname: "/api/media/**" },

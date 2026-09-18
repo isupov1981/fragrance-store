@@ -117,7 +117,9 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
                 sizes="(max-width: 1024px) 100vw, 36vw"
                 priority={index === 0}
                 unoptimized={
-                  image.includes("/api/media/") || image.includes("parfums.cloud/")
+                  image.includes("/api/media/") ||
+                  image.includes("parfums.cloud/") ||
+                  image.includes("raw.githubusercontent.com/")
                 }
               />
             </div>

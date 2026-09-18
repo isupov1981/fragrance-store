@@ -31,7 +31,8 @@ export function ProductCard({ product, priority = false }: { product: StoreProdu
             priority={priority}
             unoptimized={
               product.images[0]?.includes("/api/media/") ||
-              product.images[0]?.includes("parfums.cloud/")
+              product.images[0]?.includes("parfums.cloud/") ||
+              product.images[0]?.includes("raw.githubusercontent.com/")
             }
           />
           {product.images[1] ? (
@@ -43,7 +44,8 @@ export function ProductCard({ product, priority = false }: { product: StoreProdu
               sizes="(max-width: 640px) 78vw, (max-width: 1024px) 45vw, 25vw"
               unoptimized={
                 product.images[1].includes("/api/media/") ||
-                product.images[1].includes("parfums.cloud/")
+                product.images[1].includes("parfums.cloud/") ||
+                product.images[1].includes("raw.githubusercontent.com/")
               }
             />
           ) : null}
