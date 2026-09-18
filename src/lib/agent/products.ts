@@ -12,6 +12,7 @@ import {
   type UpdateProductInput,
 } from "@/lib/agent/schema";
 import { merchandisingCategoryDefs, isMerchCategorySlug } from "@/lib/catalog/merchandising";
+import { inferFamilyCategory } from "@/lib/catalog/family";
 import { toSlug } from "@/lib/catalog/slug";
 import { databaseEnabled } from "@/lib/db/enabled";
 import { announceNewArrivalIfNeeded } from "@/lib/email/new-arrivals";
@@ -58,7 +59,7 @@ async function upsertFamilyCategory(tx: Prisma.TransactionClient, name?: string 
   const slug = toSlug(name);
   if (isMerchCategorySlug(slug)) {
     throw new AgentCatalogError(
-      `Use merchandising for ${slug}; category is for olfactive family (woody / floral / amber / citrus).`,
+      `Use merchandising for ${slug}; category is for olfactive family (amber=gourmand / woody=clean / floral / citrus=dominant).`,
       400,
     );
   }
@@ -144,9 +145,16 @@ export function parseAdminProductInput(input: unknown): CreateProductInput {
 
 export async function createDraftProduct(input: CreateProductInput) {
   const prisma = await db();
+  const familySlug = inferFamilyCategory({
+    category: input.category,
+    name: input.name,
+    description: input.description,
+    descriptionHe: input.descriptionHe,
+    notes: input.notes,
+  });
   return prisma.$transaction(async (tx) => {
     const brand = await upsertBrand(tx, input.brand);
-    const family = await upsertFamilyCategory(tx, input.category);
+    const family = await upsertFamilyCategory(tx, familySlug);
     const merch = await Promise.all(
       (input.merchandising ?? []).map((tag) => ensureMerchandisingCategory(tx, tag)),
     );

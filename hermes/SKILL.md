@@ -30,7 +30,15 @@ Storefront **Categories** menu uses merchandising tags (separate from olfactive 
 | Testers / Refills / тестеры / טסטרים | `testers-refills` |
 | Additional Products / дополнительные / מוצרים נוספים | `additional-products` |
 
-- `category` = olfactive family only (`woody` / `floral` / `amber` / `citrus` or a new family).
+- `category` = one olfactive family only. Storefront labels:
+  | Slug | Label |
+  |---|---|
+  | `amber` | גורמני / Gourmand |
+  | `woody` | נקי / Clean |
+  | `floral` | פרחוני / Floral |
+  | `citrus` | דומיננטי / Dominant |
+  If omitted, the server **auto-picks** one of these four from the product copy.
+  Always prefer passing the best-matching slug when the admin states a family.
 - To place a product in a Categories menu section, call `update_product` with
   `merchandising: ["back-in-stock"]` (can combine several tags).
 - To remove from all merchandising sections: `merchandising: []`.
@@ -52,8 +60,9 @@ node ~/.hermes/profiles/the-perfume-room/bin/upload-local-image.mjs \
 
 3. Parse stdout JSON `{ url, key }`. The `url` must be a full `https://parfums.cloud/...`
    link and the file must be **> 8 KB**. If upload fails, stop and say so.
-4. Call `create_product` with brand, name, slug, descriptions, category, variants,
-   and `images: [{ url }]` from step 3. **Do not** run beautify/flyer generation.
+4. Call `create_product` with brand, name, slug, descriptions, **category** (one of
+   amber/woody/floral/citrus — infer from the copy if the admin did not name a family),
+   variants, and `images: [{ url }]` from step 3. **Do not** run beautify/flyer generation.
 5. Reply with the slug, that it is a **draft**, and wait for an explicit publish command.
 6. After `publish_product`, live URLs are `/he/products/{slug}`, `/en/products/{slug}`,
    `/ru/products/{slug}`.

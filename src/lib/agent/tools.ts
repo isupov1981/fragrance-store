@@ -35,7 +35,11 @@ export const agentTools = [
         description: { type: "string", description: "English description" },
         descriptionHe: { type: "string" },
         brand: { type: "string" },
-        category: { type: "string", description: "Olfactive family slug or name, e.g. woody / floral / amber / citrus" },
+        category: {
+          type: "string",
+          description:
+            "Olfactive family: amber (גורמני/gourmand), woody (נקי/clean), floral (פרחוני), citrus (דומיננטי/dominant). Auto-inferred from copy if omitted.",
+        },
         merchandising: {
           type: "array",
           description: "Store Categories menu tags",

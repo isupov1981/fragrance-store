@@ -27,8 +27,12 @@ function htmlPage(title: string, body: string) {
 </html>`;
 }
 
-export async function GET(request: Request) {
-  const token = new URL(request.url).searchParams.get("token")?.trim() ?? "";
+function tokenFromRequest(request: Request) {
+  const url = new URL(request.url);
+  return url.searchParams.get("token")?.trim() ?? "";
+}
+
+async function handleUnsubscribe(token: string) {
   if (!token) {
     return new Response(
       htmlPage("Unsubscribe", "This unsubscribe link is missing or incomplete."),
@@ -51,4 +55,13 @@ export async function GET(request: Request) {
     ),
     { status: 200, headers: { "content-type": "text/html; charset=utf-8" } },
   );
+}
+
+export async function GET(request: Request) {
+  return handleUnsubscribe(tokenFromRequest(request));
+}
+
+/** One-click unsubscribe (RFC 8058) used by mail clients with List-Unsubscribe-Post. */
+export async function POST(request: Request) {
+  return handleUnsubscribe(tokenFromRequest(request));
 }

@@ -18,6 +18,7 @@ export default async function AdminLayout({
     [dict.nav.brands, "/admin/brands"],
     [dict.nav.orders, "/admin/orders"],
     [dict.nav.customers, "/admin/customers"],
+    [dict.nav.subscribers, "/admin/subscribers"],
     [dict.nav.content, "/admin/content"],
     [dict.nav.shipping, "/admin/shipping"],
     [dict.nav.settings, "/admin/settings"],

@@ -113,6 +113,10 @@ class SmtpOrderMailer implements OrderMailer {
       subject: copy.subject,
       text,
       html,
+      headers: {
+        "List-Unsubscribe": `<${input.unsubscribeUrl}>`,
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+      },
     });
   }
 }

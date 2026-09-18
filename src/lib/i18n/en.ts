@@ -492,6 +492,8 @@ export const en = {
       "ANFAS Ishq is a unisex fragrance with a rich, warm gourmand character — fruity sweetness, soft florals and creamy depth. Luxurious and enveloping, with an elegant, sensual presence. Juicy raspberry and white flowers meet sweet creamy tones for lasting warmth on skin.",
     "zoologist-rabbit":
       "Rabbit by Zoologist is a unisex fragrance — green, sweetly gourmand, inspired by the soft, playful world of the rabbit. Planty freshness meets warm creamy sweetness for a cozy, fluffy, comforting wear.",
+    "le-labo-santal-33":
+      "Santal 33 by Le Labo is a unisex fragrance — woody, dry and smoky, inspired by open spaces, nature and freedom. Deep warmth meets aromatic freshness in a minimalist, elegant, slightly rugged profile. Sandalwood and cedar sit at the heart with cardamom, iris, violet and leather — creamy woods with dry, smoky, leathery facets that soften into an addictive warmth on skin. A signature scent from the New York niche house.",
   },
   variants: {
     "50 ml": "50 ml",
