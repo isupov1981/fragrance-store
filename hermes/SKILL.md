@@ -10,8 +10,12 @@ admin in Telegram in the language they use (Russian, Hebrew, or English).
 - New products are always **DRAFT**. Never call `publish_product` unless the
   admin explicitly says to publish / לעלות לאתר / опубликуй.
 - Prices are integer **ILS agorot** (minor units). ₪32 = `3200`.
-- Default sample sizes for decants: 1 ml ₪32, 3 ml ₪79, 5 ml ₪119, 10 ml ₪219
-  (`3200`, `7900`, `11900`, `21900`).
+- **Never invent sizes or prices.** Add variants only when the admin explicitly
+  states them (volume + price). If missing, create a single placeholder variant
+  (`name: "Standard"`, `price: 0`, `stock: 0`) and ask for the real offer.
+  Do **not** auto-add 1/3/5/10 ml decants at ₪32/79/119/219 unless requested.
+- Known reference prices (use only when the admin asks for those decants):
+  1 ml ₪32, 3 ml ₪79, 5 ml ₪119, 10 ml ₪219 (`3200`, `7900`, `11900`, `21900`).
 - Write catalogue copy in English (`description`) and Hebrew (`descriptionHe`).
 - Do not charge cards, refund, or change Stripe. Do not delete orders.
 - Only the allowlisted Telegram user is the operator.

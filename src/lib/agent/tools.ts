@@ -25,7 +25,7 @@ export const agentTools = [
   {
     name: "create_product",
     description:
-      "Create a DRAFT fragrance product. Prices are ILS agorot (32₪ = 3200). Sample sizes typically 1/3/5/10 ml at 3200/7900/11900/21900. Never publishes. Use merchandising for store menu placement: back-in-stock, testers-refills, additional-products.",
+      "Create a DRAFT fragrance product. Prices are ILS agorot (32₪ = 3200). Never invent variants — only add sizes/prices the admin stated; if omitted use one placeholder Standard at price 0 stock 0. Never publishes. Use merchandising for store menu placement: back-in-stock, testers-refills, additional-products.",
     inputSchema: {
       type: "object",
       required: ["name", "slug", "description", "variants"],
