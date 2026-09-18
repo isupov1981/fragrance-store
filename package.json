@@ -27,6 +27,7 @@
     "db:seed": "node scripts/run-prisma.mjs db seed",
     "import:products": "tsx scripts/import-products-csv.ts",
     "media:upload": "node scripts/upload-catalog-media.mjs",
+    "hero:video": "node --env-file=.env scripts/generate-hero-video.mjs",
     "stripe:webhook": "node scripts/stripe-register-webhook.mjs"
   },
   "prisma": {

@@ -654,6 +654,14 @@ html[data-a11y-cursor="white"] * {
 .home-hero-video {
   display: block;
   background: var(--ink);
+  opacity: 0;
+  transition: opacity 1.8s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.home-hero-video.is-active {
+  opacity: 1;
+  z-index: 1;
 }
 
 .home-hero-frame,
