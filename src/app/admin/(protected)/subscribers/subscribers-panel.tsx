@@ -59,7 +59,7 @@ export function SubscribersPanel({ initialSubscribers }: Props) {
     }
   }
 
-  async function setBlocked(id: string, blocked: boolean) {
+  async function patchSubscriber(id: string, body: { blocked?: boolean; locale?: string }, okMessage: string) {
     setBusyId(id);
     setMessage(undefined);
     setError(false);
@@ -67,7 +67,7 @@ export function SubscribersPanel({ initialSubscribers }: Props) {
       const response = await fetch(`/api/admin/newsletter/subscribers/${id}`, {
         method: "PATCH",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ blocked }),
+        body: JSON.stringify(body),
       });
       const data = (await response.json().catch(() => null)) as {
         subscriber?: AdminSubscriber;
@@ -79,13 +79,23 @@ export function SubscribersPanel({ initialSubscribers }: Props) {
         return;
       }
       setSubscribers((rows) => rows.map((row) => (row.id === id ? data.subscriber! : row)));
-      setMessage(blocked ? copy.blockedOk : copy.unblockedOk);
+      setMessage(okMessage);
     } catch {
       setError(true);
       setMessage(copy.updateFailed);
     } finally {
       setBusyId(null);
     }
+  }
+
+  async function setBlocked(id: string, blocked: boolean) {
+    await patchSubscriber(id, { blocked }, blocked ? copy.blockedOk : copy.unblockedOk);
+  }
+
+  async function updateLocale(id: string, nextLocale: string) {
+    const current = subscribers.find((row) => row.id === id);
+    if (!current || current.locale === nextLocale) return;
+    await patchSubscriber(id, { locale: nextLocale }, copy.localeOk);
   }
 
   async function removeSubscriber(id: string) {
@@ -201,7 +211,22 @@ export function SubscribersPanel({ initialSubscribers }: Props) {
                 return (
                   <tr key={row.id} className="border-t border-slate-200">
                     <td className="px-4 py-3">{row.email}</td>
-                    <td className="px-4 py-3 uppercase">{row.locale}</td>
+                    <td className="px-4 py-3">
+                      <label className="sr-only" htmlFor={`subscriber-locale-${row.id}`}>
+                        {copy.localeLabel.replace("{email}", row.email)}
+                      </label>
+                      <select
+                        id={`subscriber-locale-${row.id}`}
+                        className="rounded-lg border border-slate-300 px-2 py-1.5 text-sm disabled:opacity-60"
+                        value={row.locale === "he" || row.locale === "en" || row.locale === "ru" ? row.locale : "en"}
+                        disabled={busy}
+                        onChange={(event) => updateLocale(row.id, event.target.value)}
+                      >
+                        <option value="he">עברית</option>
+                        <option value="en">English</option>
+                        <option value="ru">Русский</option>
+                      </select>
+                    </td>
                     <td className="px-4 py-3">
                       <span
                         className={

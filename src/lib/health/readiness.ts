@@ -21,6 +21,10 @@ export async function collectReadiness() {
     grow: isGrowConfigured() ? "configured" : "missing",
     stripe: process.env.STRIPE_SECRET_KEY ? "configured" : "demo",
     smtp: process.env.SMTP_HOST ? "configured" : "noop",
+    smtpAuth:
+      process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASSWORD
+        ? "configured"
+        : "incomplete",
     hermesAgent: agentTokenConfigured() ? "configured" : "missing",
     geminiImage: isGeminiConfigured() ? "configured" : "missing",
   };

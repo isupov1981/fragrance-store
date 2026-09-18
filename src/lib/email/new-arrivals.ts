@@ -1,6 +1,10 @@
 import { formatMoney } from "@/lib/currency";
 import { databaseEnabled } from "@/lib/db/enabled";
-import { getOrderMailer, isSmtpConfigured } from "@/lib/email/mailer";
+import {
+  getOrderMailer,
+  isSmtpConfigured,
+  smtpErrorMessage,
+} from "@/lib/email/mailer";
 import { isLocale, type Locale } from "@/lib/i18n/config";
 import { localizedPath } from "@/lib/i18n/path";
 import { listActiveSubscribers } from "@/lib/newsletter/subscribers";
@@ -42,6 +46,8 @@ export type NewArrivalBlastResult = {
   emailsFailed: number;
   productSlugs: string[];
   smtpConfigured: boolean;
+  /** Short SMTP/send error for the admin UI when something failed. */
+  lastError?: string;
 };
 
 /**
@@ -93,6 +99,7 @@ export async function announceNewArrivalIfNeeded(productId: string) {
   const imageUrl = absoluteMediaUrl(product.images[0].url, origin);
   const mailer = getOrderMailer();
 
+  let failed = 0;
   await Promise.all(
     subscribers.map(async (subscriber) => {
       const locale: Locale = isLocale(subscriber.locale) ? subscriber.locale : "en";
@@ -113,10 +120,19 @@ export async function announceNewArrivalIfNeeded(productId: string) {
           unsubscribeUrl: `${origin}/api/newsletter/unsubscribe?token=${encodeURIComponent(subscriber.unsubscribeToken)}`,
         });
       } catch (error) {
+        failed += 1;
         console.error(`New-arrival email failed for ${subscriber.email}`, error);
       }
     }),
   );
+
+  // Allow a later admin blast if every send failed.
+  if (failed === subscribers.length) {
+    await prisma.product.update({
+      where: { id: product.id },
+      data: { newArrivalAnnouncedAt: null },
+    });
+  }
 }
 
 export async function listUnannouncedNewArrivals(): Promise<UnannouncedNewArrival[]> {
@@ -187,15 +203,20 @@ export async function blastUnannouncedNewArrivals(): Promise<NewArrivalBlastResu
 
   let emailsAttempted = 0;
   let emailsFailed = 0;
+  let lastError: string | undefined;
   const productSlugs: string[] = [];
 
   for (const product of products) {
     const imageUrl = absoluteMediaUrl(product.imageUrl, origin);
     productSlugs.push(product.slug);
 
+    let productFailed = 0;
+    let productAttempted = 0;
+
     for (const subscriber of subscribers) {
       const locale: Locale = isLocale(subscriber.locale) ? subscriber.locale : "en";
       emailsAttempted += 1;
+      productAttempted += 1;
       try {
         await mailer.sendNewArrival({
           to: subscriber.email,
@@ -214,19 +235,24 @@ export async function blastUnannouncedNewArrivals(): Promise<NewArrivalBlastResu
         });
       } catch (error) {
         emailsFailed += 1;
+        productFailed += 1;
+        lastError = smtpErrorMessage(error);
         console.error(`New-arrival blast failed for ${subscriber.email} / ${product.slug}`, error);
       }
     }
 
-    await prisma.product.updateMany({
-      where: {
-        id: product.id,
-        newArrival: true,
-        status: "ACTIVE",
-        newArrivalAnnouncedAt: null,
-      },
-      data: { newArrivalAnnouncedAt: new Date() },
-    });
+    // Only stamp announced when at least one email was delivered.
+    if (productAttempted > 0 && productFailed < productAttempted) {
+      await prisma.product.updateMany({
+        where: {
+          id: product.id,
+          newArrival: true,
+          status: "ACTIVE",
+          newArrivalAnnouncedAt: null,
+        },
+        data: { newArrivalAnnouncedAt: new Date() },
+      });
+    }
   }
 
   return {
@@ -236,5 +262,17 @@ export async function blastUnannouncedNewArrivals(): Promise<NewArrivalBlastResu
     emailsFailed,
     productSlugs,
     smtpConfigured,
+    lastError,
   };
+}
+
+/** Clear announce stamp so an admin can retry a failed blast for a slug. */
+export async function clearNewArrivalAnnouncement(slug: string) {
+  if (!databaseEnabled()) return false;
+  const { prisma } = await import("@/lib/db/prisma");
+  const result = await prisma.product.updateMany({
+    where: { slug, newArrival: true },
+    data: { newArrivalAnnouncedAt: null },
+  });
+  return result.count > 0;
 }

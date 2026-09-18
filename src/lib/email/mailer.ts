@@ -31,10 +31,17 @@ class NoopOrderMailer implements OrderMailer {
 
 class SmtpOrderMailer implements OrderMailer {
   private transport() {
+    const port = Number(process.env.SMTP_PORT ?? 587);
+    const secure =
+      process.env.SMTP_SECURE === "true" || port === 465;
     return nodemailer.createTransport({
       host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT ?? 587),
-      secure: process.env.SMTP_SECURE === "true",
+      port,
+      secure,
+      requireTLS: !secure && port === 587,
+      connectionTimeout: 20_000,
+      greetingTimeout: 20_000,
+      socketTimeout: 30_000,
       auth:
         process.env.SMTP_USER && process.env.SMTP_PASSWORD
           ? {
@@ -43,6 +50,10 @@ class SmtpOrderMailer implements OrderMailer {
             }
           : undefined,
     });
+  }
+
+  async verify() {
+    await this.transport().verify();
   }
 
   async sendConfirmation(order: Order) {
@@ -233,9 +244,34 @@ function escapeAttr(value: string) {
 }
 
 export function isSmtpConfigured() {
-  return Boolean(process.env.SMTP_HOST?.trim());
+  return Boolean(
+    process.env.SMTP_HOST?.trim() &&
+      process.env.SMTP_USER?.trim() &&
+      process.env.SMTP_PASSWORD?.trim(),
+  );
 }
 
 export function getOrderMailer(): OrderMailer {
   return isSmtpConfigured() ? new SmtpOrderMailer() : new NoopOrderMailer();
+}
+
+/** Probe SMTP credentials; returns null when ok, or a short error message. */
+export async function probeSmtp(): Promise<string | null> {
+  if (!isSmtpConfigured()) return "SMTP is not configured";
+  try {
+    await new SmtpOrderMailer().verify();
+    return null;
+  } catch (error) {
+    return smtpErrorMessage(error);
+  }
+}
+
+export function smtpErrorMessage(error: unknown) {
+  if (!(error instanceof Error)) return "Unknown SMTP error";
+  const withCode = error as Error & { code?: string; response?: string; responseCode?: number };
+  const parts = [withCode.message];
+  if (withCode.code) parts.push(`code=${withCode.code}`);
+  if (withCode.responseCode) parts.push(`smtp=${withCode.responseCode}`);
+  if (withCode.response) parts.push(String(withCode.response).slice(0, 180));
+  return parts.filter(Boolean).join(" · ");
 }

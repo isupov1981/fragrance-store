@@ -4,9 +4,10 @@ import { requireAdminRole } from "@/lib/auth/rbac";
 import { hasSameOrigin, requireAdminRequest } from "@/lib/auth/server";
 import {
   blastUnannouncedNewArrivals,
+  clearNewArrivalAnnouncement,
   countUnannouncedNewArrivals,
 } from "@/lib/email/new-arrivals";
-import { isSmtpConfigured } from "@/lib/email/mailer";
+import { isSmtpConfigured, probeSmtp } from "@/lib/email/mailer";
 import { listActiveSubscribers } from "@/lib/newsletter/subscribers";
 import { auditLog } from "@/lib/security/audit";
 
@@ -19,15 +20,18 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const [pendingProducts, subscribers] = await Promise.all([
+  const [pendingProducts, subscribers, smtpError] = await Promise.all([
     countUnannouncedNewArrivals(),
     listActiveSubscribers(),
+    probeSmtp(),
   ]);
 
   return NextResponse.json({
     pendingProducts,
     subscribers: subscribers.length,
     smtpConfigured: isSmtpConfigured(),
+    smtpOk: !smtpError,
+    smtpError,
   });
 }
 
@@ -46,19 +50,27 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "SMTP is not configured" }, { status: 503 });
   }
 
+  const body = (await request.json().catch(() => null)) as { retrySlug?: string } | null;
+  if (body?.retrySlug?.trim()) {
+    await clearNewArrivalAnnouncement(body.retrySlug.trim());
+  }
+
   try {
     const result = await blastUnannouncedNewArrivals();
+    const allFailed =
+      result.emailsAttempted > 0 && result.emailsFailed === result.emailsAttempted;
     auditLog({
       event: "admin_newsletter_new_arrivals_blast",
-      level: "info",
-      outcome: "success",
+      level: allFailed ? "warn" : "info",
+      outcome: allFailed ? "failed" : "success",
       meta: {
         products: result.products,
         emailsAttempted: result.emailsAttempted,
         emailsFailed: result.emailsFailed,
+        lastError: result.lastError,
       },
     });
-    return NextResponse.json(result);
+    return NextResponse.json(result, { status: allFailed ? 502 : 200 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Could not send newsletter blast";
     return NextResponse.json({ error: message }, { status: 503 });

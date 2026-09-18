@@ -112,6 +112,21 @@ export async function setSubscriberBlocked(id: string, blocked: boolean): Promis
   return serialize(row);
 }
 
+export async function setSubscriberLocale(id: string, localeInput: string): Promise<AdminSubscriber | null> {
+  if (!databaseEnabled()) return null;
+  if (!isLocale(localeInput)) return null;
+  const { prisma } = await import("@/lib/db/prisma");
+  try {
+    const row = await prisma.newsletterSubscriber.update({
+      where: { id },
+      data: { locale: localeInput },
+    });
+    return serialize(row);
+  } catch {
+    return null;
+  }
+}
+
 export async function deleteSubscriber(id: string): Promise<boolean> {
   if (!databaseEnabled()) return false;
   const { prisma } = await import("@/lib/db/prisma");

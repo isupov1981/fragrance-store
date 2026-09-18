@@ -3,14 +3,24 @@ import { z } from "zod";
 
 import { requireAdminRole } from "@/lib/auth/rbac";
 import { hasSameOrigin, requireAdminRequest } from "@/lib/auth/server";
-import { deleteSubscriber, setSubscriberBlocked } from "@/lib/newsletter/subscribers";
+import { locales } from "@/lib/i18n/config";
+import {
+  deleteSubscriber,
+  setSubscriberBlocked,
+  setSubscriberLocale,
+} from "@/lib/newsletter/subscribers";
 import { auditLog } from "@/lib/security/audit";
 
 export const runtime = "nodejs";
 
-const patchSchema = z.object({
-  blocked: z.boolean(),
-});
+const patchSchema = z
+  .object({
+    blocked: z.boolean().optional(),
+    locale: z.enum(locales).optional(),
+  })
+  .refine((value) => value.blocked !== undefined || value.locale !== undefined, {
+    message: "Provide blocked and/or locale",
+  });
 
 export async function PATCH(
   request: Request,
@@ -32,17 +42,33 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid data", issues: parsed.error.issues }, { status: 400 });
   }
 
-  const subscriber = await setSubscriberBlocked(id, parsed.data.blocked);
-  if (!subscriber) {
-    return NextResponse.json({ error: "Subscriber not found" }, { status: 404 });
+  let subscriber = null;
+
+  if (parsed.data.locale !== undefined) {
+    subscriber = await setSubscriberLocale(id, parsed.data.locale);
+    if (!subscriber) {
+      return NextResponse.json({ error: "Subscriber not found" }, { status: 404 });
+    }
+    auditLog({
+      event: "admin_subscriber_locale",
+      level: "info",
+      outcome: "success",
+      meta: { id: subscriber.id, email: subscriber.email, locale: subscriber.locale },
+    });
   }
 
-  auditLog({
-    event: parsed.data.blocked ? "admin_subscriber_block" : "admin_subscriber_unblock",
-    level: "info",
-    outcome: "success",
-    meta: { id: subscriber.id, email: subscriber.email },
-  });
+  if (parsed.data.blocked !== undefined) {
+    subscriber = await setSubscriberBlocked(id, parsed.data.blocked);
+    if (!subscriber) {
+      return NextResponse.json({ error: "Subscriber not found" }, { status: 404 });
+    }
+    auditLog({
+      event: parsed.data.blocked ? "admin_subscriber_block" : "admin_subscriber_unblock",
+      level: "info",
+      outcome: "success",
+      meta: { id: subscriber.id, email: subscriber.email },
+    });
+  }
 
   return NextResponse.json({ subscriber });
 }

@@ -66,6 +66,8 @@ const en = {
     success:
       "Sent for {products} products to {subscribers} subscribers ({emails} emails). Failed: {failed}.",
     failed: "Could not send the newsletter blast",
+    smtpProbeFail: "SMTP check failed: {error}",
+    partialFail: "Some emails failed. Last error: {error}",
   },
   subscribers: {
     eyebrow: "Newsletter list",
@@ -93,6 +95,8 @@ const en = {
     deleteFailed: "Could not delete subscriber",
     blockedOk: "Mailing blocked for this address.",
     unblockedOk: "Mailing enabled for this address.",
+    localeOk: "Mail language updated.",
+    localeLabel: "Mail language for {email}",
     updateFailed: "Could not update subscriber",
     empty: "No subscribers yet.",
   },
@@ -283,6 +287,8 @@ const he: typeof en = {
     success:
       "נשלח עבור {products} מוצרים ל־{subscribers} מנויים ({emails} מיילים). נכשלו: {failed}.",
     failed: "לא ניתן לשלוח את דיוור החידושים",
+    smtpProbeFail: "בדיקת SMTP נכשלה: {error}",
+    partialFail: "חלק מהמיילים נכשלו. שגיאה אחרונה: {error}",
   },
   subscribers: {
     eyebrow: "רשימת תפוצה",
@@ -310,6 +316,8 @@ const he: typeof en = {
     deleteFailed: "לא ניתן למחוק מנוי",
     blockedOk: "הדיוור נחסם עבור כתובת זו.",
     unblockedOk: "הדיוור הופעל עבור כתובת זו.",
+    localeOk: "שפת הדיוור עודכנה.",
+    localeLabel: "שפת דיוור עבור {email}",
     updateFailed: "לא ניתן לעדכן מנוי",
     empty: "אין עדיין מנויים.",
   },
