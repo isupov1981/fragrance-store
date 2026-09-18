@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { LocaleLink } from "@/components/i18n/locale-link";
 import { useI18n } from "@/components/i18n/i18n-provider";
+import { isUnoptimizedCatalogImage } from "@/lib/catalog/image";
 
 type TrioProduct = {
   slug: string;
@@ -39,6 +40,7 @@ export function EditorialTrio({ products }: { products: TrioProduct[] }) {
                     alt={study.name}
                     fill
                     sizes={studies.length === 1 ? "100vw" : "(max-width: 640px) 100vw, 33vw"}
+                    unoptimized={isUnoptimizedCatalogImage(study.images[0])}
                   />
                 ) : null}
               </div>

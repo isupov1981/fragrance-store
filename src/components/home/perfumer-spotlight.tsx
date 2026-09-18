@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { LocaleLink } from "@/components/i18n/locale-link";
 import { useI18n } from "@/components/i18n/i18n-provider";
+import { isUnoptimizedCatalogImage } from "@/lib/catalog/image";
 import { interpolate } from "@/lib/i18n/interpolate";
 import { usePrefersReducedMotion } from "./reveal";
 
@@ -78,6 +79,7 @@ export function PerfumerSpotlight({ products }: { products: SpotlightProduct[] }
               alt={house.name}
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
+              unoptimized={isUnoptimizedCatalogImage(house.images[0])}
             />
           ))}
         </div>

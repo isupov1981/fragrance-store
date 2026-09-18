@@ -6,6 +6,7 @@ import { useCurrency } from "@/components/i18n/currency-provider";
 import { useI18n } from "@/components/i18n/i18n-provider";
 import { interpolate } from "@/lib/i18n/interpolate";
 import type { StoreProduct } from "@/lib/catalog";
+import { isUnoptimizedCatalogImage } from "@/lib/catalog/image";
 import { isNewProduct } from "@/lib/catalog/new-arrival";
 
 export function ProductCard({ product, priority = false }: { product: StoreProduct; priority?: boolean }) {
@@ -29,11 +30,7 @@ export function ProductCard({ product, priority = false }: { product: StoreProdu
             fill
             sizes="(max-width: 640px) 78vw, (max-width: 1024px) 45vw, 25vw"
             priority={priority}
-            unoptimized={
-              product.images[0]?.includes("/api/media/") ||
-              product.images[0]?.includes("parfums.cloud/") ||
-              product.images[0]?.includes("raw.githubusercontent.com/")
-            }
+            unoptimized={isUnoptimizedCatalogImage(product.images[0])}
           />
           {product.images[1] ? (
             <Image
@@ -42,11 +39,7 @@ export function ProductCard({ product, priority = false }: { product: StoreProdu
               alt=""
               fill
               sizes="(max-width: 640px) 78vw, (max-width: 1024px) 45vw, 25vw"
-              unoptimized={
-                product.images[1].includes("/api/media/") ||
-                product.images[1].includes("parfums.cloud/") ||
-                product.images[1].includes("raw.githubusercontent.com/")
-              }
+              unoptimized={isUnoptimizedCatalogImage(product.images[1])}
             />
           ) : null}
           <div className="absolute start-3 top-3 flex flex-col items-start gap-1.5">

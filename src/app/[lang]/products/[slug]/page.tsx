@@ -10,6 +10,7 @@ import { convertCatalogCents, defaultCurrency, formatMoney, FREE_SHIPPING_ILS_CE
 import { cookies } from "next/headers";
 import { localeMeta } from "@/lib/i18n/config";
 import { localizedDescription } from "@/lib/catalog";
+import { isUnoptimizedCatalogImage } from "@/lib/catalog/image";
 import { getDictionary, hasLocale } from "@/lib/i18n/get-dictionary";
 import { interpolate } from "@/lib/i18n/interpolate";
 import { localizedPath } from "@/lib/i18n/path";
@@ -116,11 +117,7 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
                 fill
                 sizes="(max-width: 1024px) 100vw, 36vw"
                 priority={index === 0}
-                unoptimized={
-                  image.includes("/api/media/") ||
-                  image.includes("parfums.cloud/") ||
-                  image.includes("raw.githubusercontent.com/")
-                }
+                unoptimized={isUnoptimizedCatalogImage(image)}
               />
             </div>
           ))}

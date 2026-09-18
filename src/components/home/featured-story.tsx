@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { LocaleLink } from "@/components/i18n/locale-link";
 import { useI18n } from "@/components/i18n/i18n-provider";
+import { isUnoptimizedCatalogImage } from "@/lib/catalog/image";
 import { usePrefersReducedMotion } from "./reveal";
 
 type FeaturedProduct = {
@@ -71,6 +72,7 @@ export function FeaturedStory({ product }: { product?: FeaturedProduct }) {
               alt={item.alt}
               fill
               sizes="100vw"
+              unoptimized={isUnoptimizedCatalogImage(item.image)}
             />
           ))}
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(25,21,17,.08)_0%,rgba(25,21,17,.55)_100%)]" />
