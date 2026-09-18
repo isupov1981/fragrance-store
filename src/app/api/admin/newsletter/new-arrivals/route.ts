@@ -62,7 +62,7 @@ export async function POST(request: Request) {
     auditLog({
       event: "admin_newsletter_new_arrivals_blast",
       level: allFailed ? "warn" : "info",
-      outcome: allFailed ? "failed" : "success",
+      outcome: allFailed ? "failure" : "success",
       meta: {
         products: result.products,
         emailsAttempted: result.emailsAttempted,
