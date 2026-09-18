@@ -77,6 +77,7 @@ describe("toStoreProduct", () => {
     expect(mapped?.descriptionHe).toBe("תיאור בעברית");
     expect(mapped?.variants[0]?.price).toBe(3200);
     expect(mapped?.notes).toEqual(["Incense", "Oud"]);
+    expect(mapped?.createdAt).toBeTruthy();
   });
 
   it("returns null when there are no variants", () => {

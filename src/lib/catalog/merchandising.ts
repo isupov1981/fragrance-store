@@ -1,4 +1,5 @@
 import type { Dictionary } from "@/lib/i18n/en";
+import { isNewProduct } from "@/lib/catalog/new-arrival";
 
 export const MERCH_CATEGORY_SLUGS = ["back-in-stock", "testers-refills", "additional-products"] as const;
 
@@ -67,11 +68,17 @@ export const categoryMenuLinks: CategoryMenuLink[] = [
 ];
 
 export function matchesMerchandisingEdit(
-  product: { newArrival?: boolean; featured?: boolean; categorySlugs?: string[]; category: string },
+  product: {
+    newArrival?: boolean;
+    createdAt?: string | Date | null;
+    featured?: boolean;
+    categorySlugs?: string[];
+    category: string;
+  },
   edit: string,
 ) {
   if (!edit) return true;
-  if (edit === "new") return Boolean(product.newArrival);
+  if (edit === "new") return isNewProduct(product);
   if (edit === "featured") return Boolean(product.featured);
   if (edit === "back-in-stock") {
     return (product.categorySlugs ?? [product.category]).includes("back-in-stock");

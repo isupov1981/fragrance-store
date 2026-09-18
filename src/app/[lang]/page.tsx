@@ -9,6 +9,7 @@ import { ProductCarousel } from "@/components/home/product-carousel";
 import { Reveal } from "@/components/home/reveal";
 import type { Metadata } from "next";
 import { listStoreProducts } from "@/lib/db/products";
+import { isNewProduct } from "@/lib/catalog/new-arrival";
 import { getDictionary, hasLocale } from "@/lib/i18n/get-dictionary";
 import { localizedPath } from "@/lib/i18n/path";
 
@@ -34,7 +35,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
   const { lang } = await params;
   const dict = getDictionary(lang);
   const catalog = await listStoreProducts();
-  const arrivals = catalog.filter((product) => product.newArrival);
+  const arrivals = catalog.filter((product) => isNewProduct(product));
   const cabinet = [...catalog].sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)));
 
   return (

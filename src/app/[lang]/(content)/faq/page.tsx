@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { LocaleLink } from "@/components/i18n/locale-link";
 import { ContentPage } from "@/components/ui/content-page";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 
@@ -12,15 +13,61 @@ export default async function FaqPage({ params }: PageProps<"/[lang]/faq">) {
   const dict = getDictionary(lang);
   return (
     <ContentPage eyebrow={dict.faq.eyebrow} title={dict.faq.heading} intro={dict.faq.intro}>
-      <div className="mx-auto max-w-3xl divide-y divide-ink/10 border-y border-ink/10">
-        {dict.faq.items.map(([question, answer], index) => (
-          <details className="group py-6" key={question} open={index === 0}>
-            <summary className="flex items-start justify-between gap-6 font-display text-xl sm:text-2xl">
-              {question}<span className="mt-1 shrink-0 font-sans text-xl font-light transition group-open:rotate-45" aria-hidden="true">+</span>
-            </summary>
-            <p className="max-w-2xl pt-4 text-sm leading-7 text-ink/65">{answer}</p>
-          </details>
+      <div className="mx-auto flex max-w-3xl flex-col gap-8">
+        {dict.faq.sections.map((section) => (
+          <section key={section.title} className="rounded-2xl border border-ink/12 p-5 sm:p-6">
+            <h2 className="text-sm font-medium text-ink/55">{section.title}</h2>
+            <ul className="mt-4 space-y-3">
+              {section.items.map((item) => (
+                <li key={item.question} className="rounded-xl border border-ink/10 bg-ivory px-4 py-4 sm:px-5">
+                  <h3 className="text-sm font-semibold leading-6 text-ink">
+                    <span className="me-2 text-ink/35" aria-hidden="true">
+                      –
+                    </span>
+                    {item.question}
+                  </h3>
+                  <p className="mt-2 text-sm leading-7 text-ink/65">{item.answer}</p>
+                  {item.note ? (
+                    <p className="mt-3 rounded-lg border border-dashed border-ink/20 bg-stone/40 px-3 py-2 text-sm leading-6 text-ink/70">
+                      {item.note}
+                    </p>
+                  ) : null}
+                  {item.bullets?.length ? (
+                    <ul className="mt-3 list-disc space-y-1 ps-5 text-sm leading-6 text-ink/65">
+                      {item.bullets.map((bullet) => (
+                        <li key={bullet}>{bullet}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                  {item.footer ? <p className="mt-3 text-sm leading-6 text-ink/65">{item.footer}</p> : null}
+                </li>
+              ))}
+            </ul>
+          </section>
         ))}
+
+        <div className="flex flex-col items-stretch gap-3 sm:items-center">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-center">
+            <LocaleLink
+              className="inline-flex h-12 items-center justify-center border border-ink px-6 text-[11px] font-semibold uppercase tracking-[0.14em] transition hover:bg-ink hover:text-ivory"
+              href="/shipping"
+            >
+              {dict.faq.actions.terms}
+            </LocaleLink>
+            <LocaleLink
+              className="inline-flex h-12 items-center justify-center border border-ink px-6 text-[11px] font-semibold uppercase tracking-[0.14em] transition hover:bg-ink hover:text-ivory"
+              href="/refund"
+            >
+              {dict.faq.actions.returns}
+            </LocaleLink>
+          </div>
+          <LocaleLink
+            className="inline-flex h-12 items-center justify-center bg-ink px-8 text-[11px] font-semibold uppercase tracking-[0.14em] text-ivory transition hover:bg-bronze"
+            href="/contact"
+          >
+            {dict.faq.actions.contact}
+          </LocaleLink>
+        </div>
       </div>
     </ContentPage>
   );

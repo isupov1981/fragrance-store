@@ -38,6 +38,7 @@ export function toStoreProduct(record: PublishedProduct): StoreProduct | null {
     concentration,
     featured: record.featured,
     newArrival: record.newArrival,
+    createdAt: record.createdAt.toISOString(),
     notes,
     images: record.images.map((image) => image.url).filter(Boolean),
     variants: record.variants.map((variant) => ({

@@ -321,30 +321,82 @@ export const en = {
   faq: {
     title: "Frequently asked questions",
     eyebrow: "Client care",
-    heading: "Questions, considered.",
-    intro: "Everything you may wish to know about choosing, wearing and receiving fragrance from The Perfume Room.",
-    items: [
-      [
-        "How should I choose a fragrance online?",
-        "Begin with the notes and atmosphere you already enjoy, then consider a sample where available. We can also offer personal guidance—contact us with a few fragrances you love.",
-      ],
-      [
-        "Are your fragrances authentic?",
-        "Every fragrance is sourced directly from its house or an authorised distributor. We guarantee the provenance of every bottle.",
-      ],
-      [
-        "Do you include samples?",
-        "Yes. Every full-size order includes complimentary samples selected to complement your fragrance.",
-      ],
-      [
-        "How should fragrance be stored?",
-        "Keep your bottle upright, away from direct light, heat and sudden temperature changes. A cool drawer or cabinet is ideal.",
-      ],
-      [
-        "Can I send an order as a gift?",
-        "Yes. Signature wrapping and a handwritten note can be requested during checkout.",
-      ],
+    heading: "Frequently asked questions",
+    intro: "Orders, authenticity, payments, returns and cancellations — clear answers in one place.",
+    sections: [
+      {
+        title: "Orders",
+        items: [
+          {
+            question: "Can I change the address or shipping method after ordering?",
+            answer:
+              "If the order has not yet shipped, we will gladly update it. If it has already shipped, we will try to help with the carrier. A change after placing an order may involve an additional fee.",
+          },
+          {
+            question: "How do I know the order was received?",
+            answer:
+              "You will receive a confirmation email immediately after payment. Didn't get it? Check your promotions or spam folder. You can always contact us and we will confirm manually.",
+          },
+        ],
+      },
+      {
+        title: "Products & authenticity",
+        items: [
+          {
+            question: "Are the products authentic?",
+            answer:
+              "Yes. We work with the major official importers in Israel and, in some cases, with high-quality parallel import — to ensure authenticity, availability and a fair price.",
+          },
+        ],
+      },
+      {
+        title: "Payments",
+        items: [
+          {
+            question: "Which payment methods are accepted?",
+            answer:
+              "Credit cards and the supported payment methods shown on the payment screen. If something doesn't work, contact us and we will find a solution.",
+          },
+          {
+            question: "Is the site secure?",
+            answer:
+              "Yes. The site uses up-to-date encryption standards, and payment is processed in a secure environment.",
+          },
+        ],
+      },
+      {
+        title: "Returns & exchanges",
+        items: [
+          {
+            question: "What is the return policy?",
+            answer:
+              "Returns are possible within 14 days of purchase when the product is sealed, new and in its original packaging, with proof of purchase. Refunds are issued to the original payment method within 7 days of processing.",
+            note: "Opened or used products cannot be returned. Made-to-order products — as required by law.",
+          },
+          {
+            question: "I received a gift with my order. What happens if I return it?",
+            answer:
+              "If you return a product without returning a gift that came with it, ₪50 will be deducted from the refund for each gift not returned. Gifts must be sealed and in original packaging.",
+          },
+          {
+            question: "How do I cancel an order?",
+            answer:
+              "You can cancel even if the shipment has already left, under the Consumer Protection Law and our terms. If it has not shipped yet, processing is faster. If it has shipped, we will arrange an orderly return after you contact us.",
+            bullets: [
+              "Cancellation fee for a return not due to a defect: 5% or ₪100 — whichever is lower.",
+              "If you received free shipping, ₪30 may be charged for shipping upon cancellation.",
+            ],
+            footer:
+              "To request a cancellation, provide the full name and ID number of the purchaser, plus the order details.",
+          },
+        ],
+      },
     ],
+    actions: {
+      terms: "Site terms",
+      returns: "Returns & exchanges policy",
+      contact: "Contact form",
+    },
   },
   shipping: {
     title: "Delivery",
@@ -412,10 +464,10 @@ export const en = {
   },
   categories: {
     all: { name: "All fragrances", description: "The complete collection." },
-    amber: { name: "Amber", description: "Warm resins, woods and golden vanilla." },
-    woody: { name: "Woody", description: "Cedar, sandalwood and atmospheric forest notes." },
+    amber: { name: "Gourmand", description: "Vanilla, cocoa, caramel and rich sweet accords." },
+    woody: { name: "Clean", description: "Soft musk, linen and bright skin-light notes." },
     floral: { name: "Floral", description: "Modern petals, iris and expressive rose." },
-    citrus: { name: "Citrus", description: "Luminous bergamot, neroli and bitter orange." },
+    citrus: { name: "Dominant", description: "Bold presence, depth and lasting projection." },
     "back-in-stock": { name: "Back In Stock", description: "Recently restocked fragrances." },
     "testers-refills": { name: "Testers / Refills", description: "Testers and refill formats." },
     "additional-products": {

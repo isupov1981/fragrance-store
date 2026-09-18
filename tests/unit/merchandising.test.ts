@@ -8,6 +8,7 @@ describe("matchesMerchandisingEdit", () => {
       category: "woody",
       categorySlugs: ["woody", "testers-refills"],
       newArrival: true,
+      createdAt: new Date().toISOString(),
       featured: false,
     };
     expect(matchesMerchandisingEdit(product, "")).toBe(true);

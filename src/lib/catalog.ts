@@ -24,6 +24,8 @@ export type StoreProduct = {
   concentration?: "edp" | "extrait";
   featured?: boolean;
   newArrival?: boolean;
+  /** ISO timestamp used to auto-expire the NEW badge after 30 days. */
+  createdAt?: string;
   notes?: string[];
   images: string[];
   variants: StoreVariant[];
@@ -173,10 +175,10 @@ export const products = fallbackProducts;
 
 export const categories: StoreCategory[] = [
   { slug: "all", name: "All fragrances", description: "The complete collection." },
-  { slug: "amber", name: "Amber", description: "Warm resins, woods and golden vanilla." },
-  { slug: "woody", name: "Woody", description: "Cedar, sandalwood and atmospheric forest notes." },
+  { slug: "amber", name: "Gourmand", description: "Vanilla, cocoa, caramel and rich sweet accords." },
+  { slug: "woody", name: "Clean", description: "Soft musk, linen and bright skin-light notes." },
   { slug: "floral", name: "Floral", description: "Modern petals, iris and expressive rose." },
-  { slug: "citrus", name: "Citrus", description: "Luminous bergamot, neroli and bitter orange." },
+  { slug: "citrus", name: "Dominant", description: "Bold presence, depth and lasting projection." },
   { slug: "back-in-stock", name: "Back In Stock", description: "Recently restocked fragrances." },
   { slug: "testers-refills", name: "Testers / Refills", description: "Testers and refill formats." },
   {

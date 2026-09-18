@@ -1,4 +1,5 @@
 import type { StoreProduct } from "@/lib/catalog";
+import { isNewProduct } from "@/lib/catalog/new-arrival";
 
 export const COLLECTION_PAGE_SIZE = 9;
 
@@ -14,12 +15,22 @@ function startingPrice(product: StoreProduct) {
   return product.variants[0]?.price ?? 0;
 }
 
+function createdAtMs(product: StoreProduct) {
+  if (!product.createdAt) return 0;
+  const value = new Date(product.createdAt).getTime();
+  return Number.isNaN(value) ? 0 : value;
+}
+
 export function sortCollection(products: StoreProduct[], sort: CollectionSort) {
   const copy = [...products];
   copy.sort((left, right) => {
     switch (sort) {
       case "newest":
-        return Number(Boolean(right.newArrival)) - Number(Boolean(left.newArrival)) || left.name.localeCompare(right.name);
+        return (
+          createdAtMs(right) - createdAtMs(left) ||
+          Number(isNewProduct(right)) - Number(isNewProduct(left)) ||
+          left.name.localeCompare(right.name)
+        );
       case "price-asc":
         return startingPrice(left) - startingPrice(right);
       case "price-desc":

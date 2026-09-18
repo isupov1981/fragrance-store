@@ -6,10 +6,12 @@ import { useCurrency } from "@/components/i18n/currency-provider";
 import { useI18n } from "@/components/i18n/i18n-provider";
 import { interpolate } from "@/lib/i18n/interpolate";
 import type { StoreProduct } from "@/lib/catalog";
+import { isNewProduct } from "@/lib/catalog/new-arrival";
 
 export function ProductCard({ product, priority = false }: { product: StoreProduct; priority?: boolean }) {
   const variant = product.variants[0];
   const available = product.variants.some((item) => item.stock > 0);
+  const showNew = isNewProduct(product);
   const { dict } = useI18n();
   const { format } = useCurrency();
   const category = dict.categories[product.category as keyof typeof dict.categories];
@@ -46,8 +48,10 @@ export function ProductCard({ product, priority = false }: { product: StoreProdu
             />
           ) : null}
           <div className="absolute start-3 top-3 flex flex-col items-start gap-1.5">
-            {product.newArrival && <span className="badge">{dict.product.new}</span>}
-            {!available && <span className="badge bg-ink text-ivory">{dict.product.soldOut}</span>}
+            {showNew ? <span className="badge">{dict.product.new}</span> : null}
+            {!available && !showNew ? (
+              <span className="badge bg-ink text-ivory">{dict.product.soldOut}</span>
+            ) : null}
           </div>
           <span className="absolute inset-x-4 bottom-4 translate-y-3 bg-ivory/95 px-5 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.18em] opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100">
             {dict.product.discover}
