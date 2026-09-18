@@ -55,14 +55,19 @@ export async function storeImage(input: {
 
   assertImageUpload({ type: contentType, size: input.size });
   await assertDecodableImage(input.body);
-  try {
-    if (isS3Configured()) {
+  if (isS3Configured()) {
+    try {
       return await putS3Object({
         body: input.body,
         contentType,
         key: input.key,
       });
+    } catch (error) {
+      if (error instanceof StorageError) throw error;
+      console.error("S3 upload failed, falling back to local storage:", error);
     }
+  }
+  try {
     return await putLocalObject({
       body: input.body,
       contentType,
