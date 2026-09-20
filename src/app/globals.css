@@ -649,6 +649,7 @@ html[data-a11y-cursor="white"] * {
 .home-hero-media {
   transform: none;
   will-change: auto;
+  isolation: isolate;
 }
 
 .home-hero-video {
@@ -657,6 +658,7 @@ html[data-a11y-cursor="white"] * {
   opacity: 0;
   transition: opacity 1.8s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
+  z-index: 0;
 }
 
 .home-hero-video.is-active {

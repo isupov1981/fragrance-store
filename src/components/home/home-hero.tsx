@@ -111,7 +111,7 @@ export function HomeHero() {
       className="home-hero relative isolate min-h-svh overflow-hidden bg-ink text-ivory"
       aria-label="The Perfume Room"
     >
-      <div className="home-hero-media absolute inset-0">
+      <div className="home-hero-media absolute inset-0 z-0">
         <video
           ref={aRef}
           className={`home-hero-video absolute inset-0 h-full w-full object-cover ${showA ? "is-active" : ""}`}
@@ -139,8 +139,8 @@ export function HomeHero() {
           />
         ) : null}
       </div>
-      <div className="home-hero-veil home-hero-veil--video pointer-events-none absolute inset-0" />
-      <div className="relative flex min-h-svh items-end justify-center px-6 pb-16 text-center sm:pb-20 lg:pb-24">
+      <div className="home-hero-veil home-hero-veil--video pointer-events-none absolute inset-0 z-[1]" />
+      <div className="relative z-[2] flex min-h-svh items-end justify-center px-6 pb-16 text-center sm:pb-20 lg:pb-24">
         <div className="flex flex-wrap justify-center gap-3">
           <LocaleLink
             className="inline-flex h-13 items-center bg-ivory px-7 text-[11px] font-semibold uppercase tracking-[0.17em] text-ink transition hover:bg-sand"
