@@ -110,7 +110,7 @@ const en = {
   sections: {
     products: {
       title: "Products",
-      columns: ["Name", "SKU", "Price", "Status"],
+      columns: ["Name", "SKU", "Price", "Added", "Status"],
       fields: {
         name: "Name",
         slug: "Slug",
@@ -331,7 +331,7 @@ const he: typeof en = {
   sections: {
     products: {
       title: "מוצרים",
-      columns: ["שם", "SKU", "מחיר", "סטטוס"],
+      columns: ["שם", "SKU", "מחיר", "נוסף", "סטטוס"],
       fields: {
         name: "שם",
         slug: "Slug",

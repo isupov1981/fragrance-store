@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import {
@@ -8,6 +9,7 @@ import {
 import { getAdminLocale } from "@/lib/admin/get-locale";
 import { getAdminSectionRows } from "@/lib/admin/queries";
 import { requireAdminPage } from "@/lib/auth/server";
+import { localizedPath } from "@/lib/i18n/path";
 import { CsvPanel } from "./csv-panel";
 import { OrderStatusForm } from "./order-status-form";
 import { ResourceForm } from "./resource-form";
@@ -67,7 +69,24 @@ export default async function AdminSectionPage({
             {rows.length ? (
               rows.map((row, index) => (
                 <tr key={index} className="border-t border-slate-200">
-                  {section === "orders" ? (
+                  {section === "products" ? (
+                    <>
+                      <td className="px-4 py-3">
+                        <Link
+                          href={localizedPath(locale, `/products/${row[5]}`)}
+                          className="font-medium text-slate-900 underline underline-offset-2 hover:text-slate-600"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {row[0]}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-3">{row[1]}</td>
+                      <td className="max-w-xs px-4 py-3 whitespace-pre-line">{row[2]}</td>
+                      <td className="px-4 py-3">{row[3]}</td>
+                      <td className="px-4 py-3">{row[4]}</td>
+                    </>
+                  ) : section === "orders" ? (
                     <>
                       <td className="px-4 py-3">{row[0]}</td>
                       <td className="px-4 py-3">{row[1]}</td>

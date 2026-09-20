@@ -18,15 +18,21 @@ export async function getAdminSectionRows(section: string) {
   switch (section) {
     case "products": {
       const products = await prisma.product.findMany({
-        include: { variants: true },
+        include: { variants: { orderBy: { price: "asc" } } },
         orderBy: { updatedAt: "desc" },
         take: 100,
       });
       return products.map((product) => [
         product.name,
         product.variants[0]?.sku ?? "—",
-        product.variants[0] ? formatMoney(product.variants[0].price) : "—",
+        product.variants.length
+          ? product.variants
+              .map((variant) => `${variant.name}: ${formatMoney(variant.price)}`)
+              .join("\n")
+          : "—",
+        product.createdAt.toISOString().slice(0, 10),
         product.status,
+        product.slug,
       ]);
     }
     case "categories": {

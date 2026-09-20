@@ -500,6 +500,8 @@ export const en = {
       "Angel Dust by FUGAZZI is a soft, warm, enveloping woody-musk fragrance. Quiet confidence rather than projection — intimate, sensual and addictive close to skin. Cashmeran sits at the heart with Calabrian bergamot, pepper, translucent woods and white amber — clean soft musk-woods with a lightly spiced warmth and an almost fluffy, cashmere feel. A modern Dutch niche house; the EDP is dosed at 20%.",
     "fugazzi-goudh":
       "Goudh by FUGAZZI is a woody, deep, warm and powerful fragrance with a dark, sensual presence. A modern take on oud — rich and mysterious, yet elegant enough to feel dominant and refined. Built around oud and deep woods with warm, spicy and ambery facets: woody richness, delicate sweetness, smoky and leathery nuances that linger boldly on skin. FUGAZZI is a Dutch niche house with a modern, unconventional approach; Goudh brings that style into deep woody territory with a bold contemporary oud reading.",
+    "matiere-premiere-vanilla-powder":
+      "Vanilla Powder by MATIERE PREMIERE is a unisex fragrance — vanillic, creamy, soft and enveloping. A modern, refined take on vanilla that pairs pleasant sweetness with a clean, powdery, woody feel: rich and sensual, indulgent yet elegant. Madagascar vanilla absolute sits at the heart with coconut powder, palo santo and white musk — deep creamy vanilla, milky-powdery coconut, and woody-clean depth from palo santo and musk for a warm, addictive, almost velvet trail on skin. A French niche house founded by perfumer Aurélien Guichard; here vanilla takes center stage in a modern, rich, elegant reading.",
   },
   variants: {
     "50 ml": "50 ml",
@@ -532,6 +534,10 @@ export const en = {
     Saffron: "Saffron",
     Leather: "Leather",
     Smoke: "Smoke",
+    "Madagascar vanilla absolute": "Madagascar vanilla absolute",
+    "Coconut powder": "Coconut powder",
+    "Palo Santo": "Palo Santo",
+    "White musk": "White musk",
   },
   studies: {
     citrusNote: "Bergamot peel, bright then smoky",

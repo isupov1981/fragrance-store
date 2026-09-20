@@ -6,14 +6,9 @@ import { useI18n } from "@/components/i18n/i18n-provider";
 import { usePrefersReducedMotion } from "./reveal";
 
 const HERO_CLIPS = [
-  "/videos/hero/la-sultane.mp4",
-  "/videos/hero/angel-dust.mp4",
-  "/videos/hero/santal-33.mp4",
-  "/videos/hero/couleur-primaire.mp4",
-  "/videos/hero/champaca.mp4",
-  "/videos/hero/creme-brulee.mp4",
-  "/videos/hero/doux-ennui.mp4",
-  "/videos/hero/marzipan.mp4",
+  "/videos/hero/anfas-ishq.mp4",
+  "/videos/hero/notre-dame.mp4",
+  "/videos/hero/rabbit.mp4",
 ] as const;
 
 const CROSSFADE_MS = 1800;
