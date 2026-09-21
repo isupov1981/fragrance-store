@@ -13,18 +13,34 @@ import {
   type ConsentPreferences,
 } from "@/lib/consent/preferences";
 
+let cachedRaw: string | null | undefined;
+let cachedConsent: ConsentPreferences | null | undefined;
+
+function invalidateConsentCache() {
+  cachedRaw = undefined;
+  cachedConsent = undefined;
+}
+
 function subscribe(onChange: () => void) {
-  window.addEventListener("storage", onChange);
-  window.addEventListener(CONSENT_CHANGE_EVENT, onChange);
+  const handle = () => {
+    invalidateConsentCache();
+    onChange();
+  };
+  window.addEventListener("storage", handle);
+  window.addEventListener(CONSENT_CHANGE_EVENT, handle);
   return () => {
-    window.removeEventListener("storage", onChange);
-    window.removeEventListener(CONSENT_CHANGE_EVENT, onChange);
+    window.removeEventListener("storage", handle);
+    window.removeEventListener(CONSENT_CHANGE_EVENT, handle);
   };
 }
 
 function getConsent() {
   try {
-    return parseConsent(localStorage.getItem(CONSENT_KEY));
+    const raw = localStorage.getItem(CONSENT_KEY);
+    if (raw === cachedRaw && cachedConsent !== undefined) return cachedConsent;
+    cachedRaw = raw;
+    cachedConsent = parseConsent(raw);
+    return cachedConsent;
   } catch {
     return null;
   }
@@ -69,6 +85,7 @@ export function ConsentManager() {
     } catch {
       /* Private mode can block storage; still close the banner for this visit. */
     }
+    invalidateConsentCache();
     window.dispatchEvent(new Event(CONSENT_CHANGE_EVENT));
     setCustomizing(false);
     setForcedOpen(false);
