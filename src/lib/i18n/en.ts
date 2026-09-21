@@ -504,6 +504,8 @@ export const en = {
       "Vanilla Powder by MATIERE PREMIERE is a unisex fragrance — vanillic, creamy, soft and enveloping. A modern, refined take on vanilla that pairs pleasant sweetness with a clean, powdery, woody feel: rich and sensual, indulgent yet elegant. Madagascar vanilla absolute sits at the heart with coconut powder, palo santo and white musk — deep creamy vanilla, milky-powdery coconut, and woody-clean depth from palo santo and musk for a warm, addictive, almost velvet trail on skin. A French niche house founded by perfumer Aurélien Guichard; here vanilla takes center stage in a modern, rich, elegant reading.",
     "thoo-doux-ennui":
       "Doux Ennui by The House of Oud (THoO) is a unisex gourmand — fruity, creamy and buttery — launched in 2025 in the Crazy collection. It plays with French decadence: apricot jam, salted butter and juicy fruit. Opens with apricot jam, mandarin and ylang-ylang; heart of peach, salted butter and ylang-ylang; base of vanilla, osmanthus, benzoin, amber and musk — a rich soft buttery fruity-gourmand with jammy sweetness and vanilla-amber warmth on skin. THoO is known for creative perfume and artistic bottles; composed by Cristian Calabrò, Doux Ennui continues Crazy’s bold gourmand line.",
+    "thoo-lexplicite":
+      "L’Explicite by The House of Oud (THoO) is a bold unisex gourmand — sweet and creamy — built around an unusual pairing of banana bread and peanut butter. Familiar warm bakery smells become a rich, playful niche scent. Opens with lemon zest and ylang-ylang; heart of banana bread, peanut butter and warm spices; base of violet, amber and fruity musk — sweet, creamy warmth like fresh banana cake with peanut butter and an ambery-musky depth. Part of the Crazy collection; composed by Cristian Calabrò at 30%, with banana as the star of both the formula and the bottle’s artistic concept.",
   },
   variants: {
     "50 ml": "50 ml",
@@ -548,6 +550,12 @@ export const en = {
     Osmanthus: "Osmanthus",
     Benzoin: "Benzoin",
     Musk: "Musk",
+    "Lemon zest": "Lemon zest",
+    "Banana bread": "Banana bread",
+    "Peanut butter": "Peanut butter",
+    "Warm spices": "Warm spices",
+    Violet: "Violet",
+    "Fruity musk": "Fruity musk",
   },
   studies: {
     citrusNote: "Bergamot peel, bright then smoky",
