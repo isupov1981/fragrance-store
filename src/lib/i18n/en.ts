@@ -514,6 +514,8 @@ export const en = {
       "Marzipan Gourmand by Theodoros Kalotinis is a unisex gourmand — sweet and creamy — inspired by marzipan and almond desserts. Rich and indulgent, with a warm character like soft sweet almond candy. Built around marzipan and almonds with sweet, creamy, vanillic facets — a nutty gourmand, warm and enveloping, recalling fresh marzipan and a rich almond dessert. A Greek niche house known especially for realistic gourmands; Marzipan Gourmand continues that style with a rich, addictive reading of marzipan and almonds.",
     "theodoros-kalotinis-tiramisu":
       "Tiramisu by Theodoros Kalotinis is a unisex gourmand — sweet, creamy and rich — inspired by the Italian tiramisu dessert. Indulgent and warm, like coffee beside sweet cream and cocoa. Coffee, cocoa and sweet cream meet vanillic gourmand facets — rich, creamy and addictive, recalling layers of fresh tiramisu with coffee and cocoa. A Greek niche house known especially for realistic gourmands; Tiramisu continues that style with a sweet, creamy, indulgent reading of one of Italy’s most loved desserts.",
+    "theodoros-kalotinis-creme-brulee":
+      "Crème Brûlée by Theodoros Kalotinis is a unisex gourmand — sweet, creamy and warm — inspired by the classic crème brûlée dessert. Rich and indulgent, with soft vanilla cream and a layer of caramelized sugar. Vanilla, rich cream and caramelized sugar create a milky-creamy scent with deep sweetness and gourmand warmth — like fresh crème brûlée with a crisp sweet caramel shell. A Greek niche house known especially for realistic gourmands; Crème Brûlée continues that style with a rich, creamy, addictive reading of the classic French dessert.",
   },
   variants: {
     "50 ml": "50 ml",
@@ -580,6 +582,8 @@ export const en = {
     Coffee: "Coffee",
     Cocoa: "Cocoa",
     "Sweet cream": "Sweet cream",
+    "Rich cream": "Rich cream",
+    "Caramelized sugar": "Caramelized sugar",
   },
   studies: {
     citrusNote: "Bergamot peel, bright then smoky",
