@@ -37,6 +37,10 @@ export async function createPrismaProductRepository(): Promise<ProductImportRepo
             featured: row.featured,
             newArrival: row.newArrival,
             brandId: brand?.id ?? null,
+            ...(row.manufacturer ? { manufacturer: row.manufacturer } : {}),
+            ...(row.originCountry ? { originCountry: row.originCountry } : {}),
+            ...(row.inci ? { inci: row.inci } : {}),
+            ...(row.supplyChannel ? { supplyChannel: row.supplyChannel } : {}),
           },
           create: {
             name: row.name,
@@ -46,6 +50,10 @@ export async function createPrismaProductRepository(): Promise<ProductImportRepo
             featured: row.featured,
             newArrival: row.newArrival,
             brandId: brand?.id,
+            manufacturer: row.manufacturer,
+            originCountry: row.originCountry,
+            inci: row.inci,
+            supplyChannel: row.supplyChannel,
           },
         });
         await tx.productVariant.upsert({

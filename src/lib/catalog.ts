@@ -22,6 +22,10 @@ export type StoreProduct = {
   /** All category slugs linked to the product (families + merchandising). */
   categorySlugs?: string[];
   concentration?: "edp" | "extrait";
+  manufacturer?: string;
+  originCountry?: string;
+  inci?: string;
+  supplyChannel?: "official" | "parallel";
   featured?: boolean;
   newArrival?: boolean;
   /** ISO timestamp used to auto-expire the NEW badge after 30 days. */

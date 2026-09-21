@@ -67,6 +67,10 @@ model Product {
   newArrival            Boolean           @default(false)
   newArrivalAnnouncedAt DateTime?
   concentration         String?
+  manufacturer   String?
+  originCountry  String?
+  inci           String?
+  supplyChannel  String?
   notes          Json?
   seoTitle       String?
   seoDescription String?

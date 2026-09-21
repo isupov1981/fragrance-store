@@ -36,6 +36,13 @@ export function toStoreProduct(record: PublishedProduct): StoreProduct | null {
     category,
     categorySlugs: categorySlugs.length ? categorySlugs : [category],
     concentration,
+    manufacturer: record.manufacturer ?? undefined,
+    originCountry: record.originCountry ?? undefined,
+    inci: record.inci ?? undefined,
+    supplyChannel:
+      record.supplyChannel === "official" || record.supplyChannel === "parallel"
+        ? record.supplyChannel
+        : undefined,
     featured: record.featured,
     newArrival: record.newArrival,
     createdAt: record.createdAt.toISOString(),

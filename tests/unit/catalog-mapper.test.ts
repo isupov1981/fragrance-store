@@ -15,6 +15,10 @@ describe("toStoreProduct", () => {
       newArrival: true,
       newArrivalAnnouncedAt: null,
       concentration: "extrait",
+      manufacturer: "Maison Test",
+      originCountry: "France",
+      inci: "Alcohol Denat., Parfum",
+      supplyChannel: "official",
       notes: ["Incense", "Oud"],
       seoTitle: null,
       seoDescription: null,
@@ -77,6 +81,10 @@ describe("toStoreProduct", () => {
     expect(mapped?.descriptionHe).toBe("תיאור בעברית");
     expect(mapped?.variants[0]?.price).toBe(3200);
     expect(mapped?.notes).toEqual(["Incense", "Oud"]);
+    expect(mapped?.manufacturer).toBe("Maison Test");
+    expect(mapped?.originCountry).toBe("France");
+    expect(mapped?.inci).toBe("Alcohol Denat., Parfum");
+    expect(mapped?.supplyChannel).toBe("official");
     expect(mapped?.createdAt).toBeTruthy();
   });
 
@@ -94,6 +102,10 @@ describe("toStoreProduct", () => {
         newArrival: false,
         newArrivalAnnouncedAt: null,
         concentration: null,
+        manufacturer: null,
+        originCountry: null,
+        inci: null,
+        supplyChannel: null,
         notes: null,
         seoTitle: null,
         seoDescription: null,

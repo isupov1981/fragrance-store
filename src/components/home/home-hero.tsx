@@ -84,6 +84,13 @@ export function HomeHero() {
   }, [reduced]);
 
   useEffect(() => {
+    for (const video of [aRef.current, bRef.current]) {
+      const track = video?.textTracks[0];
+      if (track) track.mode = "showing";
+    }
+  }, [aIndex, bIndex]);
+
+  useEffect(() => {
     if (reduced) {
       aRef.current?.pause();
       bRef.current?.pause();
@@ -104,8 +111,9 @@ export function HomeHero() {
   return (
     <section
       className="home-hero relative isolate min-h-svh overflow-hidden bg-ink text-ivory"
-      aria-label="The Perfume Room"
+      aria-label={dict.home.heroAlt}
     >
+      <p className="sr-only">{dict.home.heroAlt}</p>
       <div className="home-hero-media absolute inset-0 z-0">
         <video
           ref={aRef}
@@ -119,7 +127,9 @@ export function HomeHero() {
           aria-hidden="true"
           onTimeUpdate={showA ? onTimeUpdate : undefined}
           onEnded={showA ? beginCrossfade : undefined}
-        />
+        >
+          <track kind="captions" src="/videos/hero/silent.vtt" srcLang="en" label="English" default />
+        </video>
         {HERO_CLIPS.length > 1 ? (
           <video
             ref={bRef}
@@ -131,7 +141,9 @@ export function HomeHero() {
             aria-hidden="true"
             onTimeUpdate={showA ? undefined : onTimeUpdate}
             onEnded={showA ? undefined : beginCrossfade}
-          />
+          >
+            <track kind="captions" src="/videos/hero/silent.vtt" srcLang="en" label="English" default />
+          </video>
         ) : null}
       </div>
       <div className="home-hero-veil home-hero-veil--video pointer-events-none absolute inset-0 z-[1]" />

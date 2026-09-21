@@ -100,6 +100,10 @@ function serializeProduct(product: Prisma.ProductGetPayload<{ include: typeof pr
     featured: product.featured,
     newArrival: product.newArrival,
     concentration: product.concentration,
+    manufacturer: product.manufacturer,
+    originCountry: product.originCountry,
+    inci: product.inci,
+    supplyChannel: product.supplyChannel,
     notes: product.notes,
     images: product.images,
     variants: product.variants,
@@ -168,6 +172,10 @@ export async function createDraftProduct(input: CreateProductInput) {
         featured: input.featured ?? false,
         newArrival: input.newArrival ?? false,
         concentration: input.concentration,
+        manufacturer: input.manufacturer,
+        originCountry: input.originCountry,
+        inci: input.inci,
+        supplyChannel: input.supplyChannel,
         notes: input.notes,
         brandId: brand?.id,
         images: input.images?.length
@@ -237,6 +245,10 @@ export async function updateProduct(input: UpdateProductInput) {
         featured: input.featured,
         newArrival: input.newArrival,
         concentration: input.concentration === undefined ? undefined : input.concentration,
+        manufacturer: input.manufacturer === undefined ? undefined : input.manufacturer,
+        originCountry: input.originCountry === undefined ? undefined : input.originCountry,
+        inci: input.inci === undefined ? undefined : input.inci,
+        supplyChannel: input.supplyChannel === undefined ? undefined : input.supplyChannel,
         notes:
           input.notes === undefined
             ? undefined

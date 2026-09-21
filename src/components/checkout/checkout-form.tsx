@@ -224,7 +224,9 @@ export function CheckoutForm() {
           <span>{dict.checkout.total}</span>
           <span>{format(totals.subtotal + shippingIls)}</span>
         </div>
-        <p className="mt-2 text-xs text-zinc-500">{dict.checkout.vatInclusive}</p>
+        <p className="mt-2 text-xs leading-5 text-zinc-500">
+          {country === "IL" ? dict.checkout.vatInclusive : dict.checkout.vatExport}
+        </p>
         {error ? <p role="alert" className="mt-4 text-sm text-red-700">{error}</p> : null}
         <button
           className="mt-6 w-full rounded-full bg-zinc-950 px-5 py-3 text-white disabled:opacity-60"

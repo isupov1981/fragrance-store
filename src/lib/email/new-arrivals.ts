@@ -107,16 +107,20 @@ export async function announceNewArrivalIfNeeded(productId: string) {
         await mailer.sendNewArrival({
           to: subscriber.email,
           locale,
-          productName: product.name,
-          brand: product.brand?.name,
-          productUrl: `${origin}${localizedPath(locale, `/products/${product.slug}`)}`,
-          priceLabel: formatMoney(
-            startingPrice,
-            "ILS",
-            locale === "he" ? "he-IL" : locale === "ru" ? "ru-RU" : "en-US",
-          ),
-          showPrice: startingPrice > 0,
-          imageUrl,
+          products: [
+            {
+              productName: product.name,
+              brand: product.brand?.name,
+              productUrl: `${origin}${localizedPath(locale, `/products/${product.slug}`)}`,
+              priceLabel: formatMoney(
+                startingPrice,
+                "ILS",
+                locale === "he" ? "he-IL" : locale === "ru" ? "ru-RU" : "en-US",
+              ),
+              showPrice: startingPrice > 0,
+              imageUrl,
+            },
+          ],
           unsubscribeUrl: `${origin}/api/newsletter/unsubscribe?token=${encodeURIComponent(subscriber.unsubscribeToken)}`,
         });
       } catch (error) {
@@ -172,8 +176,8 @@ export async function countUnannouncedNewArrivals() {
 }
 
 /**
- * Admin blast: email every subscriber about each unannounced new arrival using
- * the original product photo, then stamp newArrivalAnnouncedAt.
+ * Admin blast: one email per subscriber listing every unannounced new arrival,
+ * then stamp newArrivalAnnouncedAt.
  */
 export async function blastUnannouncedNewArrivals(): Promise<NewArrivalBlastResult> {
   const smtpConfigured = isSmtpConfigured();
@@ -204,55 +208,44 @@ export async function blastUnannouncedNewArrivals(): Promise<NewArrivalBlastResu
   let emailsAttempted = 0;
   let emailsFailed = 0;
   let lastError: string | undefined;
-  const productSlugs: string[] = [];
+  const productSlugs = products.map((product) => product.slug);
 
-  for (const product of products) {
-    const imageUrl = absoluteMediaUrl(product.imageUrl, origin);
-    productSlugs.push(product.slug);
-
-    let productFailed = 0;
-    let productAttempted = 0;
-
-    for (const subscriber of subscribers) {
-      const locale: Locale = isLocale(subscriber.locale) ? subscriber.locale : "en";
-      emailsAttempted += 1;
-      productAttempted += 1;
-      try {
-        await mailer.sendNewArrival({
-          to: subscriber.email,
-          locale,
+  for (const subscriber of subscribers) {
+    const locale: Locale = isLocale(subscriber.locale) ? subscriber.locale : "en";
+    const intl = locale === "he" ? "he-IL" : locale === "ru" ? "ru-RU" : "en-US";
+    emailsAttempted += 1;
+    try {
+      await mailer.sendNewArrival({
+        to: subscriber.email,
+        locale,
+        products: products.map((product) => ({
           productName: product.name,
           brand: product.brand,
           productUrl: `${origin}${localizedPath(locale, `/products/${product.slug}`)}`,
-          priceLabel: formatMoney(
-            product.startingPrice,
-            "ILS",
-            locale === "he" ? "he-IL" : locale === "ru" ? "ru-RU" : "en-US",
-          ),
+          priceLabel: formatMoney(product.startingPrice, "ILS", intl),
           showPrice: product.startingPrice > 0,
-          imageUrl,
-          unsubscribeUrl: `${origin}/api/newsletter/unsubscribe?token=${encodeURIComponent(subscriber.unsubscribeToken)}`,
-        });
-      } catch (error) {
-        emailsFailed += 1;
-        productFailed += 1;
-        lastError = smtpErrorMessage(error);
-        console.error(`New-arrival blast failed for ${subscriber.email} / ${product.slug}`, error);
-      }
-    }
-
-    // Only stamp announced when at least one email was delivered.
-    if (productAttempted > 0 && productFailed < productAttempted) {
-      await prisma.product.updateMany({
-        where: {
-          id: product.id,
-          newArrival: true,
-          status: "ACTIVE",
-          newArrivalAnnouncedAt: null,
-        },
-        data: { newArrivalAnnouncedAt: new Date() },
+          imageUrl: absoluteMediaUrl(product.imageUrl, origin),
+        })),
+        unsubscribeUrl: `${origin}/api/newsletter/unsubscribe?token=${encodeURIComponent(subscriber.unsubscribeToken)}`,
       });
+    } catch (error) {
+      emailsFailed += 1;
+      lastError = smtpErrorMessage(error);
+      console.error(`New-arrival blast failed for ${subscriber.email}`, error);
     }
+  }
+
+  // Stamp every product once at least one digest was delivered.
+  if (emailsAttempted > 0 && emailsFailed < emailsAttempted) {
+    await prisma.product.updateMany({
+      where: {
+        id: { in: products.map((product) => product.id) },
+        newArrival: true,
+        status: "ACTIVE",
+        newArrivalAnnouncedAt: null,
+      },
+      data: { newArrivalAnnouncedAt: new Date() },
+    });
   }
 
   return {

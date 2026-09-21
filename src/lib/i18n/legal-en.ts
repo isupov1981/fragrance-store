@@ -48,7 +48,8 @@ export const legalEn: {
       {
         title: "Prices and VAT",
         paragraphs: [
-          "Prices displayed to consumers in Israel include VAT. Shipping is calculated at checkout and shown before payment. Currency conversion is indicative; the charge is processed according to the payment provider and the selected currency.",
+          "Prices displayed to consumers in Israel include Israeli VAT. Shipping is calculated at checkout and shown before payment. Currency conversion is indicative; the charge is processed according to the payment provider and the selected currency.",
+          "An order delivered outside Israel is charged the same Israeli catalogue price. Israeli VAT is not removed, and we do not add a foreign sales tax. Customs duties in the destination country, if charged, are paid by you.",
           "A price is an invitation to treat until we accept the order.",
         ],
       },
@@ -229,13 +230,14 @@ export const legalEn: {
         title: "What we have implemented",
         paragraphs: [
           "The storefront supports Hebrew RTL, a skip-to-content link, labelled form fields, and an accessibility toolbar (keyboard emphasis, contrast, text size, reduced motion, link and heading highlights, larger cursor).",
+          "Home hero films are silent and played muted. Each has a caption track stating that there is no dialogue, and a text alternative on the page. They pause when reduced motion is requested.",
           "If a barrier remains, we will try to provide the information or complete the purchase another way — email or WhatsApp.",
         ],
       },
       {
         title: "Known limitations",
         paragraphs: [
-          "Home hero videos may not yet include captions or audio description. Checkout payment is completed on a third-party page whose accessibility we do not control. We continue to improve contrast, focus order and media alternatives.",
+          "Checkout payment is completed on a third-party page whose accessibility we do not control. A formal accessibility-audit certificate has not yet been issued. We continue to improve contrast and focus order.",
         ],
       },
       {

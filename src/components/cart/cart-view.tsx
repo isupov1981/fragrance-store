@@ -86,6 +86,7 @@ export function CartView() {
         <p className="mt-2 text-sm text-zinc-500">
           {dict.cart.shippingNote}
         </p>
+        <p className="mt-2 text-xs leading-5 text-zinc-500">{dict.product.vatAbroad}</p>
         <LocaleLink
           href="/checkout"
           className="mt-6 block rounded-full bg-zinc-950 px-5 py-3 text-center text-white"

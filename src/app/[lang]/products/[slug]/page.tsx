@@ -127,7 +127,43 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
           <p className="eyebrow text-bronze">{product.brand}</p>
           <h1 className="mt-4 font-display text-5xl leading-none sm:text-6xl">{product.name}</h1>
           <p className="mt-4 text-sm" suppressHydrationWarning>{interpolate(dict.product.from, { price: priced })}</p>
+          <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-ink/45">{dict.product.vatInclusive}</p>
+          {currency !== "ILS" ? <p className="mt-2 max-w-md text-xs leading-5 text-ink/55">{dict.product.vatFx}</p> : null}
+          <p className="mt-2 max-w-md text-xs leading-5 text-ink/55">{dict.product.vatAbroad}</p>
           <p className="mt-7 text-sm leading-7 text-ink/70">{description}</p>
+          <section className="mt-8" aria-labelledby="product-labeling">
+            <h2 id="product-labeling" className="eyebrow">{dict.product.labeling}</h2>
+            <dl className="mt-4 space-y-3 text-xs leading-5 text-ink/70">
+              <div>
+                <dt className="font-semibold text-ink">{dict.product.manufacturer}</dt>
+                <dd>{product.manufacturer?.trim() || dict.product.onPack}</dd>
+              </div>
+              <div>
+                <dt className="font-semibold text-ink">{dict.product.origin}</dt>
+                <dd>{product.originCountry?.trim() || dict.product.onPack}</dd>
+              </div>
+              <div>
+                <dt className="font-semibold text-ink">{dict.product.ingredients}</dt>
+                <dd>{product.inci?.trim() || dict.product.ingredientsOnPack}</dd>
+              </div>
+              <div>
+                <dt className="font-semibold text-ink">{dict.product.supply}</dt>
+                <dd>
+                  {product.supplyChannel === "official"
+                    ? dict.product.supplyOfficial
+                    : product.supplyChannel === "parallel"
+                      ? dict.product.supplyParallel
+                      : dict.product.supplyUnknown}
+                </dd>
+              </div>
+            </dl>
+            <h3 className="mt-5 text-xs font-semibold uppercase tracking-[0.13em]">{dict.product.warnings}</h3>
+            <ul className="mt-2 list-disc space-y-1 ps-4 text-xs leading-5 text-ink/70">
+              <li>{dict.product.warningAlcohol}</li>
+              <li>{dict.product.warningChildren}</li>
+              <li>{dict.product.warningExternal}</li>
+            </ul>
+          </section>
 
           <div className="mt-8 border-y border-ink/10 py-6">
             <p className="eyebrow mb-4">{dict.product.composition}</p>

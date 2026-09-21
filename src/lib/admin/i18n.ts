@@ -52,7 +52,7 @@ const en = {
   newsletterBlast: {
     eyebrow: "Newsletter",
     title: "New-arrival emails",
-    copy: "Email every active subscriber about each unannounced new arrival — one message per product, using the original product photo.",
+    copy: "Email every active subscriber once, with every unannounced new arrival and its photo in a single message.",
     pendingProducts: "{count} products ready to announce",
     pendingNone: "No unannounced new arrivals right now.",
     subscribers: "{count} active subscribers",
@@ -274,7 +274,7 @@ const he: typeof en = {
   newsletterBlast: {
     eyebrow: "ניוזלטר",
     title: "מיילים על חדשים",
-    copy: "שולחים לכל המנויים הפעילים על כל חידוש שטרם הוכרז — מייל נפרד לכל מוצר, עם צילום המוצר המקורי.",
+    copy: "שולחים לכל המנויים הפעילים מייל אחד עם כל החידושים שטרם הוכרזו, כולל צילום כל מוצר.",
     pendingProducts: "{count} מוצרים מוכנים להכרזה",
     pendingNone: "אין כרגע חידושים שטרם הוכרזו.",
     subscribers: "{count} מנויים פעילים",

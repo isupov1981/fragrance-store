@@ -14,6 +14,11 @@ export type PricedLine = {
   sku: string;
   unitPrice: number;
   quantity: number;
+  brand?: string;
+  manufacturer?: string;
+  originCountry?: string;
+  inci?: string;
+  supplyChannel?: "official" | "parallel";
 };
 
 export type PricedCart = {
@@ -66,6 +71,11 @@ export function priceCatalogItems(
       sku: variant.sku,
       unitPrice: variant.price,
       quantity,
+      brand: product.brand || undefined,
+      manufacturer: product.manufacturer,
+      originCountry: product.originCountry,
+      inci: product.inci,
+      supplyChannel: product.supplyChannel,
     };
   });
 

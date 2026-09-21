@@ -97,6 +97,7 @@ export function CartDrawer() {
             <span>{format(totals.subtotal)}</span>
           </div>
           <p className="mt-2 text-xs text-ink/55">{dict.cart.shippingNote}</p>
+          <p className="mt-2 text-xs leading-5 text-ink/55">{dict.product.vatAbroad}</p>
           <LocaleLink
             href="/checkout"
             className="button-primary mt-5 flex h-12 w-full items-center justify-center"

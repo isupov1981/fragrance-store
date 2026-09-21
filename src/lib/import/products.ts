@@ -21,6 +21,13 @@ export const productCsvRowSchema = z.object({
   featured: booleanFromCsv.default(false),
   newArrival: booleanFromCsv.default(false),
   brand: z.string().trim().max(120).optional().default(""),
+  manufacturer: z.string().trim().max(200).optional(),
+  originCountry: z.string().trim().max(120).optional(),
+  inci: z.string().trim().max(4000).optional(),
+  supplyChannel: z.preprocess(
+    (value) => (value === "" || value === undefined || value === null ? undefined : value),
+    z.enum(["official", "parallel"]).optional(),
+  ),
   category: z.string().trim().max(120).optional().default(""),
   imageUrl: z.union([z.url(), z.literal("")]).optional().default(""),
 });

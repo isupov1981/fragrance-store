@@ -1,12 +1,12 @@
 import nodemailer from "nodemailer";
 
 import type { Order } from "@/lib/checkout/orders";
+import { buildOrderDisclosure, type SupplyChannel } from "@/lib/email/disclosure";
+import { listStoreProducts } from "@/lib/db/products";
 import type { Locale } from "@/lib/i18n/config";
 import { localizedPath } from "@/lib/i18n/path";
 
-export type NewArrivalMail = {
-  to: string;
-  locale: Locale;
+export type NewArrivalMailProduct = {
   productName: string;
   productUrl: string;
   priceLabel: string;
@@ -15,6 +15,12 @@ export type NewArrivalMail = {
   brand?: string | null;
   /** When false, omit the "from price" line (e.g. price is 0). */
   showPrice?: boolean;
+};
+
+export type NewArrivalMail = {
+  to: string;
+  locale: Locale;
+  products: NewArrivalMailProduct[];
   unsubscribeUrl: string;
 };
 
@@ -58,9 +64,9 @@ class SmtpOrderMailer implements OrderMailer {
   }
 
   async sendConfirmation(order: Order) {
-    const from = process.env.EMAIL_FROM ?? process.env.ORDER_FROM_EMAIL ?? "The Perfume Room <noreply@parfums.cloud>";
+    const from = resolveMailFrom();
     const admin = process.env.ORDER_ADMIN_EMAIL;
-    const copy = orderConfirmationCopy(order);
+    const copy = orderConfirmationCopy(await withProductDisclosure(order));
     await this.transport().sendMail({
       from,
       to: order.customer.email,
@@ -71,7 +77,7 @@ class SmtpOrderMailer implements OrderMailer {
   }
 
   async sendEnquiry(input: { name: string; email: string; subject: string; message: string }) {
-    const from = process.env.EMAIL_FROM ?? process.env.ORDER_FROM_EMAIL ?? "The Perfume Room <noreply@parfums.cloud>";
+    const from = resolveMailFrom();
     await this.transport().sendMail({
       from,
       to: process.env.ORDER_ADMIN_EMAIL ?? from,
@@ -82,23 +88,29 @@ class SmtpOrderMailer implements OrderMailer {
   }
 
   async sendNewArrival(input: NewArrivalMail) {
-    const from = process.env.EMAIL_FROM ?? process.env.ORDER_FROM_EMAIL ?? "The Perfume Room <noreply@parfums.cloud>";
-    const showPrice = input.showPrice !== false && Boolean(input.priceLabel.trim());
-    const copy = newArrivalCopy(input.locale, input.productName, input.priceLabel, showPrice);
-    const brand = input.brand?.trim();
+    const from = resolveMailFrom();
+    const products = input.products.filter((product) => product.productName.trim() && product.productUrl.trim());
+    if (!products.length) return;
+    const copy = newArrivalCopy(input.locale, products);
+
+    const textBlocks = products.flatMap((product) => {
+      const brand = product.brand?.trim();
+      const showPrice = product.showPrice !== false && Boolean(product.priceLabel.trim());
+      return [
+        brand || null,
+        product.productName,
+        product.productUrl,
+        showPrice ? priceLine(input.locale, product.priceLabel) : null,
+        "",
+      ];
+    });
 
     const text = [
       copy.greeting,
       "",
       copy.body,
-      brand ? brand : null,
-      input.productName,
-      input.productUrl,
-      showPrice ? copy.price : null,
       "",
-      copy.cta,
-      input.productUrl,
-      "",
+      ...textBlocks,
       copy.unsubscribe,
       input.unsubscribeUrl,
       "",
@@ -109,11 +121,7 @@ class SmtpOrderMailer implements OrderMailer {
 
     const html = buildNewArrivalHtml({
       copy,
-      productName: input.productName,
-      productUrl: input.productUrl,
-      imageUrl: input.imageUrl,
-      brand,
-      showPrice,
+      products,
       unsubscribeUrl: input.unsubscribeUrl,
       locale: input.locale,
     });
@@ -132,50 +140,86 @@ class SmtpOrderMailer implements OrderMailer {
   }
 }
 
-function newArrivalCopy(locale: Locale, productName: string, priceLabel: string, showPrice: boolean) {
+/** Hostinger rejects a From address that is not the authenticated mailbox. */
+export function resolveMailFrom() {
+  const user = process.env.SMTP_USER?.trim();
+  const configured = (process.env.EMAIL_FROM ?? process.env.ORDER_FROM_EMAIL ?? "").trim();
+  const parsed = configured ? parseMailbox(configured) : undefined;
+  const name = parsed?.name || "The Perfume Room";
+  if (user) {
+    const configuredAddress = parsed?.address.toLowerCase();
+    if (!configuredAddress || configuredAddress !== user.toLowerCase()) {
+      return `${name} <${user}>`;
+    }
+  }
+  if (parsed?.name) return `${parsed.name} <${parsed.address}>`;
+  if (parsed?.address) return parsed.address;
+  return user ? `${name} <${user}>` : `${name} <orders@parfums.cloud>`;
+}
+
+function parseMailbox(value: string): { name?: string; address: string } {
+  const trimmed = value.trim();
+  const wrapped = trimmed.match(/^(?:"([^"]+)"|([^<]+?))?\s*<([^>]+)>\s*$/);
+  if (wrapped) {
+    const name = (wrapped[1] ?? wrapped[2] ?? "").trim();
+    return { name: name || undefined, address: wrapped[3].trim() };
+  }
+  return { address: trimmed };
+}
+
+function priceLine(locale: Locale, priceLabel: string) {
+  if (locale === "he") return `החל מ־${priceLabel}`;
+  if (locale === "ru") return `От ${priceLabel}`;
+  return `From ${priceLabel}`;
+}
+
+function newArrivalCopy(locale: Locale, products: NewArrivalMailProduct[]) {
+  const many = products.length > 1;
+  const productName = products[0]?.productName ?? "";
   if (locale === "he") {
     return {
-      subject: `פרסומת: חדש באטלייה: ${productName}`,
+      subject: many ? "פרסומת: חדשים באטלייה" : `פרסומת: חדש באטלייה: ${productName}`,
       greeting: "שלום,",
-      body: `נוסף ניחוח חדש לקולקציה — \u200F${productName}.`,
-      price: showPrice ? `החל מ־${priceLabel}` : "",
+      body: many
+        ? "נוספו ניחוחות חדשים לקולקציה."
+        : `נוסף ניחוח חדש לקולקציה — \u200F${productName}.`,
       cta: "לצפייה בניחוח",
       unsubscribe: "להסרה מרשימת התפוצה",
-      eyebrow: "פרסומת · חדש באתר",
+      eyebrow: many ? "פרסומת · חדשים באתר" : "פרסומת · חדש באתר",
       advertiser: "The Perfume Room · orders@parfums.cloud",
     };
   }
   if (locale === "ru") {
     return {
-      subject: `Реклама: Новинка в ателье: ${productName}`,
+      subject: many ? "Реклама: Новинки в ателье" : `Реклама: Новинка в ателье: ${productName}`,
       greeting: "Здравствуйте,",
-      body: `В коллекции появился новый аромат — ${productName}.`,
-      price: showPrice ? `От ${priceLabel}` : "",
+      body: many
+        ? "В коллекции появились новые ароматы."
+        : `В коллекции появился новый аромат — ${productName}.`,
       cta: "Смотреть аромат",
       unsubscribe: "Отписаться от рассылки",
-      eyebrow: "Реклама · Новинка",
+      eyebrow: many ? "Реклама · Новинки" : "Реклама · Новинка",
       advertiser: "The Perfume Room · orders@parfums.cloud",
     };
   }
   return {
-      subject: `Advertisement: New from the atelier: ${productName}`,
+    subject: many
+      ? "Advertisement: New from the atelier"
+      : `Advertisement: New from the atelier: ${productName}`,
     greeting: "Hello,",
-    body: `A new fragrance has joined the collection — ${productName}.`,
-    price: showPrice ? `From ${priceLabel}` : "",
+    body: many
+      ? "New fragrances have joined the collection."
+      : `A new fragrance has joined the collection — ${productName}.`,
     cta: "View fragrance",
-      unsubscribe: "Unsubscribe from these notes",
-      eyebrow: "Advertisement · New arrival",
-      advertiser: "The Perfume Room · orders@parfums.cloud",
-    };
+    unsubscribe: "Unsubscribe from these notes",
+    eyebrow: many ? "Advertisement · New arrivals" : "Advertisement · New arrival",
+    advertiser: "The Perfume Room · orders@parfums.cloud",
+  };
 }
 
 function buildNewArrivalHtml(input: {
   copy: ReturnType<typeof newArrivalCopy>;
-  productName: string;
-  productUrl: string;
-  imageUrl: string;
-  brand?: string;
-  showPrice: boolean;
+  products: NewArrivalMailProduct[];
   unsubscribeUrl: string;
   locale: Locale;
 }) {
@@ -193,12 +237,42 @@ function buildNewArrivalHtml(input: {
     ? `<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600&family=Frank+Ruhl+Libre:wght@400;500;700&display=swap" rel="stylesheet">`
     : "";
 
-  const brandLine = input.brand
-    ? `<p style="margin:0 0 6px;font-family:${uiFont};font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#8a8178;text-align:center;">${escapeHtml(input.brand)}</p>`
-    : "";
-  const priceLine = input.showPrice
-    ? `<p dir="${dir}" style="margin:12px 0 0;font-family:${bodyFont};font-size:15px;color:#5c534a;text-align:center;">${escapeHtml(input.copy.price)}</p>`
-    : "";
+  const productBlocks = input.products
+    .map((product, index) => {
+      const brand = product.brand?.trim();
+      const showPrice = product.showPrice !== false && Boolean(product.priceLabel.trim());
+      const brandLine = brand
+        ? `<p style="margin:0 0 6px;font-family:${uiFont};font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#8a8178;text-align:center;">${escapeHtml(brand)}</p>`
+        : "";
+      const price = showPrice
+        ? `<p dir="${dir}" style="margin:12px 0 0;font-family:${bodyFont};font-size:15px;color:#5c534a;text-align:center;">${escapeHtml(priceLine(input.locale, product.priceLabel))}</p>`
+        : "";
+      const divider =
+        index > 0
+          ? `<tr><td style="padding:0 28px;"><div style="border-top:1px solid #e6e0d6;"></div></td></tr>`
+          : "";
+      return `${divider}
+          <tr>
+            <td style="padding:${index === 0 ? "8px" : "24px"} 28px 0;">
+              <a href="${escapeAttr(product.productUrl)}" style="display:block;text-decoration:none;">
+                <img src="${escapeAttr(product.imageUrl)}" alt="${escapeAttr(product.productName)}" width="504" style="display:block;width:100%;max-width:504px;height:auto;border:0;background:#ebe6de;" />
+              </a>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding:22px 28px 8px;text-align:center;font-family:${bodyFont};">
+              ${brandLine}
+              <h1 style="margin:0;font-family:${bodyFont};font-size:30px;line-height:1.25;font-weight:500;color:#201d19;text-align:center;">${escapeHtml(product.productName)}</h1>
+              ${price}
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding:18px 28px 28px;text-align:center;">
+              <a href="${escapeAttr(product.productUrl)}" style="display:inline-block;background:#201d19;color:#fffcf7;font-family:${uiFont};font-size:13px;letter-spacing:${isHe ? "0.06em" : "0.16em"};${isHe ? "" : "text-transform:uppercase;"};text-decoration:none;padding:14px 28px;">${escapeHtml(input.copy.cta)}</a>
+            </td>
+          </tr>`;
+    })
+    .join("");
 
   return `<!DOCTYPE html>
 <html lang="${escapeAttr(input.locale)}" dir="${dir}">
@@ -219,25 +293,7 @@ function buildNewArrivalHtml(input: {
               <p dir="${dir}" style="margin:10px 0 0;font-family:${bodyFont};font-size:17px;line-height:1.75;color:#5c534a;text-align:${textAlign};direction:${dir};">${escapeHtml(input.copy.body)}</p>
             </td>
           </tr>
-          <tr>
-            <td style="padding:8px 28px 0;">
-              <a href="${escapeAttr(input.productUrl)}" style="display:block;text-decoration:none;">
-                <img src="${escapeAttr(input.imageUrl)}" alt="${escapeAttr(input.productName)}" width="504" style="display:block;width:100%;max-width:504px;height:auto;border:0;background:#ebe6de;" />
-              </a>
-            </td>
-          </tr>
-          <tr>
-            <td align="center" style="padding:22px 28px 8px;text-align:center;font-family:${bodyFont};">
-              ${brandLine}
-              <h1 style="margin:0;font-family:${bodyFont};font-size:30px;line-height:1.25;font-weight:500;color:#201d19;text-align:center;">${escapeHtml(input.productName)}</h1>
-              ${priceLine}
-            </td>
-          </tr>
-          <tr>
-            <td align="center" style="padding:18px 28px 28px;text-align:center;">
-              <a href="${escapeAttr(input.productUrl)}" style="display:inline-block;background:#201d19;color:#fffcf7;font-family:${uiFont};font-size:13px;letter-spacing:${isHe ? "0.06em" : "0.16em"};${isHe ? "" : "text-transform:uppercase;"};text-decoration:none;padding:14px 28px;">${escapeHtml(input.copy.cta)}</a>
-            </td>
-          </tr>
+          ${productBlocks}
           <tr>
             <td dir="${dir}" align="center" style="padding:0 28px 28px;text-align:center;font-family:${uiFont};font-size:13px;color:#8a8178;direction:${dir};">
               <a href="${escapeAttr(input.unsubscribeUrl)}" style="color:#8a8178;font-family:${uiFont};text-decoration:underline;">${escapeHtml(input.copy.unsubscribe)}</a>
@@ -256,6 +312,28 @@ function siteOrigin() {
   return (process.env.NEXT_PUBLIC_SITE_URL ?? process.env.APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
 }
 
+async function withProductDisclosure(order: Order): Promise<Order> {
+  const products = await listStoreProducts();
+  return {
+    ...order,
+    cart: {
+      ...order.cart,
+      lines: order.cart.lines.map((line) => {
+        const product = products.find((item) => item.id === line.productId);
+        if (!product) return line;
+        return {
+          ...line,
+          brand: line.brand || product.brand || undefined,
+          manufacturer: line.manufacturer || product.manufacturer,
+          originCountry: line.originCountry || product.originCountry,
+          inci: line.inci || product.inci,
+          supplyChannel: line.supplyChannel || product.supplyChannel,
+        };
+      }),
+    },
+  };
+}
+
 function orderConfirmationCopy(order: Order) {
   const locale: Locale = order.locale ?? "en";
   const origin = siteOrigin();
@@ -266,17 +344,33 @@ function orderConfirmationCopy(order: Order) {
   const lines = order.cart.lines
     .map((line) => `${line.productName} (${line.variantName}) × ${line.quantity}`)
     .join("\n");
+  const disclosure = buildOrderDisclosure(
+    locale,
+    order.customer.country,
+    order.cart.lines.map((line) => ({
+      productName: line.productName,
+      variantName: line.variantName,
+      quantity: line.quantity,
+      brand: line.brand,
+      manufacturer: line.manufacturer,
+      originCountry: line.originCountry,
+      inci: line.inci,
+      supplyChannel: line.supplyChannel as SupplyChannel | undefined,
+    })),
+  );
 
   if (locale === "he") {
     return {
       subject: `הזמנה ${order.id} אושרה`,
       text: [
         `תודה, ${order.customer.name}.`,
-        `הזמנה ${order.id} שולמה. המחיר כולל מע״מ.`,
+        `הזמנה ${order.id} שולמה.`,
         `סה״כ: ${total}`,
         "",
         "פריטים:",
         lines,
+        "",
+        disclosure,
         "",
         "ניתן לבטל עסקת מכר מרחוק תוך 14 ימים מקבלת הטובין או ממסמך גילוי זה — לפי המאוחר. בושם שנפתח בדרך כלל אינו ניתן להחזרה.",
         "דמי ביטול אם אין פגם: 5% או ₪100 לפי הנמוך.",
@@ -293,11 +387,13 @@ function orderConfirmationCopy(order: Order) {
       subject: `Заказ ${order.id} подтверждён`,
       text: [
         `Спасибо, ${order.customer.name}.`,
-        `Заказ ${order.id} оплачен. Цена включает НДС.`,
+        `Заказ ${order.id} оплачен.`,
         `Итого: ${total}`,
         "",
         "Позиции:",
         lines,
+        "",
+        disclosure,
         "",
         "Дистанционную сделку можно отменить в течение 14 дней с получения товара или этого документа раскрытия — что позже. Вскрытый аромат обычно нельзя вернуть.",
         "Комиссия при отсутствии дефекта: 5% или ₪100 — что меньше.",
@@ -313,11 +409,13 @@ function orderConfirmationCopy(order: Order) {
     subject: `Order ${order.id} confirmed`,
     text: [
       `Thank you, ${order.customer.name}.`,
-      `Your order ${order.id} has been paid. Prices include VAT.`,
+      `Your order ${order.id} has been paid.`,
       `Total: ${total}`,
       "",
       "Items:",
       lines,
+      "",
+      disclosure,
       "",
       "You may cancel a distance sale within 14 days of receiving the goods or this disclosure document, whichever is later. Opened fragrance generally cannot be returned.",
       "Cancellation fee if there is no defect: 5% or ₪100, whichever is lower.",
