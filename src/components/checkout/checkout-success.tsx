@@ -22,12 +22,18 @@ export function CheckoutSuccess({ orderId }: { orderId?: string }) {
       {orderId ? (
         <p className="mt-5 text-zinc-600">{orderId}</p>
       ) : null}
-      <LocaleLink
-        href="/collections/all"
-        className="mt-8 inline-block rounded-full bg-zinc-950 px-6 py-3 text-white"
-      >
-        {dict.cart.browse}
-      </LocaleLink>
+      <p className="mx-auto mt-5 max-w-md text-sm leading-6 text-zinc-600">{dict.success.copy}</p>
+      <div className="mt-8 flex flex-col items-center gap-3">
+        <LocaleLink href="/refund" className="text-sm underline">
+          {dict.success.cancel}
+        </LocaleLink>
+        <LocaleLink
+          href="/collections/all"
+          className="inline-block rounded-full bg-zinc-950 px-6 py-3 text-white"
+        >
+          {dict.cart.browse}
+        </LocaleLink>
+      </div>
     </div>
   );
 }

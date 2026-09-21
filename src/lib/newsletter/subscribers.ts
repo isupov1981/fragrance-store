@@ -6,6 +6,8 @@ import { defaultLocale, isLocale, type Locale } from "@/lib/i18n/config";
 export type NewsletterSubscribeInput = {
   email: string;
   locale?: string;
+  marketingConsent?: boolean;
+  consentSource?: "footer" | "admin";
 };
 
 export type NewsletterSubscriberRecord = {
@@ -15,6 +17,8 @@ export type NewsletterSubscriberRecord = {
   unsubscribeToken: string;
   createdAt: Date;
   unsubscribedAt: Date | null;
+  marketingConsentAt: Date | null;
+  consentSource: string | null;
 };
 
 function serialize(subscriber: NewsletterSubscriberRecord) {
@@ -24,6 +28,8 @@ function serialize(subscriber: NewsletterSubscriberRecord) {
     locale: subscriber.locale,
     createdAt: subscriber.createdAt.toISOString(),
     unsubscribedAt: subscriber.unsubscribedAt?.toISOString() ?? null,
+    marketingConsentAt: subscriber.marketingConsentAt?.toISOString() ?? null,
+    consentSource: subscriber.consentSource,
     active: subscriber.unsubscribedAt == null,
   };
 }
@@ -37,6 +43,9 @@ export async function subscribeToNewsletter(input: NewsletterSubscribeInput) {
   const { prisma } = await import("@/lib/db/prisma");
   const email = input.email.trim().toLowerCase();
   const locale: Locale = isLocale(input.locale) ? input.locale : defaultLocale;
+  const consented = input.marketingConsent === true;
+  const consentSource = input.consentSource ?? (consented ? "footer" : "admin");
+  const consentStamp = consented ? new Date() : undefined;
 
   return prisma.newsletterSubscriber.upsert({
     where: { email },
@@ -44,10 +53,15 @@ export async function subscribeToNewsletter(input: NewsletterSubscribeInput) {
       email,
       locale,
       unsubscribeToken: randomUUID(),
+      marketingConsentAt: consentStamp ?? (consentSource === "admin" ? new Date() : null),
+      consentSource,
     },
     update: {
       locale,
       unsubscribedAt: null,
+      ...(consented || consentSource === "admin"
+        ? { marketingConsentAt: new Date(), consentSource }
+        : {}),
     },
   });
 }

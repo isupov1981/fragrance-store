@@ -193,8 +193,22 @@ export function CheckoutForm() {
         </fieldset>
         <label className="mt-6 flex items-start gap-3 text-sm">
           <input className="mt-1" type="checkbox" name="acceptsTerms" required />
-          <span>{dict.checkout.terms}</span>
+          <span>
+            {dict.checkout.termsBefore}
+            <LocaleLink className="underline" href="/terms">{dict.checkout.termsLink}</LocaleLink>
+            {dict.checkout.termsMid1}
+            <LocaleLink className="underline" href="/shipping">{dict.checkout.shippingLink}</LocaleLink>
+            {dict.checkout.termsMid2}
+            <LocaleLink className="underline" href="/refund">{dict.checkout.returnsLink}</LocaleLink>
+            {dict.checkout.termsAfter}
+          </span>
         </label>
+        <p className="mt-4 max-w-xl text-xs leading-6 text-zinc-500">{dict.checkout.cancellationNotice}</p>
+        <p className="mt-3 text-xs leading-6 text-zinc-500">
+          {dict.checkout.privacyNote}
+          <LocaleLink className="underline" href="/privacy">{dict.checkout.privacyLink}</LocaleLink>
+          {dict.checkout.privacyAfter}
+        </p>
       </section>
       <aside className="h-fit rounded-xl bg-zinc-50 p-6">
         <h2 className="text-xl font-medium">{dict.checkout.summary}</h2>
@@ -210,6 +224,7 @@ export function CheckoutForm() {
           <span>{dict.checkout.total}</span>
           <span>{format(totals.subtotal + shippingIls)}</span>
         </div>
+        <p className="mt-2 text-xs text-zinc-500">{dict.checkout.vatInclusive}</p>
         {error ? <p role="alert" className="mt-4 text-sm text-red-700">{error}</p> : null}
         <button
           className="mt-6 w-full rounded-full bg-zinc-950 px-5 py-3 text-white disabled:opacity-60"

@@ -36,7 +36,7 @@ test("customer can complete demo checkout", async ({ page }) => {
   await page.getByPlaceholder("City").fill("Paris");
   await page.getByPlaceholder("Postal code").fill("75001");
   await page.getByLabel("Country").selectOption("FR");
-  await page.getByRole("checkbox").check();
+  await page.locator('input[name="acceptsTerms"]').check();
   await page.getByRole("button", { name: /continue to payment/i }).click();
   await expect(page).toHaveURL(/\/en\/checkout\/success/, { timeout: 15_000 });
   await expect(page.getByRole("heading", { name: /thank you/i })).toBeVisible();
@@ -45,6 +45,10 @@ test("customer can complete demo checkout", async ({ page }) => {
 test("static support pages and SEO endpoints respond", async ({ page, request }) => {
   await page.goto("/en/faq");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await page.goto("/en/terms");
+  await expect(page.getByRole("heading", { name: /site terms/i })).toBeVisible();
+  await page.goto("/en/privacy");
+  await expect(page.getByRole("heading", { name: /privacy policy/i })).toBeVisible();
   await page.goto("/en/account");
   await expect(page.getByRole("heading", { name: /look up an order/i })).toBeVisible();
   expect((await request.get("/sitemap.xml")).ok()).toBeTruthy();

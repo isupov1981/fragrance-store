@@ -24,6 +24,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/refund",
     "/about",
     "/account",
+    "/terms",
+    "/privacy",
+    "/cookies",
+    "/accessibility",
   ];
 
   return locales.flatMap((locale) =>

@@ -44,7 +44,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const subscriber = await createSubscriber(parsed.data);
+        const subscriber = await createSubscriber({ ...parsed.data, consentSource: "admin" });
     auditLog({
       event: "admin_subscriber_create",
       level: "info",

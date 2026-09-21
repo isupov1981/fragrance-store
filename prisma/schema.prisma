@@ -243,6 +243,8 @@ model NewsletterSubscriber {
   unsubscribeToken String    @unique @default(cuid())
   createdAt        DateTime  @default(now())
   unsubscribedAt   DateTime?
+  marketingConsentAt DateTime?
+  consentSource      String?
 
   @@index([unsubscribedAt])
 }

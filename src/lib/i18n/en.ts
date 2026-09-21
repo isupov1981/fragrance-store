@@ -479,21 +479,22 @@ export const en = {
     eyebrow: "Client care",
     heading: "Returns, made simple.",
     intro:
-      "We hope every selection feels entirely right. If it does not, unopened full-size fragrance may be returned within 14 days of delivery.",
+      "We hope every selection feels entirely right. If it does not, unopened full-size fragrance may be cancelled within 14 days of delivery or of the written disclosure document, whichever is later.",
     conditions: "Return conditions",
     conditionsCopy:
-      "Items must be unused, unopened and in their original cellophane and presentation packaging. Samples, discovery sizes and personalised items are final sale.",
+      "Items must be unused, unopened and in their original cellophane and presentation packaging. Opened fragrance generally cannot be returned. Purchased samples that remain sealed may be cancelled like other goods. Personalised items may be excluded as provided by law. Complimentary samples included with an order should be returned unused if you cancel.",
     begin: "Begin a return",
     beginCopy:
       "Write to us with your order number and the item you wish to return. We will send instructions appropriate to your location.",
     contact: "Contact client care",
     refunds: "Refunds",
     refundsCopy:
-      "Once inspected, approved refunds are returned to the original payment method within 5–10 business days. Original delivery charges are not refundable.",
+      "Refunds are issued to the original payment method within 14 days of receiving the cancellation notice and, where goods must come back, the returned goods. A statutory cancellation fee of 5% or ₪100 (whichever is lower) may be deducted unless the cancellation is due to a defect or non-conformity. Return shipping for a change-of-mind cancellation is paid by the customer.",
     damaged: "Damaged orders",
     damagedCopy:
-      "If an item arrives damaged or incorrect, photograph the parcel and contents and contact us within 48 hours. We will make it right.",
+      "If an item arrives damaged, incorrect or not as described, photograph the parcel and contents and contact us as soon as possible. Statutory rights for defective goods are not limited to a short notice window. We will repair, replace or refund as required by law.",
   },
+  legal: legalEn,
   notFound: {
     eyebrow: "A vanished trace",
     title: "This page has left no sillage.",

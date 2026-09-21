@@ -56,7 +56,10 @@ export function ProductCard({ product, priority = false }: { product: StoreProdu
           <p className="text-[10px] uppercase tracking-[0.2em] text-ink/55">{product.brand}</p>
           <div className="mt-2 flex items-start justify-between gap-4">
             <h3 className="font-display text-xl leading-tight">{product.name}</h3>
-            <p className="shrink-0 text-xs">{interpolate(dict.product.from, { price: format(variant.price) })}</p>
+            <div className="shrink-0 text-end">
+              <p className="text-xs">{interpolate(dict.product.from, { price: format(variant.price) })}</p>
+              <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-ink/45">{dict.product.vatInclusive}</p>
+            </div>
           </div>
           <p className="mt-2 text-xs text-ink/55">{category?.name} · {concentration}</p>
         </div>

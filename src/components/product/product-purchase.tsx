@@ -52,6 +52,7 @@ export function ProductPurchase({ product }: { product: StoreProduct }) {
               />
               <span className="block">{dict.variants[variant.name as keyof typeof dict.variants] ?? variant.name}</span>
               <span className="mt-0.5 block text-[10px] opacity-70">{format(variant.price)}</span>
+              <span className="mt-0.5 block text-[9px] uppercase tracking-[0.12em] opacity-60">{dict.product.vatInclusive}</span>
             </label>
           ))}
         </div>

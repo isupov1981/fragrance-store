@@ -15,6 +15,7 @@ export const runtime = "nodejs";
 const schema = z.object({
   email: z.email(),
   locale: z.enum(locales).optional(),
+  marketingConsent: z.literal(true),
 });
 
 export async function POST(request: Request) {
@@ -27,7 +28,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    await subscribeToNewsletter(parsed.data);
+    await subscribeToNewsletter({ ...parsed.data, marketingConsent: true, consentSource: "footer" });
   } catch (error) {
     console.error("Newsletter subscribe failed", error);
     return NextResponse.json({ error: "Unable to subscribe" }, { status: 503 });

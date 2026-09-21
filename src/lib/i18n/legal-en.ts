@@ -1,4 +1,25 @@
-export const legalEn = {
+export type LegalSection = {
+  title: string;
+  paragraphs: string[];
+  bullets?: string[];
+};
+
+export type LegalDocument = {
+  title: string;
+  eyebrow: string;
+  heading: string;
+  intro: string;
+  updated: string;
+  sections: LegalSection[];
+};
+
+export const legalEn: {
+  identityNote: string;
+  terms: LegalDocument;
+  privacy: LegalDocument;
+  cookies: LegalDocument;
+  accessibility: LegalDocument;
+} = {
   identityNote:
     "Full seller identity (legal name, registration number and address) will be published on this site once registration is complete. Until then, contact us at orders@parfums.cloud or via WhatsApp.",
   terms: {

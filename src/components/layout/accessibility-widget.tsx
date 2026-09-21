@@ -362,9 +362,14 @@ export function AccessibilityWidget() {
               </section>
 
               <div className="a11y-stack">
+              <div className="flex flex-col gap-2">
+                <a className="a11y-footer-link" href={localizedPath(locale, "/accessibility")}>
+                  {t.statement}
+                </a>
                 <a className="a11y-footer-link" href={localizedPath(locale, "/contact")}>
                   {t.report}
                 </a>
+              </div>
                 <button type="button" className="a11y-reset" onClick={() => update(defaults)}>
                   <RotateCcw size={16} aria-hidden="true" />
                   {t.reset}

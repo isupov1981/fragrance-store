@@ -50,7 +50,7 @@ export default async function FaqPage({ params }: PageProps<"/[lang]/faq">) {
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-center">
             <LocaleLink
               className="inline-flex h-12 items-center justify-center border border-ink px-6 text-[11px] font-semibold uppercase tracking-[0.14em] transition hover:bg-ink hover:text-ivory"
-              href="/shipping"
+              href="/terms"
             >
               {dict.faq.actions.terms}
             </LocaleLink>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { NewsletterForm } from "./newsletter-form";
+import { CookieSettingsButton } from "./cookie-settings-button";
 import { SocialLinks } from "./social-links";
 import type { Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
@@ -27,11 +28,20 @@ export function Footer({ locale }: { locale: Locale }) {
         ["/faq", dict.nav.faq],
       ],
     },
+    {
+      title: dict.footer.legal,
+      links: [
+        ["/terms", dict.footer.terms],
+        ["/privacy", dict.footer.privacy],
+        ["/cookies", dict.footer.cookies],
+        ["/accessibility", dict.footer.accessibility],
+      ],
+    },
   ] as const;
 
   return (
     <footer className="mt-auto bg-ink text-ivory">
-      <div className="shell grid gap-12 py-16 md:grid-cols-2 lg:grid-cols-[1.4fr_.7fr_.7fr] lg:gap-20 lg:py-24">
+      <div className="shell grid gap-12 py-16 md:grid-cols-2 lg:grid-cols-[1.3fr_.7fr_.7fr_.7fr] lg:gap-16 lg:py-24">
         <div className="max-w-lg">
           <p className="eyebrow text-ivory/60">{dict.footer.correspondence}</p>
           <h2 className="mt-5 font-display text-3xl leading-tight sm:text-4xl">{dict.footer.notesTitle}</h2>
@@ -54,7 +64,10 @@ export function Footer({ locale }: { locale: Locale }) {
       </div>
       <div className="shell flex flex-col gap-5 border-t border-ivory/15 py-7 text-[11px] text-ivory/50 sm:flex-row sm:items-center sm:justify-between">
         <p>{interpolate(dict.footer.rights, { year: new Date().getFullYear() })}</p>
-        <span>{dict.footer.cities}</span>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <span>{dict.footer.cities}</span>
+          <CookieSettingsButton />
+        </div>
       </div>
     </footer>
   );

@@ -1,25 +1,29 @@
 "use client";
 
 import Script from "next/script";
-import { useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { LocaleLink } from "@/components/i18n/locale-link";
 import { useI18n } from "@/components/i18n/i18n-provider";
-
-type Consent = "accepted" | "declined" | null;
-
-const CONSENT_KEY = "the-perfume-room-cookie-consent";
-const CONSENT_EVENT = "the-perfume-room-consent-change";
+import {
+  CONSENT_CHANGE_EVENT,
+  CONSENT_KEY,
+  CONSENT_OPEN_EVENT,
+  parseConsent,
+  serializeConsent,
+  type ConsentPreferences,
+} from "@/lib/consent/preferences";
 
 function subscribe(onChange: () => void) {
   window.addEventListener("storage", onChange);
-  window.addEventListener(CONSENT_EVENT, onChange);
+  window.addEventListener(CONSENT_CHANGE_EVENT, onChange);
   return () => {
     window.removeEventListener("storage", onChange);
-    window.removeEventListener(CONSENT_EVENT, onChange);
+    window.removeEventListener(CONSENT_CHANGE_EVENT, onChange);
   };
 }
 
 function getConsent() {
-  return localStorage.getItem(CONSENT_KEY) as Consent;
+  return parseConsent(localStorage.getItem(CONSENT_KEY));
 }
 
 function readNonce() {
@@ -30,18 +34,41 @@ function readNonce() {
 export function ConsentManager() {
   const { dict } = useI18n();
   const consent = useSyncExternalStore(subscribe, getConsent, () => null);
+  const [customizing, setCustomizing] = useState(false);
+  const [forcedOpen, setForcedOpen] = useState(false);
+  const [draft, setDraft] = useState<Pick<ConsentPreferences, "analytics" | "marketing">>({
+    analytics: false,
+    marketing: false,
+  });
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
   const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
   const nonce = readNonce();
+  const showBanner = consent === null || forcedOpen;
 
-  function choose(value: Exclude<Consent, null>) {
-    localStorage.setItem(CONSENT_KEY, value);
-    window.dispatchEvent(new Event(CONSENT_EVENT));
+  useEffect(() => {
+    function open() {
+      const current = getConsent();
+      setDraft({
+        analytics: current?.analytics ?? false,
+        marketing: current?.marketing ?? false,
+      });
+      setCustomizing(true);
+      setForcedOpen(true);
+    }
+    window.addEventListener(CONSENT_OPEN_EVENT, open);
+    return () => window.removeEventListener(CONSENT_OPEN_EVENT, open);
+  }, []);
+
+  function persist(prefs: Pick<ConsentPreferences, "analytics" | "marketing">) {
+    localStorage.setItem(CONSENT_KEY, serializeConsent(prefs));
+    window.dispatchEvent(new Event(CONSENT_CHANGE_EVENT));
+    setCustomizing(false);
+    setForcedOpen(false);
   }
 
   return (
     <>
-      {consent === "accepted" && gaId ? (
+      {consent?.analytics && gaId ? (
         <>
           <Script
             src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
@@ -54,7 +81,7 @@ gtag('js',new Date());gtag('config','${gaId}',{anonymize_ip:true});`}
           </Script>
         </>
       ) : null}
-      {consent === "accepted" && pixelId ? (
+      {consent?.marketing && pixelId ? (
         <Script id="meta-pixel" strategy="afterInteractive" nonce={nonce}>
           {`!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
 n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
@@ -64,15 +91,73 @@ t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}
 fbq('init','${pixelId}');fbq('track','PageView');`}
         </Script>
       ) : null}
-      {consent === null ? (
-        <section className="consent-banner" aria-label={dict.consent.label}>
+      {showBanner ? (
+        <section className="consent-banner" aria-label={dict.consent.label} data-testid="cookie-consent">
           <div>
             <strong>{dict.consent.title}</strong>
             <p>{dict.consent.copy}</p>
+            <p>
+              <LocaleLink className="underline" href="/cookies">
+                {dict.consent.policy}
+              </LocaleLink>
+            </p>
+            {customizing ? (
+              <fieldset className="consent-choices">
+                <legend className="sr-only">{dict.consent.customize}</legend>
+                <label>
+                  <input type="checkbox" checked disabled />
+                  <span>
+                    <strong>{dict.consent.necessary}</strong>
+                    <span>{dict.consent.necessaryCopy}</span>
+                  </span>
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={draft.analytics}
+                    onChange={(event) => setDraft((current) => ({ ...current, analytics: event.target.checked }))}
+                  />
+                  <span>
+                    <strong>{dict.consent.analytics}</strong>
+                    <span>{dict.consent.analyticsCopy}</span>
+                  </span>
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={draft.marketing}
+                    onChange={(event) => setDraft((current) => ({ ...current, marketing: event.target.checked }))}
+                  />
+                  <span>
+                    <strong>{dict.consent.marketing}</strong>
+                    <span>{dict.consent.marketingCopy}</span>
+                  </span>
+                </label>
+              </fieldset>
+            ) : null}
           </div>
           <div className="consent-actions">
-            <button type="button" onClick={() => choose("declined")}>{dict.consent.decline}</button>
-            <button type="button" className="button-dark" onClick={() => choose("accepted")}>{dict.consent.accept}</button>
+            {customizing ? (
+              <button type="button" className="button-dark" onClick={() => persist(draft)}>
+                {dict.consent.save}
+              </button>
+            ) : (
+              <>
+                <button type="button" onClick={() => setCustomizing(true)}>
+                  {dict.consent.customize}
+                </button>
+                <button type="button" onClick={() => persist({ analytics: false, marketing: false })}>
+                  {dict.consent.decline}
+                </button>
+                <button
+                  type="button"
+                  className="button-dark"
+                  onClick={() => persist({ analytics: true, marketing: true })}
+                >
+                  {dict.consent.accept}
+                </button>
+              </>
+            )}
           </div>
         </section>
       ) : null}
@@ -84,11 +169,13 @@ export function trackCommerceEvent(
   event: "view_item" | "add_to_cart" | "begin_checkout" | "purchase",
   payload: Record<string, unknown>,
 ) {
-  if (typeof window === "undefined" || localStorage.getItem(CONSENT_KEY) !== "accepted") return;
+  if (typeof window === "undefined") return;
+  const consent = parseConsent(localStorage.getItem(CONSENT_KEY));
+  if (!consent) return;
   const analyticsWindow = window as typeof window & {
     gtag?: (...args: unknown[]) => void;
     fbq?: (...args: unknown[]) => void;
   };
-  analyticsWindow.gtag?.("event", event, payload);
-  analyticsWindow.fbq?.("track", event, payload);
+  if (consent.analytics) analyticsWindow.gtag?.("event", event, payload);
+  if (consent.marketing) analyticsWindow.fbq?.("track", event, payload);
 }

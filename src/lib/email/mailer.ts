@@ -2,6 +2,7 @@ import nodemailer from "nodemailer";
 
 import type { Order } from "@/lib/checkout/orders";
 import type { Locale } from "@/lib/i18n/config";
+import { localizedPath } from "@/lib/i18n/path";
 
 export type NewArrivalMail = {
   to: string;
@@ -59,16 +60,13 @@ class SmtpOrderMailer implements OrderMailer {
   async sendConfirmation(order: Order) {
     const from = process.env.EMAIL_FROM ?? process.env.ORDER_FROM_EMAIL ?? "The Perfume Room <noreply@parfums.cloud>";
     const admin = process.env.ORDER_ADMIN_EMAIL;
+    const copy = orderConfirmationCopy(order);
     await this.transport().sendMail({
       from,
       to: order.customer.email,
       ...(admin ? { bcc: admin } : {}),
-      subject: `Order ${order.id} confirmed`,
-      text: [
-        `Thank you, ${order.customer.name}.`,
-        `Your order ${order.id} has been paid.`,
-        `Total: ${(order.cart.subtotal / 100).toFixed(2)} ${order.cart.currency.toUpperCase()}`,
-      ].join("\n"),
+      subject: copy.subject,
+      text: copy.text,
     });
   }
 
@@ -103,6 +101,8 @@ class SmtpOrderMailer implements OrderMailer {
       "",
       copy.unsubscribe,
       input.unsubscribeUrl,
+      "",
+      copy.advertiser,
     ]
       .filter((line): line is string => line != null)
       .join("\n");
@@ -135,35 +135,38 @@ class SmtpOrderMailer implements OrderMailer {
 function newArrivalCopy(locale: Locale, productName: string, priceLabel: string, showPrice: boolean) {
   if (locale === "he") {
     return {
-      subject: `חדש באטלייה: ${productName}`,
+      subject: `פרסומת: חדש באטלייה: ${productName}`,
       greeting: "שלום,",
       body: `נוסף ניחוח חדש לקולקציה — \u200F${productName}.`,
       price: showPrice ? `החל מ־${priceLabel}` : "",
       cta: "לצפייה בניחוח",
       unsubscribe: "להסרה מרשימת התפוצה",
-      eyebrow: "חדש באתר",
+      eyebrow: "פרסומת · חדש באתר",
+      advertiser: "The Perfume Room · orders@parfums.cloud",
     };
   }
   if (locale === "ru") {
     return {
-      subject: `Новинка в ателье: ${productName}`,
+      subject: `Реклама: Новинка в ателье: ${productName}`,
       greeting: "Здравствуйте,",
       body: `В коллекции появился новый аромат — ${productName}.`,
       price: showPrice ? `От ${priceLabel}` : "",
       cta: "Смотреть аромат",
       unsubscribe: "Отписаться от рассылки",
-      eyebrow: "Новинка",
+      eyebrow: "Реклама · Новинка",
+      advertiser: "The Perfume Room · orders@parfums.cloud",
     };
   }
   return {
-    subject: `New from the atelier: ${productName}`,
+      subject: `Advertisement: New from the atelier: ${productName}`,
     greeting: "Hello,",
     body: `A new fragrance has joined the collection — ${productName}.`,
     price: showPrice ? `From ${priceLabel}` : "",
     cta: "View fragrance",
-    unsubscribe: "Unsubscribe from these notes",
-    eyebrow: "New arrival",
-  };
+      unsubscribe: "Unsubscribe from these notes",
+      eyebrow: "Advertisement · New arrival",
+      advertiser: "The Perfume Room · orders@parfums.cloud",
+    };
 }
 
 function buildNewArrivalHtml(input: {
@@ -238,6 +241,7 @@ function buildNewArrivalHtml(input: {
           <tr>
             <td dir="${dir}" align="center" style="padding:0 28px 28px;text-align:center;font-family:${uiFont};font-size:13px;color:#8a8178;direction:${dir};">
               <a href="${escapeAttr(input.unsubscribeUrl)}" style="color:#8a8178;font-family:${uiFont};text-decoration:underline;">${escapeHtml(input.copy.unsubscribe)}</a>
+              <p dir="${dir}" style="margin:12px 0 0;font-size:11px;line-height:1.5;color:#8a8178;">${escapeHtml(input.copy.advertiser)}</p>
             </td>
           </tr>
         </table>
@@ -246,6 +250,84 @@ function buildNewArrivalHtml(input: {
   </table>
 </body>
 </html>`;
+}
+
+function siteOrigin() {
+  return (process.env.NEXT_PUBLIC_SITE_URL ?? process.env.APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+}
+
+function orderConfirmationCopy(order: Order) {
+  const locale: Locale = order.locale ?? "en";
+  const origin = siteOrigin();
+  const terms = `${origin}${localizedPath(locale, "/terms")}`;
+  const refund = `${origin}${localizedPath(locale, "/refund")}`;
+  const privacy = `${origin}${localizedPath(locale, "/privacy")}`;
+  const total = `${(order.cart.total / 100).toFixed(2)} ${order.cart.currency.toUpperCase()}`;
+  const lines = order.cart.lines
+    .map((line) => `${line.productName} (${line.variantName}) × ${line.quantity}`)
+    .join("\n");
+
+  if (locale === "he") {
+    return {
+      subject: `הזמנה ${order.id} אושרה`,
+      text: [
+        `תודה, ${order.customer.name}.`,
+        `הזמנה ${order.id} שולמה. המחיר כולל מע״מ.`,
+        `סה״כ: ${total}`,
+        "",
+        "פריטים:",
+        lines,
+        "",
+        "ניתן לבטל עסקת מכר מרחוק תוך 14 ימים מקבלת הטובין או ממסמך גילוי זה — לפי המאוחר. בושם שנפתח בדרך כלל אינו ניתן להחזרה.",
+        "דמי ביטול אם אין פגם: 5% או ₪100 לפי הנמוך.",
+        `תקנון: ${terms}`,
+        `החזרות: ${refund}`,
+        `פרטיות: ${privacy}`,
+        "",
+        "פרטי העוסק המלאים יפורסמו באתר עם השלמת הרישום. עד אז: orders@parfums.cloud",
+      ].join("\n"),
+    };
+  }
+  if (locale === "ru") {
+    return {
+      subject: `Заказ ${order.id} подтверждён`,
+      text: [
+        `Спасибо, ${order.customer.name}.`,
+        `Заказ ${order.id} оплачен. Цена включает НДС.`,
+        `Итого: ${total}`,
+        "",
+        "Позиции:",
+        lines,
+        "",
+        "Дистанционную сделку можно отменить в течение 14 дней с получения товара или этого документа раскрытия — что позже. Вскрытый аромат обычно нельзя вернуть.",
+        "Комиссия при отсутствии дефекта: 5% или ₪100 — что меньше.",
+        `Правила: ${terms}`,
+        `Возвраты: ${refund}`,
+        `Конфиденциальность: ${privacy}`,
+        "",
+        "Полные реквизиты продавца будут опубликованы на сайте после регистрации. До этого: orders@parfums.cloud",
+      ].join("\n"),
+    };
+  }
+  return {
+    subject: `Order ${order.id} confirmed`,
+    text: [
+      `Thank you, ${order.customer.name}.`,
+      `Your order ${order.id} has been paid. Prices include VAT.`,
+      `Total: ${total}`,
+      "",
+      "Items:",
+      lines,
+      "",
+      "You may cancel a distance sale within 14 days of receiving the goods or this disclosure document, whichever is later. Opened fragrance generally cannot be returned.",
+      "Cancellation fee if there is no defect: 5% or ₪100, whichever is lower.",
+      `Terms: ${terms}`,
+      `Returns: ${refund}`,
+      `Privacy: ${privacy}`,
+      "",
+      "Full seller identity will be published on the site once registration is complete. Until then: orders@parfums.cloud",
+    ].join("\n"),
+  };
 }
 
 function escapeHtml(value: string) {

@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { LocaleLink } from "@/components/i18n/locale-link";
 import { useI18n } from "@/components/i18n/i18n-provider";
 
 export function ContactForm() {
@@ -49,6 +50,11 @@ export function ContactForm() {
         <label className="eyebrow" htmlFor="message">{dict.contact.message}</label>
         <textarea className="mt-2 min-h-36 w-full resize-y border-b border-ink/25 bg-transparent py-3 text-sm outline-none" id="message" name="message" required />
       </div>
+      <p className="sm:col-span-2 text-xs leading-6 text-ink/55">
+        {dict.contact.privacyNote}
+        <LocaleLink className="underline" href="/privacy">{dict.contact.privacyLink}</LocaleLink>
+        {dict.contact.privacyAfter}
+      </p>
       <button className="button-primary h-13 sm:col-span-2 sm:w-max" type="submit" disabled={submitting}>
         {dict.contact.send}
       </button>
