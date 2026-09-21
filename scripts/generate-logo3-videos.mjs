@@ -18,7 +18,9 @@ const PUBLIC_DIR = path.join(ROOT, "public", "videos", "hero");
 
 const NEGATIVE_PROMPT =
   "warping bottle, morphing label, distorted text, unreadable logo, extra fingers, " +
-  "wrong animal, jitter, shaky cam, low quality, watermark, sudden cuts, cartoon";
+  "wrong animal, jitter, shaky cam, low quality, watermark, sudden cuts, cartoon, " +
+  "thick cream, whipped cream, frosting, yogurt, custard, viscous paste, " +
+  "gluey pour, slow molasses drip, heavy batter, clotted cream";
 
 const CLIPS = [
   {
@@ -27,10 +29,14 @@ const CLIPS = [
     prompt:
       "Ultra luxury perfume commercial matching a high-end gourmand hero film. " +
       "Keep the exact ANFAS gold bottle, red wax seal and label unchanged and sharp. " +
-      "Cinematic slow motion: thick white cream pours over the ornate gold cap and drips " +
-      "down the bottle sides; raspberries drift and settle; soft jasmine petals stir; " +
-      "vanilla pods catch light. Warm chiaroscuro lighting, shallow depth of field, " +
-      "rich gold and crimson palette, 24fps feel, elegant camera push-in, no text changes.",
+      "Cinematic slow motion: plain cold white cow milk — thin, watery, highly fluid — " +
+      "pours from above onto the ornate gold cap in a continuous stream; " +
+      "viscosity like fresh skim milk or water with milk, never cream; " +
+      "it runs fast in thin translucent sheets and rivulets down the bottle, " +
+      "with fine airborne droplets and light splash crowns where it hits; " +
+      "raspberries drift and settle; soft jasmine petals stir; vanilla pods catch light. " +
+      "Warm chiaroscuro lighting, shallow depth of field, rich gold and crimson palette, " +
+      "24fps feel, elegant camera push-in, no text changes.",
   },
   {
     file: "notre-dame.jpg",
