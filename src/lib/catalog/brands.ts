@@ -69,7 +69,7 @@ export async function listStoreBrands(): Promise<StoreBrand[]> {
     return brandsFromProducts(await listStoreProducts());
   } catch (error) {
     console.error("Failed to load brands from database", error);
-    return brandsFromProducts(fallbackProducts);
+    return brandsFromProducts([]);
   }
 }
 

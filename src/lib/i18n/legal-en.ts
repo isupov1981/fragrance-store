@@ -230,7 +230,7 @@ export const legalEn: {
         title: "What we have implemented",
         paragraphs: [
           "The storefront supports Hebrew RTL, a skip-to-content link, labelled form fields, and an accessibility toolbar (keyboard emphasis, contrast, text size, reduced motion, link and heading highlights, larger cursor).",
-          "Home hero films are silent and played muted. Each has a caption track stating that there is no dialogue, and a text alternative on the page. They pause when reduced motion is requested.",
+          "Home hero films are silent and played muted, with a text alternative on the page and no captions. They pause when reduced motion is requested.",
           "If a barrier remains, we will try to provide the information or complete the purchase another way — email or WhatsApp.",
         ],
       },

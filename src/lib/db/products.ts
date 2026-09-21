@@ -73,11 +73,13 @@ export async function listStoreProducts(): Promise<StoreProduct[]> {
   if (!databaseEnabled()) return fallbackProducts;
   try {
     const records = await loadPublishedProducts();
-    const mapped = records.map(toStoreProduct).filter((item): item is StoreProduct => Boolean(item?.images.length));
-    return mapped.length ? mapped : fallbackProducts;
+    const mapped = records
+      .map(toStoreProduct)
+      .filter((item): item is StoreProduct => item != null);
+    return mapped;
   } catch (error) {
     console.error("Failed to load catalogue from database", error);
-    return fallbackProducts;
+    return [];
   }
 }
 
@@ -89,16 +91,12 @@ export async function getStoreProduct(slug: string): Promise<StoreProduct | unde
       where: { slug, status: "ACTIVE" },
       include: publishedInclude,
     });
-    if (!record) {
-      const published = await loadPublishedProducts();
-      if (!published.length) return getProduct(slug);
-      return undefined;
-    }
+    if (!record) return undefined;
     const mapped = toStoreProduct(record);
-    return mapped?.images.length ? mapped : undefined;
+    return mapped ?? undefined;
   } catch (error) {
     console.error("Failed to load product from database", error);
-    return getProduct(slug);
+    return undefined;
   }
 }
 
