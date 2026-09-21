@@ -55,6 +55,9 @@ export async function storeImage(input: {
 
   assertImageUpload({ type: contentType, size: input.size });
   await assertDecodableImage(input.body);
+  const allowLocalFallback =
+    process.env.NODE_ENV !== "production" || process.env.STORAGE_ALLOW_LOCAL === "true";
+
   if (isS3Configured()) {
     try {
       return await putS3Object({
@@ -64,9 +67,19 @@ export async function storeImage(input: {
       });
     } catch (error) {
       if (error instanceof StorageError) throw error;
+      if (!allowLocalFallback) {
+        console.error("S3 upload failed:", error);
+        throw new StorageError("Object storage upload failed", 502);
+      }
       console.error("S3 upload failed, falling back to local storage:", error);
     }
+  } else if (!allowLocalFallback) {
+    throw new StorageError(
+      "Object storage is not configured (set S3_*). Local uploads are ephemeral on Hostinger.",
+      503,
+    );
   }
+
   try {
     return await putLocalObject({
       body: input.body,

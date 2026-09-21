@@ -90,6 +90,8 @@ Re-run when migrations change. Skip seed on repeat if data already exists (omit 
 
 On Business Node hosting, **local `uploads/` is wiped on redeploy**. Configure **Cloudflare R2** (or another S3 API) and all `S3_*` vars. After deploy, `/api/admin/health` should show `"storage":"s3"`.
 
+In production the app **does not fall back to local disk** unless `STORAGE_ALLOW_LOCAL=true`. Without S3, uploads return 503 instead of writing `/api/media/...` URLs that break on the next deploy.
+
 ---
 
 ## Phase 3 — Domain and SSL
