@@ -508,6 +508,8 @@ export const en = {
       "L’Explicite by The House of Oud (THoO) is a bold unisex gourmand — sweet and creamy — built around an unusual pairing of banana bread and peanut butter. Familiar warm bakery smells become a rich, playful niche scent. Opens with lemon zest and ylang-ylang; heart of banana bread, peanut butter and warm spices; base of violet, amber and fruity musk — sweet, creamy warmth like fresh banana cake with peanut butter and an ambery-musky depth. Part of the Crazy collection; composed by Cristian Calabrò at 30%, with banana as the star of both the formula and the bottle’s artistic concept.",
     "trussardi-champaca-edizione-millesimata":
       "Champaca Edizione Millesimata by Trussardi is a rich, creamy unisex gourmand from the Le Vie di Milano collection. Inspired by sweet childhood memories and the feel of a decadent praline, it joins warm nuttiness with elegant florals and soft vanilla sweetness. Opens with lemon blossom, magnolia and freesia; heart of praline accord, red champaca and hazelnut; base of vanilla, heliotrope and white woods — creamy, nutty and sweet with a refined floral veil, like hazelnut praline wrapped in luxury vanilla cream. An Italian fashion house; Le Vie di Milano turns Italian stories and atmosphere into perfume. This Edizione Millesimata Champaca is a numbered limited Eau de Parfum Intense with selected fine materials.",
+    "tiziana-terenzi-halley":
+      "Halley by Tiziana Terenzi is a rich, fruity, sweet unisex fragrance with a luxurious, powerful character. Juicy fruits meet soft florals over a warm, enveloping base. Passionfruit, peach, lemon and blackcurrant sit with floral facets and depth of vanilla, musk and amber — sweet, fruity and sensual, with a soft warmth that stays on skin. An Italian family niche house known for rich, lasting, present compositions; Halley reflects that opulent style in bright fruit and deep sweetness.",
   },
   variants: {
     "50 ml": "50 ml",
@@ -566,6 +568,9 @@ export const en = {
     Hazelnut: "Hazelnut",
     Heliotrope: "Heliotrope",
     "White woods": "White woods",
+    Passionfruit: "Passionfruit",
+    Lemon: "Lemon",
+    Blackcurrant: "Blackcurrant",
   },
   studies: {
     citrusNote: "Bergamot peel, bright then smoky",
