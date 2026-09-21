@@ -27,7 +27,14 @@ function createNonce() {
 }
 
 function withSecurityHeaders(response: NextResponse, nonce: string) {
-  response.headers.set(cspHeaderName(), buildContentSecurityPolicy(nonce));
+  // Hostinger CDN already sends an enforcing Content-Security-Policy
+  // (`upgrade-insecure-requests`). Emitting a second nonce-based policy
+  // (even Report-Only) breaks hydration in some Chromium/Electron embeds.
+  // Keep the nonce for Next script attributes; only opt into our CSP when
+  // explicitly enabled and Hostinger is not injecting its own.
+  if (process.env.CSP_ENABLE === "true") {
+    response.headers.set(cspHeaderName(), buildContentSecurityPolicy(nonce));
+  }
   if (process.env.NODE_ENV === "production") {
     response.headers.set("Strict-Transport-Security", buildHstsHeader());
   }
