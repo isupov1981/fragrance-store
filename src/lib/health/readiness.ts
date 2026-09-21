@@ -3,12 +3,14 @@ import { databaseEnabled } from "@/lib/db/enabled";
 import { isGeminiConfigured } from "@/lib/marketing/gemini-image";
 import { isGrowConfigured } from "@/lib/payments/grow";
 import { isS3Configured } from "@/lib/storage";
+import { SITE_VERSION } from "@/lib/version";
 
 export async function collectReadiness() {
   const reachable = await databaseReachable();
   return {
     ok: true,
     service: "the-perfume-room",
+    version: SITE_VERSION,
     time: new Date().toISOString(),
     storage: isS3Configured() ? "s3" : "local",
     database: databaseEnabled() ? "configured" : "missing",

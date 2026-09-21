@@ -7,7 +7,14 @@
  *   FRAGRANCE_API_URL   default http://localhost:3000
  *   HERMES_AGENT_TOKEN  Bearer token (min 24 chars)
  */
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { stdin, stdout } from "node:process";
+
+const SITE_VERSION = JSON.parse(
+  readFileSync(join(dirname(fileURLToPath(import.meta.url)), "../package.json"), "utf8"),
+).version;
 
 const API = (process.env.FRAGRANCE_API_URL || "http://localhost:3000").replace(/\/$/, "");
 const TOKEN = process.env.HERMES_AGENT_TOKEN || "";
@@ -50,7 +57,7 @@ async function handle(message) {
       result: {
         protocolVersion: "2024-11-05",
         capabilities: { tools: {} },
-        serverInfo: { name: "the-perfume-room", version: "0.1.0" },
+        serverInfo: { name: "the-perfume-room", version: SITE_VERSION },
       },
     };
   }

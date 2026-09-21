@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { agentTokenConfigured } from "@/lib/agent/auth";
+import { SITE_VERSION } from "@/lib/version";
 import { assertAgentRequest, agentTools, dispatchAgentTool, jsonAgentError } from "@/lib/agent/tools";
 import {
   enforceRateLimit,
@@ -39,7 +40,7 @@ export async function POST(request: Request) {
       return rpcResult(id, {
         protocolVersion: "2024-11-05",
         capabilities: { tools: {} },
-        serverInfo: { name: "the-perfume-room", version: "0.1.0" },
+        serverInfo: { name: "the-perfume-room", version: SITE_VERSION },
       });
     }
 
