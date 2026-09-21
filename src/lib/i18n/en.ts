@@ -510,6 +510,8 @@ export const en = {
       "Champaca Edizione Millesimata by Trussardi is a rich, creamy unisex gourmand from the Le Vie di Milano collection. Inspired by sweet childhood memories and the feel of a decadent praline, it joins warm nuttiness with elegant florals and soft vanilla sweetness. Opens with lemon blossom, magnolia and freesia; heart of praline accord, red champaca and hazelnut; base of vanilla, heliotrope and white woods — creamy, nutty and sweet with a refined floral veil, like hazelnut praline wrapped in luxury vanilla cream. An Italian fashion house; Le Vie di Milano turns Italian stories and atmosphere into perfume. This Edizione Millesimata Champaca is a numbered limited Eau de Parfum Intense with selected fine materials.",
     "tiziana-terenzi-halley":
       "Halley by Tiziana Terenzi is a rich, fruity, sweet unisex fragrance with a luxurious, powerful character. Juicy fruits meet soft florals over a warm, enveloping base. Passionfruit, peach, lemon and blackcurrant sit with floral facets and depth of vanilla, musk and amber — sweet, fruity and sensual, with a soft warmth that stays on skin. An Italian family niche house known for rich, lasting, present compositions; Halley reflects that opulent style in bright fruit and deep sweetness.",
+    "theodoros-kalotinis-marzipan-gourmand":
+      "Marzipan Gourmand by Theodoros Kalotinis is a unisex gourmand — sweet and creamy — inspired by marzipan and almond desserts. Rich and indulgent, with a warm character like soft sweet almond candy. Built around marzipan and almonds with sweet, creamy, vanillic facets — a nutty gourmand, warm and enveloping, recalling fresh marzipan and a rich almond dessert. A Greek niche house known especially for realistic gourmands; Marzipan Gourmand continues that style with a rich, addictive reading of marzipan and almonds.",
   },
   variants: {
     "50 ml": "50 ml",
@@ -571,6 +573,8 @@ export const en = {
     Passionfruit: "Passionfruit",
     Lemon: "Lemon",
     Blackcurrant: "Blackcurrant",
+    Marzipan: "Marzipan",
+    Almonds: "Almonds",
   },
   studies: {
     citrusNote: "Bergamot peel, bright then smoky",
