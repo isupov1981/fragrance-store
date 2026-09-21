@@ -125,6 +125,7 @@ export const en = {
     cursorBlack: "Large black cursor",
     cursorWhite: "Large white cursor",
     report: "Report an accessibility issue",
+    statement: "Accessibility statement",
     reset: "Reset accessibility",
   },
   home: {
@@ -188,6 +189,7 @@ export const en = {
   product: {
     view: "View {name}",
     from: "From {price}",
+    vatInclusive: "Incl. VAT",
     edp: "Eau de parfum",
     extrait: "Extrait",
     discover: "Discover fragrance",
@@ -201,7 +203,7 @@ export const en = {
     delivery: "Delivery",
     deliveryCopy: "Complimentary delivery over {amount}, provided the original signature packaging remains unopened.",
     returns: "Returns",
-    returnsCopy: "Unopened full-size fragrance may be returned within 14 days.",
+    returnsCopy: "Unopened full-size fragrance may be cancelled within 14 days of delivery or of the disclosure document, whichever is later.",
     continue: "Continue exploring",
     also: "You may also enjoy",
     viewFamily: "View {name}",
@@ -244,7 +246,7 @@ export const en = {
     remove: "Remove",
     quantity: "Quantity for {name}",
     subtotal: "Subtotal ({count})",
-    shippingNote: "Shipping and taxes are calculated at checkout.",
+    shippingNote: "Prices include VAT. Shipping is calculated at checkout.",
     checkout: "Checkout",
     item: "item",
     items: "items",
@@ -271,7 +273,19 @@ export const en = {
     upsSaver: "UPS Express Saver",
     intlNote: "International delivery takes up to 5 business days, or 7 for remote areas.",
     free: "Free",
-    terms: "I agree to the terms, shipping policy and returns policy.",
+    termsBefore: "I agree to the ",
+    termsLink: "site terms",
+    termsMid1: ", ",
+    shippingLink: "shipping policy",
+    termsMid2: " and ",
+    returnsLink: "returns policy",
+    termsAfter: ".",
+    cancellationNotice:
+      "You may cancel a distance sale within 14 days of receiving the goods or the disclosure document, whichever is later. Opened fragrance generally cannot be returned. A statutory fee of 5% or ₪100 (whichever is lower) may apply unless the item is defective.",
+    vatInclusive: "Prices include VAT.",
+    privacyNote: "We use your details to fulfil the order. See our ",
+    privacyLink: "privacy policy",
+    privacyAfter: ".",
     summary: "Order summary",
     total: "Total",
     pay: "Continue to payment",
@@ -287,6 +301,8 @@ export const en = {
   },
   success: {
     title: "Thank you",
+    copy: "A confirmation email with cancellation information is on its way. Keep the original packaging sealed if you may return the order.",
+    cancel: "How to cancel",
   },
   account: {
     title: "Your account",
@@ -333,6 +349,9 @@ export const en = {
     message: "Message",
     send: "Send enquiry",
     sent: "Thank you. We will reply within two business days.",
+    privacyNote: "By sending this form you acknowledge our ",
+    privacyLink: "privacy policy",
+    privacyAfter: ".",
     s1: "Fragrance guidance",
     s2: "Order enquiry",
     s3: "Press and partnerships",
@@ -365,7 +384,7 @@ export const en = {
           {
             question: "Are the products authentic?",
             answer:
-              "Yes. We work with the major official importers in Israel and, in some cases, with high-quality parallel import — to ensure authenticity, availability and a fair price.",
+              "Yes. We work with the major official importers in Israel and, in some cases, with lawful parallel import — to ensure authenticity, availability and a fair price. Parallel-import cosmetics marketed in Israel may carry additional labelling required by the Ministry of Health.",
           },
         ],
       },
@@ -390,24 +409,24 @@ export const en = {
           {
             question: "What is the return policy?",
             answer:
-              "Returns are possible within 14 days of purchase when the product is sealed, new and in its original packaging, with proof of purchase. Refunds are issued to the original payment method within 7 days of processing.",
-            note: "Opened or used products cannot be returned. Made-to-order products — as required by law.",
+              "You may cancel a distance sale within 14 days of receiving the goods or the written disclosure document, whichever is later, when the item is sealed, unused and in its original packaging. Refunds go to the original payment method within 14 days of the cancellation notice and, where required, the returned goods.",
+            note: "Opened fragrance and cosmetics generally cannot be returned. Goods made to your special request may be excluded as provided by law.",
           },
           {
             question: "I received a gift with my order. What happens if I return it?",
             answer:
-              "If you return a product without returning a gift that came with it, ₪50 will be deducted from the refund for each gift not returned. Gifts must be sealed and in original packaging.",
+              "Promotional gifts must be returned unused and in original packaging. If a gift is not returned, we may deduct its stated value as shown on the order or at checkout.",
           },
           {
             question: "How do I cancel an order?",
             answer:
               "You can cancel even if the shipment has already left, under the Consumer Protection Law and our terms. If it has not shipped yet, processing is faster. If it has shipped, we will arrange an orderly return after you contact us.",
             bullets: [
-              "Cancellation fee for a return not due to a defect: 5% or ₪100 — whichever is lower.",
-              "If you received free shipping, ₪30 may be charged for shipping upon cancellation.",
+              "Cancellation fee when the return is not due to a defect: 5% or ₪100 — whichever is lower.",
+              "If complimentary shipping was granted, the actual outbound shipping cost according to the shipping page may be deducted.",
             ],
             footer:
-              "To request a cancellation, provide the full name and ID number of the purchaser, plus the order details.",
+              "To request a cancellation, provide the full name of the purchaser, the order details and, where reasonably required for identification, an ID number.",
           },
         ],
       },
@@ -444,7 +463,7 @@ export const en = {
     noteResend:
       "If the shipment is returned under these circumstances, the customer will be charged a return fee equal to the shipping cost listed above, and a resend fee equal to the shipping cost listed above, regardless of the original purchase amount.",
     noteCancel:
-      "If the customer cancels the order after the package is returned, and no later than 14 days from order confirmation, a cancellation fee of 5% of the purchase amount (but no more than {cap}) will be deducted from the refund, in accordance with the law.",
+      "If you cancel after the package is returned to us, within 14 days of receiving the goods or the disclosure document (whichever is later), a cancellation fee of 5% of the purchase amount (but no more than {cap}) will be deducted from the refund, in accordance with the law.",
     noteDeductionsIntro: "In addition, the following will also be deducted from the refund:",
     noteOriginalShipping: "Original shipping cost to home/office (if the customer received free shipping).",
     noteReturnShipping: "Return shipping cost, both equal to the rates listed above.",
@@ -538,6 +557,8 @@ export const en = {
       "Crème Brûlée by Theodoros Kalotinis is a unisex gourmand — sweet, creamy and warm — inspired by the classic crème brûlée dessert. Rich and indulgent, with soft vanilla cream and a layer of caramelized sugar. Vanilla, rich cream and caramelized sugar create a milky-creamy scent with deep sweetness and gourmand warmth — like fresh crème brûlée with a crisp sweet caramel shell. A Greek niche house known especially for realistic gourmands; Crème Brûlée continues that style with a rich, creamy, addictive reading of the classic French dessert.",
     "xerjoff-cruz-del-sur-ii":
       "Cruz del Sur II by Xerjoff is a unisex fragrance — tropical, fruity and creamy, rich and indulgent, like an exotic mango shake. Juicy mango, guava and pineapple meet exotic flowers, blackcurrant and violet leaf; milk, dried fruits, musk, vetiver and cedar give a soft, creamy, enveloping drydown. An Italian luxury niche house known for rich compositions, fine materials and striking bottles.",
+    "floraiku-one-umbrella-for-two":
+      "One Umbrella for Two by Floraïku is a unisex gourmand — fruity and sweet, warm and indulgent — like a blueberry pastry beside aromatic tea. Juicy blueberries meet genmaicha tea and a rice-cookie accord for a sweet, fruity, lightly toasted scent with a cozy warmth. Floraïku Paris is a French luxury niche house inspired by Japanese culture and aesthetics, known for artistic compositions and striking bottles.",
   },
   variants: {
     "50 ml": "50 ml",
@@ -614,6 +635,9 @@ export const en = {
     Milk: "Milk",
     "Dried fruits": "Dried fruits",
     Cedar: "Cedar",
+    Blueberry: "Blueberry",
+    "Genmaicha tea": "Genmaicha tea",
+    "Rice cookie accord": "Rice cookie accord",
   },
   studies: {
     citrusNote: "Bergamot peel, bright then smoky",
