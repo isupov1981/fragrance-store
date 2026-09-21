@@ -512,6 +512,8 @@ export const en = {
       "Halley by Tiziana Terenzi is a rich, fruity, sweet unisex fragrance with a luxurious, powerful character. Juicy fruits meet soft florals over a warm, enveloping base. Passionfruit, peach, lemon and blackcurrant sit with floral facets and depth of vanilla, musk and amber — sweet, fruity and sensual, with a soft warmth that stays on skin. An Italian family niche house known for rich, lasting, present compositions; Halley reflects that opulent style in bright fruit and deep sweetness.",
     "theodoros-kalotinis-marzipan-gourmand":
       "Marzipan Gourmand by Theodoros Kalotinis is a unisex gourmand — sweet and creamy — inspired by marzipan and almond desserts. Rich and indulgent, with a warm character like soft sweet almond candy. Built around marzipan and almonds with sweet, creamy, vanillic facets — a nutty gourmand, warm and enveloping, recalling fresh marzipan and a rich almond dessert. A Greek niche house known especially for realistic gourmands; Marzipan Gourmand continues that style with a rich, addictive reading of marzipan and almonds.",
+    "theodoros-kalotinis-tiramisu":
+      "Tiramisu by Theodoros Kalotinis is a unisex gourmand — sweet, creamy and rich — inspired by the Italian tiramisu dessert. Indulgent and warm, like coffee beside sweet cream and cocoa. Coffee, cocoa and sweet cream meet vanillic gourmand facets — rich, creamy and addictive, recalling layers of fresh tiramisu with coffee and cocoa. A Greek niche house known especially for realistic gourmands; Tiramisu continues that style with a sweet, creamy, indulgent reading of one of Italy’s most loved desserts.",
   },
   variants: {
     "50 ml": "50 ml",
@@ -575,6 +577,9 @@ export const en = {
     Blackcurrant: "Blackcurrant",
     Marzipan: "Marzipan",
     Almonds: "Almonds",
+    Coffee: "Coffee",
+    Cocoa: "Cocoa",
+    "Sweet cream": "Sweet cream",
   },
   studies: {
     citrusNote: "Bergamot peel, bright then smoky",
