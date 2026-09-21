@@ -1,4 +1,5 @@
 import type { Dictionary } from "./en";
+import { legalHe } from "./legal-he";
 
 export const he: Dictionary = {
   meta: {

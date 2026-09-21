@@ -1,3 +1,5 @@
+import { legalEn } from "./legal-en";
+
 export const en = {
   meta: {
     title: "The Perfume Room — Rare fragrance, intimately chosen",
@@ -68,15 +70,33 @@ export const en = {
     care: "Client care",
     delivery: "Delivery",
     returns: "Returns",
+    legal: "Legal",
+    terms: "Terms",
+    privacy: "Privacy",
+    cookies: "Cookies",
+    accessibility: "Accessibility",
+    cookieSettings: "Cookie settings",
+    marketingConsent:
+      "I agree to receive marketing emails about new fragrances and offers. I can unsubscribe at any time.",
+    consentRequired: "Please confirm you agree to receive marketing emails.",
     rights: "© {year} The Perfume Room. All rights reserved.",
-    cities: "Paris · New York · Tel Aviv · Worldwide",
+    cities: "Shipping in Israel and worldwide",
   },
   consent: {
     label: "Cookie preferences",
     title: "We value your privacy",
-    copy: "Analytics helps us improve the store. It only runs after you accept.",
-    decline: "Decline",
-    accept: "Accept",
+    copy: "Essential cookies keep the store working. Analytics and advertising run only if you choose them.",
+    decline: "Essential only",
+    accept: "Accept all",
+    customize: "Customize",
+    save: "Save choices",
+    necessary: "Essential",
+    necessaryCopy: "Language, currency, cart, accessibility and your cookie choice.",
+    analytics: "Analytics",
+    analyticsCopy: "Google Analytics helps us understand how the catalogue is used.",
+    marketing: "Marketing",
+    marketingCopy: "The Meta Pixel helps us measure and improve ads.",
+    policy: "Cookie policy",
   },
   whatsapp: {
     label: "Chat with us on WhatsApp",

@@ -1,4 +1,5 @@
 import type { Dictionary } from "./en";
+import { legalRu } from "./legal-ru";
 
 export const ru = {
   meta: {
