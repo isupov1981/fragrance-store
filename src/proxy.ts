@@ -23,7 +23,7 @@ function createNonce() {
   const bytes = crypto.getRandomValues(new Uint8Array(16));
   let binary = "";
   for (const byte of bytes) binary += String.fromCharCode(byte);
-  return btoa(binary);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_");
 }
 
 function withSecurityHeaders(response: NextResponse, nonce: string) {

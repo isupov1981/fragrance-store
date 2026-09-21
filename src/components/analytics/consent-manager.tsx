@@ -23,7 +23,11 @@ function subscribe(onChange: () => void) {
 }
 
 function getConsent() {
-  return parseConsent(localStorage.getItem(CONSENT_KEY));
+  try {
+    return parseConsent(localStorage.getItem(CONSENT_KEY));
+  } catch {
+    return null;
+  }
 }
 
 function readNonce() {
@@ -60,7 +64,11 @@ export function ConsentManager() {
   }, []);
 
   function persist(prefs: Pick<ConsentPreferences, "analytics" | "marketing">) {
-    localStorage.setItem(CONSENT_KEY, serializeConsent(prefs));
+    try {
+      localStorage.setItem(CONSENT_KEY, serializeConsent(prefs));
+    } catch {
+      /* Private mode can block storage; still close the banner for this visit. */
+    }
     window.dispatchEvent(new Event(CONSENT_CHANGE_EVENT));
     setCustomizing(false);
     setForcedOpen(false);
@@ -170,7 +178,12 @@ export function trackCommerceEvent(
   payload: Record<string, unknown>,
 ) {
   if (typeof window === "undefined") return;
-  const consent = parseConsent(localStorage.getItem(CONSENT_KEY));
+  let consent;
+  try {
+    consent = parseConsent(localStorage.getItem(CONSENT_KEY));
+  } catch {
+    return;
+  }
   if (!consent) return;
   const analyticsWindow = window as typeof window & {
     gtag?: (...args: unknown[]) => void;

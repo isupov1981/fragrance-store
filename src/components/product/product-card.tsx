@@ -23,15 +23,17 @@ export function ProductCard({ product, priority = false }: { product: StoreProdu
     <article className="product-card group">
       <LocaleLink className="block" href={`/products/${product.slug}`} aria-label={interpolate(dict.product.view, { name: product.name })}>
         <div className="relative aspect-[4/5] overflow-hidden bg-stone">
-          <Image
-            className={`h-full w-full object-cover transition duration-700 ease-out group-hover:scale-[1.04] ${product.images[1] ? "group-hover:opacity-0" : ""}`}
-            src={product.images[0]}
-            alt={`${product.name} ${concentration}`}
-            fill
-            sizes="(max-width: 640px) 78vw, (max-width: 1024px) 45vw, 25vw"
-            priority={priority}
-            unoptimized={isUnoptimizedCatalogImage(product.images[0])}
-          />
+          {product.images[0] ? (
+            <Image
+              className={`h-full w-full object-cover transition duration-700 ease-out group-hover:scale-[1.04] ${product.images[1] ? "group-hover:opacity-0" : ""}`}
+              src={product.images[0]}
+              alt={`${product.name} ${concentration}`}
+              fill
+              sizes="(max-width: 640px) 78vw, (max-width: 1024px) 45vw, 25vw"
+              priority={priority}
+              unoptimized={isUnoptimizedCatalogImage(product.images[0])}
+            />
+          ) : null}
           {product.images[1] ? (
             <Image
               className="object-cover opacity-0 transition duration-700 ease-out group-hover:scale-[1.04] group-hover:opacity-100"
@@ -56,10 +58,12 @@ export function ProductCard({ product, priority = false }: { product: StoreProdu
           <p className="text-[10px] uppercase tracking-[0.2em] text-ink/55">{product.brand}</p>
           <div className="mt-2 flex items-start justify-between gap-4">
             <h3 className="font-display text-xl leading-tight">{product.name}</h3>
-            <div className="shrink-0 text-end">
-              <p className="text-xs">{interpolate(dict.product.from, { price: format(variant.price) })}</p>
-              <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-ink/45">{dict.product.vatInclusive}</p>
-            </div>
+            {variant ? (
+              <div className="shrink-0 text-end">
+                <p className="text-xs">{interpolate(dict.product.from, { price: format(variant.price) })}</p>
+                <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-ink/45">{dict.product.vatInclusive}</p>
+              </div>
+            ) : null}
           </div>
           <p className="mt-2 text-xs text-ink/55">{category?.name} · {concentration}</p>
         </div>

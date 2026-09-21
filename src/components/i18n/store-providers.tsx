@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import type { Currency } from "@/lib/currency";
-import type { Dictionary } from "@/lib/i18n/en";
+import type { ClientDictionary } from "@/lib/i18n/get-dictionary";
 import type { Locale } from "@/lib/i18n/config";
 import { CommerceProvider } from "@/components/commerce/commerce-provider";
 import { CurrencyProvider } from "./currency-provider";
@@ -16,7 +16,7 @@ export function StoreProviders({
   children,
 }: {
   locale: Locale;
-  dict: Dictionary;
+  dict: ClientDictionary;
   currency: Currency;
   ordersEnabled: boolean;
   children: ReactNode;

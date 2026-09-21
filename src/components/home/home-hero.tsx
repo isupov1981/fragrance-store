@@ -115,7 +115,7 @@ export function HomeHero() {
           muted
           loop={HERO_CLIPS.length < 2}
           playsInline
-          preload="auto"
+          preload="metadata"
           aria-hidden="true"
           onTimeUpdate={showA ? onTimeUpdate : undefined}
           onEnded={showA ? beginCrossfade : undefined}
@@ -127,7 +127,7 @@ export function HomeHero() {
             src={HERO_CLIPS[bIndex]}
             muted
             playsInline
-            preload="auto"
+            preload="metadata"
             aria-hidden="true"
             onTimeUpdate={showA ? undefined : onTimeUpdate}
             onEnded={showA ? undefined : beginCrossfade}

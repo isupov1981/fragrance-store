@@ -1,4 +1,4 @@
-import type { Dictionary } from "@/lib/i18n/en";
+import type { ClientDictionary } from "@/lib/i18n/get-dictionary";
 import { isNewProduct } from "@/lib/catalog/new-arrival";
 
 export const MERCH_CATEGORY_SLUGS = ["back-in-stock", "testers-refills", "additional-products"] as const;
@@ -36,7 +36,7 @@ export const merchandisingCategoryDefs: { slug: MerchCategorySlug; name: string;
 export type CategoryMenuLink = {
   id: string;
   href: string;
-  label: (dict: Dictionary) => string;
+  label: (dict: ClientDictionary) => string;
 };
 
 export const categoryMenuLinks: CategoryMenuLink[] = [
@@ -92,7 +92,7 @@ export function matchesMerchandisingEdit(
   return true;
 }
 
-export function merchandisingTitle(dict: Dictionary, edit: string, fallback: string) {
+export function merchandisingTitle(dict: ClientDictionary, edit: string, fallback: string) {
   switch (edit) {
     case "new":
       return dict.categoriesMenu.newArrivals;

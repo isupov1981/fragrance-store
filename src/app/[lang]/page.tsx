@@ -8,8 +8,21 @@ import { Reveal } from "@/components/home/reveal";
 import type { Metadata } from "next";
 import { listStoreProducts } from "@/lib/db/products";
 import { isNewProduct } from "@/lib/catalog/new-arrival";
+import type { StoreProduct } from "@/lib/catalog";
 import { getDictionary, hasLocale } from "@/lib/i18n/get-dictionary";
 import { localizedPath } from "@/lib/i18n/path";
+
+const HOME_CAROUSEL_LIMIT = 12;
+
+function toCardProduct(product: StoreProduct): StoreProduct {
+  return {
+    ...product,
+    description: "",
+    descriptionHe: undefined,
+    notes: undefined,
+    images: product.images.slice(0, 2),
+  };
+}
 
 export async function generateMetadata({ params }: PageProps<"/[lang]">): Promise<Metadata> {
   const { lang } = await params;
@@ -23,6 +36,7 @@ export async function generateMetadata({ params }: PageProps<"/[lang]">): Promis
       languages: {
         en: localizedPath("en", "/"),
         he: localizedPath("he", "/"),
+        ru: localizedPath("ru", "/"),
         "x-default": localizedPath("en", "/"),
       },
     },
@@ -33,8 +47,16 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
   const { lang } = await params;
   const dict = getDictionary(lang);
   const catalog = await listStoreProducts();
-  const arrivals = catalog.filter((product) => isNewProduct(product));
-  const cabinet = [...catalog].sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)));
+  const arrivals = catalog.filter((product) => isNewProduct(product)).slice(0, HOME_CAROUSEL_LIMIT).map(toCardProduct);
+  const featuredSorted = [...catalog].sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)));
+  const cabinet = featuredSorted.slice(0, HOME_CAROUSEL_LIMIT).map(toCardProduct);
+  const featured = featuredSorted[0];
+  const trio = catalog.slice(0, 3).map((product) => ({
+    slug: product.slug,
+    name: product.name,
+    images: product.images.slice(0, 1),
+    notes: product.notes?.slice(0, 3),
+  }));
 
   return (
     <main id="main-content">
@@ -52,7 +74,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
       </Reveal>
 
       <Reveal>
-        <EditorialTrio products={catalog} />
+        <EditorialTrio products={trio} />
       </Reveal>
 
       <Reveal>
@@ -67,7 +89,19 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
       </Reveal>
 
       <Reveal>
-        <FeaturedStory product={cabinet[0]} />
+        <FeaturedStory
+          product={
+            featured
+              ? {
+                  slug: featured.slug,
+                  name: featured.name,
+                  brand: featured.brand,
+                  description: featured.description,
+                  images: featured.images.slice(0, 4),
+                }
+              : undefined
+          }
+        />
       </Reveal>
 
       <CinematicBand />

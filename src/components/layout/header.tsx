@@ -100,7 +100,7 @@ export function Header({ brands = [] }: { brands?: StoreBrand[] }) {
                 {familyCategories.map((category) => (
                   <li key={category.slug}>
                     <LocaleLink className="block bg-sand/45 p-4 text-sm" href={`/collections/${category.slug}`}>
-                      {dict.categories[category.slug as keyof typeof dict.categories].name}
+                      {dict.categories[category.slug as keyof typeof dict.categories]?.name ?? category.name}
                     </LocaleLink>
                   </li>
                 ))}
@@ -141,7 +141,7 @@ export function Header({ brands = [] }: { brands?: StoreBrand[] }) {
                     {familyCategories.map((category) => (
                       <li key={category.slug}>
                         <LocaleLink className="text-sm normal-case tracking-normal hover:text-bronze" href={`/collections/${category.slug}`}>
-                          {dict.categories[category.slug as keyof typeof dict.categories].name}
+                          {dict.categories[category.slug as keyof typeof dict.categories]?.name ?? category.name}
                         </LocaleLink>
                       </li>
                     ))}
