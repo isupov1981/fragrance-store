@@ -516,6 +516,8 @@ export const en = {
       "Tiramisu by Theodoros Kalotinis is a unisex gourmand — sweet, creamy and rich — inspired by the Italian tiramisu dessert. Indulgent and warm, like coffee beside sweet cream and cocoa. Coffee, cocoa and sweet cream meet vanillic gourmand facets — rich, creamy and addictive, recalling layers of fresh tiramisu with coffee and cocoa. A Greek niche house known especially for realistic gourmands; Tiramisu continues that style with a sweet, creamy, indulgent reading of one of Italy’s most loved desserts.",
     "theodoros-kalotinis-creme-brulee":
       "Crème Brûlée by Theodoros Kalotinis is a unisex gourmand — sweet, creamy and warm — inspired by the classic crème brûlée dessert. Rich and indulgent, with soft vanilla cream and a layer of caramelized sugar. Vanilla, rich cream and caramelized sugar create a milky-creamy scent with deep sweetness and gourmand warmth — like fresh crème brûlée with a crisp sweet caramel shell. A Greek niche house known especially for realistic gourmands; Crème Brûlée continues that style with a rich, creamy, addictive reading of the classic French dessert.",
+    "xerjoff-cruz-del-sur-ii":
+      "Cruz del Sur II by Xerjoff is a unisex fragrance — tropical, fruity and creamy, rich and indulgent, like an exotic mango shake. Juicy mango, guava and pineapple meet exotic flowers, blackcurrant and violet leaf; milk, dried fruits, musk, vetiver and cedar give a soft, creamy, enveloping drydown. An Italian luxury niche house known for rich compositions, fine materials and striking bottles.",
   },
   variants: {
     "50 ml": "50 ml",
@@ -584,6 +586,14 @@ export const en = {
     "Sweet cream": "Sweet cream",
     "Rich cream": "Rich cream",
     "Caramelized sugar": "Caramelized sugar",
+    Mango: "Mango",
+    Guava: "Guava",
+    Pineapple: "Pineapple",
+    "Exotic flowers": "Exotic flowers",
+    "Violet leaf": "Violet leaf",
+    Milk: "Milk",
+    "Dried fruits": "Dried fruits",
+    Cedar: "Cedar",
   },
   studies: {
     citrusNote: "Bergamot peel, bright then smoky",
