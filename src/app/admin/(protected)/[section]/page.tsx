@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import type { AdminTableRow } from "@/components/admin/admin-filterable-table";
 import {
   formatAdminMessage,
   getAdminDictionary,
@@ -9,10 +9,11 @@ import {
 import { getAdminLocale } from "@/lib/admin/get-locale";
 import { getAdminSectionRows } from "@/lib/admin/queries";
 import { requireAdminPage } from "@/lib/auth/server";
+import type { Locale } from "@/lib/i18n/config";
 import { localizedPath } from "@/lib/i18n/path";
 import { CsvPanel } from "./csv-panel";
-import { OrderStatusForm } from "./order-status-form";
 import { ResourceForm } from "./resource-form";
+import { AdminSectionTable } from "./section-table";
 import { UploadPanel } from "./upload-panel";
 
 const sectionFieldKeys = {
@@ -32,6 +33,26 @@ function sectionFields(dict: AdminDictionary, section: Section) {
   return sectionFieldKeys[section].map((key) => [key, labels[key]] as const);
 }
 
+function toTableRows(section: Section, rows: string[][], locale: Locale): AdminTableRow[] {
+  if (section === "products") {
+    return rows.map((row) => ({
+      cells: row.slice(0, 6),
+      href: localizedPath(locale, `/products/${row[6]}`),
+      key: row[6],
+    }));
+  }
+  if (section === "orders") {
+    return rows.map((row) => ({
+      cells: row.slice(0, 4),
+      key: row[4],
+    }));
+  }
+  return rows.map((row, index) => ({
+    cells: row,
+    key: `${row[0]}-${row[1] ?? index}`,
+  }));
+}
+
 export default async function AdminSectionPage({
   params,
 }: {
@@ -45,75 +66,23 @@ export default async function AdminSectionPage({
   const key = section as Section;
   const data = dict.sections[key];
   const fields = sectionFields(dict, key);
-  const rows = await getAdminSectionRows(section);
+  const rawRows = await getAdminSectionRows(section);
+  const tableRows = toTableRows(key, rawRows, locale);
 
   return (
     <>
       <p className="text-sm font-medium text-slate-500">{dict.section.eyebrow}</p>
       <h1 className="text-3xl font-bold">{data.title}</h1>
-      <div className="mt-6 overflow-x-auto rounded-xl bg-white shadow-sm">
-        <table className="w-full border-collapse text-start">
-          <caption className="sr-only">
-            {formatAdminMessage(dict.section.caption, { title: data.title })}
-          </caption>
-          <thead className="bg-slate-50">
-            <tr>
-              {data.columns.map((column) => (
-                <th key={column} scope="col" className="px-4 py-3 text-sm">
-                  {column}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length ? (
-              rows.map((row, index) => (
-                <tr key={index} className="border-t border-slate-200">
-                  {section === "products" ? (
-                    <>
-                      <td className="px-4 py-3">
-                        <Link
-                          href={localizedPath(locale, `/products/${row[5]}`)}
-                          className="font-medium text-slate-900 underline underline-offset-2 hover:text-slate-600"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {row[0]}
-                        </Link>
-                      </td>
-                      <td className="px-4 py-3">{row[1]}</td>
-                      <td className="max-w-xs px-4 py-3 whitespace-pre-line">{row[2]}</td>
-                      <td className="px-4 py-3">{row[3]}</td>
-                      <td className="px-4 py-3">{row[4]}</td>
-                    </>
-                  ) : section === "orders" ? (
-                    <>
-                      <td className="px-4 py-3">{row[0]}</td>
-                      <td className="px-4 py-3">{row[1]}</td>
-                      <td className="px-4 py-3">{row[2]}</td>
-                      <td className="px-4 py-3">
-                        <OrderStatusForm id={row[4]} status={row[3]} />
-                      </td>
-                    </>
-                  ) : (
-                    row.map((cell) => (
-                      <td key={`${index}-${cell}`} className="px-4 py-3">
-                        {cell}
-                      </td>
-                    ))
-                  )}
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td className="px-4 py-6 text-slate-500" colSpan={data.columns.length}>
-                  {dict.section.empty}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <AdminSectionTable
+        section={key}
+        caption={formatAdminMessage(dict.section.caption, { title: data.title })}
+        columns={[...data.columns]}
+        rows={tableRows}
+        empty={dict.section.empty}
+        filterPlaceholder={dict.section.filterPlaceholder}
+        clearFilters={dict.section.clearFilters}
+        resultsLabel={dict.section.results}
+      />
       <section className="mt-8 rounded-xl bg-white p-5 shadow-sm" aria-labelledby="editor-heading">
         <h2 id="editor-heading" className="text-xl font-semibold">
           {dict.section.editorTitle}

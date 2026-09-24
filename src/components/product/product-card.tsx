@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { FavoriteButton } from "@/components/product/favorite-button";
 import { LocaleLink } from "@/components/i18n/locale-link";
 import { useCurrency } from "@/components/i18n/currency-provider";
 import { useI18n } from "@/components/i18n/i18n-provider";
@@ -20,7 +21,14 @@ export function ProductCard({ product, priority = false }: { product: StoreProdu
     product.concentration === "extrait" ? dict.product.extrait : dict.product.edp;
 
   return (
-    <article className="product-card group">
+    <article className="product-card group relative">
+      <div className="absolute end-2 top-2 z-10">
+        <FavoriteButton
+          productId={product.id}
+          productName={product.name}
+          className="bg-ivory/90 shadow-[0_1px_8px_rgba(32,29,25,.08)] backdrop-blur-sm"
+        />
+      </div>
       <LocaleLink className="block" href={`/products/${product.slug}`} aria-label={interpolate(dict.product.view, { name: product.name })}>
         <div className="relative aspect-[4/5] overflow-hidden bg-stone">
           {product.images[0] ? (

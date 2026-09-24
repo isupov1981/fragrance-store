@@ -1,7 +1,21 @@
 import type { StoreProduct } from "@/lib/catalog";
 import { isNewProduct } from "@/lib/catalog/new-arrival";
 
-export const COLLECTION_PAGE_SIZE = 9;
+/** Retail-friendly sizes that fill 2 / 3 / 4-column product grids. */
+export const COLLECTION_PAGE_SIZES = [12, 24, 48, 96] as const;
+
+export type CollectionPageSize = (typeof COLLECTION_PAGE_SIZES)[number];
+
+export const COLLECTION_PAGE_SIZE: CollectionPageSize = 24;
+
+export function isCollectionPageSize(value: string | number | undefined | null): value is CollectionPageSize {
+  const size = typeof value === "number" ? value : Number.parseInt(String(value ?? ""), 10);
+  return COLLECTION_PAGE_SIZES.includes(size as CollectionPageSize);
+}
+
+export function resolveCollectionPageSize(value: string | number | undefined | null): CollectionPageSize {
+  return isCollectionPageSize(value) ? (Number(value) as CollectionPageSize) : COLLECTION_PAGE_SIZE;
+}
 
 export const collectionSorts = ["featured", "newest", "price-asc", "price-desc", "name"] as const;
 
@@ -44,7 +58,7 @@ export function sortCollection(products: StoreProduct[], sort: CollectionSort) {
   return copy;
 }
 
-export function paginateCollection<T>(items: T[], page: number, pageSize = COLLECTION_PAGE_SIZE) {
+export function paginateCollection<T>(items: T[], page: number, pageSize: number = COLLECTION_PAGE_SIZE) {
   const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
   const current = Math.min(Math.max(1, page), totalPages);
   const start = (current - 1) * pageSize;

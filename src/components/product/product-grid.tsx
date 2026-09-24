@@ -1,9 +1,15 @@
 import { ProductCard } from "./product-card";
 import type { StoreProduct } from "@/lib/catalog";
 
-export function ProductGrid({ products }: { products: StoreProduct[] }) {
+export function ProductGrid({
+  products,
+  emptyLabel = "No fragrances found.",
+}: {
+  products: StoreProduct[];
+  emptyLabel?: string;
+}) {
   if (!products.length) {
-    return <p className="border-y border-ink/10 py-16 text-center text-sm text-ink/60">No fragrances found.</p>;
+    return <p className="border-y border-ink/10 py-16 text-center text-sm text-ink/60">{emptyLabel}</p>;
   }
 
   return (

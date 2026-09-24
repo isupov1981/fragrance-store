@@ -6,7 +6,14 @@ import { LocaleLink } from "@/components/i18n/locale-link";
 import { AutoSubmitForm } from "@/components/ui/auto-submit-form";
 import { getCategory as getFallbackCategory, localizedDescription } from "@/lib/catalog";
 import { listStoreCategories, listStoreProducts } from "@/lib/db/products";
-import { isCollectionSort, paginateCollection, sortCollection, type CollectionSort } from "@/lib/catalog/browse";
+import {
+  COLLECTION_PAGE_SIZES,
+  isCollectionSort,
+  paginateCollection,
+  resolveCollectionPageSize,
+  sortCollection,
+  type CollectionSort,
+} from "@/lib/catalog/browse";
 import { matchesMerchandisingEdit, merchandisingTitle, isMerchCategorySlug } from "@/lib/catalog/merchandising";
 import { getDictionary, hasLocale } from "@/lib/i18n/get-dictionary";
 import { interpolate } from "@/lib/i18n/interpolate";
@@ -53,6 +60,7 @@ export default async function CollectionPage({
   const sort: CollectionSort = isCollectionSort(sortParam) ? sortParam : "featured";
   const inStock = query.stock === "1";
   const page = Number.parseInt(typeof query.page === "string" ? query.page : "1", 10) || 1;
+  const pageSize = resolveCollectionPageSize(typeof query.per === "string" ? query.per : undefined);
   const filtered = catalog.filter((product) => {
     const slugs = product.categorySlugs?.length ? product.categorySlugs : [product.category];
     const inCategory = slug === "all" || slugs.includes(slug) || product.category === slug;
@@ -63,8 +71,9 @@ export default async function CollectionPage({
     return inCategory && inEdit && inSearch && available;
   });
   const sorted = sortCollection(filtered, sort);
-  const paged = paginateCollection(sorted, page);
+  const paged = paginateCollection(sorted, page, pageSize);
   const title = merchandisingTitle(dict, edit, copy?.name ?? category.name);
+  const defaultPageSize = resolveCollectionPageSize(undefined);
 
   function hrefFor(next: Record<string, string | undefined>) {
     const params = new URLSearchParams();
@@ -73,6 +82,7 @@ export default async function CollectionPage({
       edit: edit || undefined,
       sort: sort === "featured" ? undefined : sort,
       stock: inStock ? "1" : undefined,
+      per: pageSize === defaultPageSize ? undefined : String(pageSize),
       page: undefined as string | undefined,
       ...next,
     };
@@ -121,6 +131,7 @@ export default async function CollectionPage({
               {edit ? <input type="hidden" name="edit" value={edit} /> : null}
               {sort !== "featured" ? <input type="hidden" name="sort" value={sort} /> : null}
               {inStock ? <input type="hidden" name="stock" value="1" /> : null}
+              {pageSize !== defaultPageSize ? <input type="hidden" name="per" value={pageSize} /> : null}
               <label className="sr-only" htmlFor="collection-search">{dict.collection.searchThis}</label>
               <input className="w-32 bg-transparent py-2 text-xs normal-case tracking-normal outline-none sm:w-44" id="collection-search" name="q" type="search" defaultValue={search} placeholder={dict.collection.search} />
               <button className="p-2" type="submit" aria-label={dict.collection.search}><Search aria-hidden="true" size={15} /></button>
@@ -129,6 +140,7 @@ export default async function CollectionPage({
               {search ? <input type="hidden" name="q" value={search} /> : null}
               {edit ? <input type="hidden" name="edit" value={edit} /> : null}
               {inStock ? <input type="hidden" name="stock" value="1" /> : null}
+              {pageSize !== defaultPageSize ? <input type="hidden" name="per" value={pageSize} /> : null}
               <label className="sr-only" htmlFor="collection-sort">{dict.collection.sort}</label>
               <select className="bg-transparent py-2 outline-none" id="collection-sort" name="sort" defaultValue={sort}>
                 <option value="featured">{dict.collection.sortFeatured}</option>
@@ -138,21 +150,46 @@ export default async function CollectionPage({
                 <option value="name">{dict.collection.sortName}</option>
               </select>
             </AutoSubmitForm>
+            <AutoSubmitForm action={localizedPath(lang, `/collections/${slug}`)}>
+              {search ? <input type="hidden" name="q" value={search} /> : null}
+              {edit ? <input type="hidden" name="edit" value={edit} /> : null}
+              {sort !== "featured" ? <input type="hidden" name="sort" value={sort} /> : null}
+              {inStock ? <input type="hidden" name="stock" value="1" /> : null}
+              <label className="sr-only" htmlFor="collection-per">{dict.collection.perPage}</label>
+              <select className="bg-transparent py-2 outline-none" id="collection-per" name="per" defaultValue={String(pageSize)}>
+                {COLLECTION_PAGE_SIZES.map((size) => (
+                  <option key={size} value={size}>
+                    {interpolate(dict.collection.perPageOption, { count: String(size) })}
+                  </option>
+                ))}
+              </select>
+            </AutoSubmitForm>
             <LocaleLink className={inStock ? "text-ink" : "text-ink/55"} href={hrefFor({ stock: inStock ? undefined : "1", page: undefined })}>
               {dict.collection.inStock}
             </LocaleLink>
           </div>
         </div>
-        <ProductGrid products={paged.items} />
-        {paged.totalPages > 1 ? (
-          <nav className="mt-12 flex items-center justify-between text-[10px] font-semibold uppercase tracking-[0.16em]" aria-label={interpolate(dict.collection.pageOf, { current: paged.page, total: paged.totalPages })}>
+        <ProductGrid products={paged.items} emptyLabel={dict.collection.empty} />
+        {paged.total > 0 ? (
+          <nav
+            className="mt-12 flex items-center justify-between gap-4 text-[10px] font-semibold uppercase tracking-[0.16em]"
+            aria-label={interpolate(dict.collection.pageOf, { current: paged.page, total: paged.totalPages })}
+          >
             {paged.page > 1 ? (
               <LocaleLink href={hrefFor({ page: String(paged.page - 1) })}>{dict.collection.previous}</LocaleLink>
-            ) : <span />}
+            ) : (
+              <span className="text-ink/30" aria-hidden="true">
+                {dict.collection.previous}
+              </span>
+            )}
             <span>{interpolate(dict.collection.pageOf, { current: paged.page, total: paged.totalPages })}</span>
             {paged.page < paged.totalPages ? (
               <LocaleLink href={hrefFor({ page: String(paged.page + 1) })}>{dict.collection.next}</LocaleLink>
-            ) : <span />}
+            ) : (
+              <span className="text-ink/30" aria-hidden="true">
+                {dict.collection.next}
+              </span>
+            )}
           </nav>
         ) : null}
       </div>

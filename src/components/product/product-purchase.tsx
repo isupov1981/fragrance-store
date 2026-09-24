@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Check, Minus, Plus } from "lucide-react";
 import { trackCommerceEvent } from "@/components/analytics/consent-manager";
 import { AddToCartButton } from "@/components/cart/add-to-cart-button";
+import { FavoriteButton } from "@/components/product/favorite-button";
 import { LocaleLink } from "@/components/i18n/locale-link";
 import { useCurrency } from "@/components/i18n/currency-provider";
 import { useI18n } from "@/components/i18n/i18n-provider";
@@ -105,6 +106,10 @@ export function ProductPurchase({ product }: { product: StoreProduct }) {
           </LocaleLink>
         </div>
       )}
+
+      <div className="mt-5">
+        <FavoriteButton productId={product.id} productName={product.name} variant="text" />
+      </div>
     </div>
   );
 }

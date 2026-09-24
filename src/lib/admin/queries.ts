@@ -18,12 +18,13 @@ export async function getAdminSectionRows(section: string) {
   switch (section) {
     case "products": {
       const products = await prisma.product.findMany({
-        include: { variants: { orderBy: { price: "asc" } } },
+        include: { variants: { orderBy: { price: "asc" } }, brand: true },
         orderBy: { updatedAt: "desc" },
         take: 100,
       });
       return products.map((product) => [
         product.name,
+        product.brand?.name ?? "—",
         product.variants[0]?.sku ?? "—",
         product.variants.length
           ? product.variants

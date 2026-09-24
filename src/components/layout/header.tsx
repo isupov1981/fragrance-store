@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { BrandsMenu } from "./brands-menu";
 import { CartLink } from "./cart-link";
 import { CategoriesMenu } from "./categories-menu";
+import { FavoritesLink } from "./favorites-link";
 import { CurrencySwitcher } from "@/components/i18n/currency-switcher";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { LocaleLink } from "@/components/i18n/locale-link";
@@ -106,6 +107,7 @@ export function Header({ brands = [] }: { brands?: StoreBrand[] }) {
                 ))}
               </ul>
               <div className="mt-8 flex flex-wrap gap-6 text-sm">
+                <LocaleLink href="/saved">{dict.nav.saved}</LocaleLink>
                 <LocaleLink href="/contact">{dict.nav.contact}</LocaleLink>
                 <LocaleLink href="/faq">{dict.nav.faq}</LocaleLink>
               </div>
@@ -182,6 +184,7 @@ export function Header({ brands = [] }: { brands?: StoreBrand[] }) {
           <LocaleLink className="icon-button hidden sm:grid" href="/account" aria-label={dict.nav.account}>
             <UserRound aria-hidden="true" size={20} />
           </LocaleLink>
+          <FavoritesLink />
           {ordersEnabled ? <CartLink /> : null}
         </div>
       </div>

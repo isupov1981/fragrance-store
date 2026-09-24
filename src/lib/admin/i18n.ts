@@ -106,11 +106,14 @@ const en = {
     empty: "No records yet.",
     editorTitle: "Editor form",
     editorHelp: "Records are saved through a protected API and validated on the server.",
+    filterPlaceholder: "Filter {column}",
+    clearFilters: "Clear filters",
+    results: "Showing {visible} of {total}",
   },
   sections: {
     products: {
       title: "Products",
-      columns: ["Name", "SKU", "Price", "Added", "Status"],
+      columns: ["Name", "Brand", "SKU", "Price", "Added", "Status"],
       fields: {
         name: "Name",
         slug: "Slug",
@@ -327,11 +330,14 @@ const he: typeof en = {
     empty: "אין עדיין רשומות.",
     editorTitle: "טופס עריכה",
     editorHelp: "הרשומות נשמרות דרך API מוגן ונבדקות בשרת.",
+    filterPlaceholder: "סינון {column}",
+    clearFilters: "ניקוי מסננים",
+    results: "מוצגים {visible} מתוך {total}",
   },
   sections: {
     products: {
       title: "מוצרים",
-      columns: ["שם", "SKU", "מחיר", "נוסף", "סטטוס"],
+      columns: ["שם", "מותג", "SKU", "מחיר", "נוסף", "סטטוס"],
       fields: {
         name: "שם",
         slug: "Slug",

@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { products } from "@/lib/catalog";
-import { paginateCollection, sortCollection } from "@/lib/catalog/browse";
+import {
+  COLLECTION_PAGE_SIZE,
+  paginateCollection,
+  resolveCollectionPageSize,
+  sortCollection,
+} from "@/lib/catalog/browse";
 
 describe("sortCollection", () => {
   it("orders by price ascending", () => {
@@ -22,5 +27,13 @@ describe("paginateCollection", () => {
     const page = paginateCollection(["a", "b", "c", "d"], 2, 2);
     expect(page).toEqual({ items: ["c", "d"], page: 2, totalPages: 2, total: 4 });
     expect(paginateCollection(["a"], 9, 2).page).toBe(1);
+  });
+});
+
+describe("resolveCollectionPageSize", () => {
+  it("accepts allowed sizes and falls back to the default", () => {
+    expect(resolveCollectionPageSize("48")).toBe(48);
+    expect(resolveCollectionPageSize("9")).toBe(COLLECTION_PAGE_SIZE);
+    expect(resolveCollectionPageSize(undefined)).toBe(24);
   });
 });
