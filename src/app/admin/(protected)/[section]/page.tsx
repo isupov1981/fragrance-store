@@ -79,7 +79,9 @@ export default async function AdminSectionPage({
         columns={[...data.columns]}
         rows={tableRows}
         empty={dict.section.empty}
-        filterPlaceholder={dict.section.filterPlaceholder}
+        filterColumn={dict.section.filterColumn}
+        selectAll={dict.section.selectAll}
+        searchValues={dict.section.searchValues}
         clearFilters={dict.section.clearFilters}
         resultsLabel={dict.section.results}
       />

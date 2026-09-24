@@ -12,7 +12,9 @@ export function AdminSectionTable({
   columns,
   rows,
   empty,
-  filterPlaceholder,
+  filterColumn,
+  selectAll,
+  searchValues,
   clearFilters,
   resultsLabel,
 }: {
@@ -21,7 +23,9 @@ export function AdminSectionTable({
   columns: string[];
   rows: AdminTableRow[];
   empty: string;
-  filterPlaceholder: string;
+  filterColumn: string;
+  selectAll: string;
+  searchValues: string;
   clearFilters: string;
   resultsLabel: string;
 }) {
@@ -31,7 +35,9 @@ export function AdminSectionTable({
       columns={columns}
       rows={rows}
       empty={empty}
-      filterPlaceholder={filterPlaceholder}
+      filterColumn={filterColumn}
+      selectAll={selectAll}
+      searchValues={searchValues}
       clearFilters={clearFilters}
       resultsLabel={(visible, total) =>
         resultsLabel.replace("{visible}", String(visible)).replace("{total}", String(total))

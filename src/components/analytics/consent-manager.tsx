@@ -54,6 +54,7 @@ function readNonce() {
 export function ConsentManager() {
   const { dict } = useI18n();
   const consent = useSyncExternalStore(subscribe, getConsent, () => null);
+  const [ready, setReady] = useState(false);
   const [customizing, setCustomizing] = useState(false);
   const [forcedOpen, setForcedOpen] = useState(false);
   const [draft, setDraft] = useState<Pick<ConsentPreferences, "analytics" | "marketing">>({
@@ -63,7 +64,13 @@ export function ConsentManager() {
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
   const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
   const nonce = readNonce();
-  const showBanner = consent === null || forcedOpen;
+  // Wait until localStorage is readable so returning visitors never flash the banner
+  // during SSR / soft navigations (getServerSnapshot is always null).
+  const showBanner = ready && (consent === null || forcedOpen);
+
+  useEffect(() => {
+    setReady(true);
+  }, []);
 
   useEffect(() => {
     function open() {
