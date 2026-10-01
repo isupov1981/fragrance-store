@@ -31,3 +31,12 @@ export function isPooledDatabaseUrl(url: string): boolean {
     return url.includes("-pooler");
   }
 }
+
+export function isNeonDatabaseUrl(url: string): boolean {
+  try {
+    const host = new URL(url).hostname;
+    return host.includes("neon.tech") || host.includes("neon.build");
+  } catch {
+    return url.includes("neon.tech") || url.includes("neon.build");
+  }
+}

@@ -1,17 +1,17 @@
+import { unstable_cache } from "next/cache";
+
+import type { StoreBrand } from "@/lib/catalog/brand-groups";
 import { toSlug } from "@/lib/catalog/slug";
 import { fallbackProducts } from "@/lib/catalog";
 import { databaseEnabled } from "@/lib/db/enabled";
+import { STORE_CATALOG_REVALIDATE_SECONDS, STORE_CATALOG_TAG } from "@/lib/db/store-cache";
 
-export type StoreBrand = {
-  name: string;
-  slug: string;
-};
-
-export type BrandLetterGroup = {
-  letter: string;
-  label: string;
-  brands: StoreBrand[];
-};
+export {
+  brandIndexLetter,
+  groupBrandsByLetter,
+  type BrandLetterGroup,
+  type StoreBrand,
+} from "@/lib/catalog/brand-groups";
 
 function brandsFromProducts(products: { brand: string }[]): StoreBrand[] {
   const bySlug = new Map<string, StoreBrand>();
@@ -24,40 +24,8 @@ function brandsFromProducts(products: { brand: string }[]): StoreBrand[] {
   return [...bySlug.values()].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
 }
 
-export function brandIndexLetter(name: string): string {
-  const ch = name.trim().charAt(0).toLocaleUpperCase("en-US");
-  if (ch >= "0" && ch <= "9") return "0-9";
-  if (ch >= "A" && ch <= "Z") return ch;
-  return "#";
-}
-
-export function groupBrandsByLetter(brands: StoreBrand[]): BrandLetterGroup[] {
-  const groups = new Map<string, StoreBrand[]>();
-  for (const brand of brands) {
-    const letter = brandIndexLetter(brand.name);
-    const bucket = groups.get(letter) ?? [];
-    bucket.push(brand);
-    groups.set(letter, bucket);
-  }
-
-  const order = (letter: string) => {
-    if (letter === "0-9") return 0;
-    if (letter === "#") return 1000;
-    return letter.charCodeAt(0);
-  };
-
-  return [...groups.entries()]
-    .sort(([a], [b]) => order(a) - order(b))
-    .map(([letter, items]) => ({
-      letter,
-      label: letter === "0-9" || letter === "#" ? letter : `${letter} — Brands`,
-      brands: items.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" })),
-    }));
-}
-
-export async function listStoreBrands(): Promise<StoreBrand[]> {
-  if (!databaseEnabled()) return brandsFromProducts(fallbackProducts);
-  try {
+const cachedListStoreBrands = unstable_cache(
+  async () => {
     const { prisma } = await import("@/lib/db/prisma");
     const rows = await prisma.brand.findMany({
       where: { products: { some: { status: "ACTIVE" } } },
@@ -67,6 +35,15 @@ export async function listStoreBrands(): Promise<StoreBrand[]> {
     if (rows.length) return rows;
     const { listStoreProducts } = await import("@/lib/db/products");
     return brandsFromProducts(await listStoreProducts());
+  },
+  ["store-brands"],
+  { revalidate: STORE_CATALOG_REVALIDATE_SECONDS, tags: [STORE_CATALOG_TAG] },
+);
+
+export async function listStoreBrands(): Promise<StoreBrand[]> {
+  if (!databaseEnabled()) return brandsFromProducts(fallbackProducts);
+  try {
+    return await cachedListStoreBrands();
   } catch (error) {
     console.error("Failed to load brands from database", error);
     return brandsFromProducts([]);

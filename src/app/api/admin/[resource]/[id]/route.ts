@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireAdminRole, requireResourceMutation, type AdminResource } from "@/lib/auth/rbac";
 import { hasSameOrigin, requireAdminRequest } from "@/lib/auth/server";
 import { announceNewArrivalIfNeeded } from "@/lib/email/new-arrivals";
+import { revalidateStoreCatalog } from "@/lib/db/store-cache";
 import { releaseOrderReservation } from "@/lib/inventory/service";
 import { auditLog } from "@/lib/security/audit";
 
@@ -53,15 +54,20 @@ export async function PATCH(
           .parse(input);
         const updated = await prisma.product.update({ where: { id: route.id }, data });
         await announceNewArrivalIfNeeded(updated.id).catch(console.error);
+        revalidateStoreCatalog();
         return NextResponse.json({ data: updated });
       }
       case "categories": {
         const data = z.object({ name: z.string().min(2).optional(), description: z.string().nullable().optional(), seoTitle: z.string().nullable().optional(), seoDescription: z.string().nullable().optional() }).parse(input);
-        return NextResponse.json({ data: await prisma.category.update({ where: { id: route.id }, data }) });
+        const updated = await prisma.category.update({ where: { id: route.id }, data });
+        revalidateStoreCatalog();
+        return NextResponse.json({ data: updated });
       }
       case "brands": {
         const data = z.object({ name: z.string().min(2).optional(), description: z.string().nullable().optional() }).parse(input);
-        return NextResponse.json({ data: await prisma.brand.update({ where: { id: route.id }, data }) });
+        const updated = await prisma.brand.update({ where: { id: route.id }, data });
+        revalidateStoreCatalog();
+        return NextResponse.json({ data: updated });
       }
       case "orders": {
         const data = z.object({ status: z.enum(["PENDING", "PAID", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED", "REFUNDED"]) }).parse(input);
@@ -122,6 +128,9 @@ export async function DELETE(
     case "customers": await prisma.customer.delete({ where: { id: route.id } }); break;
     case "content": await prisma.contentPage.delete({ where: { id: route.id } }); break;
     case "shipping": await prisma.shippingMethod.delete({ where: { id: route.id } }); break;
+  }
+  if (resource.data === "products" || resource.data === "categories" || resource.data === "brands") {
+    revalidateStoreCatalog();
   }
   return new NextResponse(null, { status: 204 });
 }

@@ -1,7 +1,8 @@
+import { unstable_cache } from "next/cache";
 import { cache } from "react";
-import { revalidatePath } from "next/cache";
 
 import { databaseEnabled } from "@/lib/db/enabled";
+import { STORE_ORDERS_TAG, revalidateStoreOrdersFlag } from "@/lib/db/store-cache";
 import {
   assertLivePaymentsForOrders,
   ordersBlockedByDemoPayments,
@@ -30,15 +31,23 @@ export const getOrdersEnabled = cache(async (): Promise<boolean> => {
   return raw;
 });
 
-async function readOrdersEnabledFlag() {
-  if (!databaseEnabled()) return envOrdersEnabledDefault();
-  try {
+const cachedOrdersEnabledFlag = unstable_cache(
+  async () => {
     const { prisma } = await import("@/lib/db/prisma");
     const row = await prisma.storeSetting.findUnique({
       where: { key: ORDERS_ENABLED_KEY },
     });
     if (!row) return envOrdersEnabledDefault();
     return parseOrdersEnabled(row.value);
+  },
+  ["store-orders-enabled"],
+  { revalidate: 900, tags: [STORE_ORDERS_TAG] },
+);
+
+async function readOrdersEnabledFlag() {
+  if (!databaseEnabled()) return envOrdersEnabledDefault();
+  try {
+    return await cachedOrdersEnabledFlag();
   } catch {
     return envOrdersEnabledDefault();
   }
@@ -65,6 +74,5 @@ export async function setOrdersEnabled(enabled: boolean) {
     create: { key: ORDERS_ENABLED_KEY, value: enabled ? "true" : "false" },
     update: { value: enabled ? "true" : "false" },
   });
-  revalidatePath("/", "layout");
-  revalidatePath("/admin");
+  revalidateStoreOrdersFlag();
 }

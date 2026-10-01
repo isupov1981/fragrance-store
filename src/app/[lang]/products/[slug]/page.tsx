@@ -2,13 +2,16 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ProductCard } from "@/components/product/product-card";
+import { ProductDeliveryCopy, ProductFromPrice, ProductVatFx } from "@/components/product/product-price-copy";
 import { ProductPurchase } from "@/components/product/product-purchase";
+import { ProductScent } from "@/components/product/product-scent";
+import { CustomerReviews } from "@/components/reviews/customer-reviews";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { LocaleLink } from "@/components/i18n/locale-link";
+import { resolveScent } from "@/lib/catalog/scent";
+import { reviewsForProduct } from "@/lib/content/reviews";
 import { getStoreProduct, listStoreProducts } from "@/lib/db/products";
-import { convertCatalogCents, defaultCurrency, formatMoney, FREE_SHIPPING_ILS_CENTS, isCurrency, CURRENCY_COOKIE } from "@/lib/currency";
-import { cookies } from "next/headers";
-import { localeMeta } from "@/lib/i18n/config";
+import { defaultCurrency } from "@/lib/currency";
 import { localizedDescription } from "@/lib/catalog";
 import { isUnoptimizedCatalogImage } from "@/lib/catalog/image";
 import { getDictionary, hasLocale } from "@/lib/i18n/get-dictionary";
@@ -17,17 +20,6 @@ import { localizedPath } from "@/lib/i18n/path";
 import { productJsonLd, breadcrumbJsonLd } from "@/lib/seo/product-json-ld";
 
 export const revalidate = 60;
-
-const notes: Record<string, Array<keyof ReturnType<typeof getDictionary>["notes"]>> = {
-  amber: ["Labdanum", "Vanilla absolute", "Dry cedar"],
-  woody: ["Fig leaf", "Sandalwood", "Mineral musk"],
-  floral: ["Iris", "Rose petal", "Ambrette"],
-  citrus: ["Bergamot", "Neroli", "Vetiver"],
-};
-
-const notesBySlug: Record<string, Array<keyof ReturnType<typeof getDictionary>["notes"]>> = {
-  "notre-dame": ["Incense", "Galbanum", "Amber"],
-};
 
 export async function generateStaticParams() {
   const catalog = await listStoreProducts();
@@ -66,22 +58,20 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
   const product = await getStoreProduct(slug);
   if (!product) notFound();
 
-  const currencyValue = (await cookies()).get(CURRENCY_COOKIE)?.value;
-  const currency = isCurrency(currencyValue) ? currencyValue : defaultCurrency;
   const catalog = await listStoreProducts();
   const related = catalog.filter((item) => item.id !== product.id && (item.category === product.category || item.featured)).slice(0, 3);
   const startingPrice = product.variants[0]?.price ?? Math.min(...product.variants.map((variant) => variant.price));
   const category = dict.categories[product.category as keyof typeof dict.categories];
   const description = dict.catalog[product.slug as keyof typeof dict.catalog] ?? localizedDescription(product, lang);
-  const priced = formatMoney(convertCatalogCents(startingPrice, currency), currency, localeMeta[lang].intl);
-  const freeShip = formatMoney(convertCatalogCents(FREE_SHIPPING_ILS_CENTS, currency), currency, localeMeta[lang].intl);
+  const scent = resolveScent(product);
+  const productReviews = reviewsForProduct(product.slug);
 
   return (
     <main id="main-content">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(productJsonLd(product, currency, lang)).replaceAll("<", "\\u003c"),
+          __html: JSON.stringify(productJsonLd(product, defaultCurrency, lang)).replaceAll("<", "\\u003c"),
         }}
       />
       <script
@@ -126,11 +116,30 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
         <div className="lg:sticky lg:top-36 lg:self-start">
           <p className="eyebrow text-bronze">{product.brand}</p>
           <h1 className="mt-4 font-display text-5xl leading-none sm:text-6xl">{product.name}</h1>
-          <p className="mt-4 text-sm" suppressHydrationWarning>{interpolate(dict.product.from, { price: priced })}</p>
+          <ProductFromPrice template={dict.product.from} cents={startingPrice} />
           <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-ink/45">{dict.product.vatInclusive}</p>
-          {currency !== "ILS" ? <p className="mt-2 max-w-md text-xs leading-5 text-ink/55">{dict.product.vatFx}</p> : null}
+          <ProductVatFx>{dict.product.vatFx}</ProductVatFx>
           <p className="mt-2 max-w-md text-xs leading-5 text-ink/55">{dict.product.vatAbroad}</p>
           <p className="mt-7 text-sm leading-7 text-ink/70">{description}</p>
+          <ProductScent
+            scent={scent}
+            family={category?.name}
+            labels={{
+              composition: dict.product.composition,
+              notes: dict.product.notes,
+              top: dict.product.pyramidTop,
+              heart: dict.product.pyramidHeart,
+              base: dict.product.pyramidBase,
+              occasion: dict.product.occasion,
+              season: dict.product.season,
+              sillage: dict.product.sillage,
+              family: dict.product.family,
+              occasions: dict.product.occasions,
+              seasons: dict.product.seasons,
+              sillages: dict.product.sillages,
+            }}
+            noteLabel={(note) => dict.notes[note as keyof typeof dict.notes] ?? note}
+          />
           <section className="mt-8" aria-labelledby="product-labeling">
             <h2 id="product-labeling" className="eyebrow">{dict.product.labeling}</h2>
             <dl className="mt-4 space-y-3 text-xs leading-5 text-ink/70">
@@ -165,39 +174,36 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
             </ul>
           </section>
 
-          <div className="mt-8 border-y border-ink/10 py-6">
-            <p className="eyebrow mb-4">{dict.product.composition}</p>
-            <div className="grid grid-cols-3 gap-4">
-              {(product.notes?.length
-                ? product.notes
-                : (notesBySlug[product.slug] ?? notes[product.category] ?? [])
-              ).map((note, index) => (
-                <div key={note}>
-                  <span className="font-display text-lg text-bronze">0{index + 1}</span>
-                  <p className="mt-1 text-xs">{dict.notes[note as keyof typeof dict.notes] ?? note}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
           <ProductPurchase product={product} />
 
           <div className="mt-8 divide-y divide-ink/10 border-y border-ink/10">
-            {[
-              [dict.product.wear, product.concentration === "extrait" ? dict.product.wearCopyExtrait : dict.product.wearCopy],
-              [dict.product.delivery, interpolate(dict.product.deliveryCopy, { amount: freeShip })],
-              [dict.product.returns, dict.product.returnsCopy],
-            ].map(([title, copy]) => (
-              <details className="group py-4" key={title}>
-                <summary className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.13em]">
-                  {title}<span className="text-lg font-light group-open:rotate-45" aria-hidden="true">+</span>
-                </summary>
-                <p className="pt-3 text-xs leading-6 text-ink/60">{copy}</p>
-              </details>
-            ))}
+            <details className="group py-4">
+              <summary className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.13em]">
+                {dict.product.wear}<span className="text-lg font-light group-open:rotate-45" aria-hidden="true">+</span>
+              </summary>
+              <p className="pt-3 text-xs leading-6 text-ink/60">
+                {product.concentration === "extrait" ? dict.product.wearCopyExtrait : dict.product.wearCopy}
+              </p>
+            </details>
+            <ProductDeliveryCopy title={dict.product.delivery} template={dict.product.deliveryCopy} />
+            <details className="group py-4">
+              <summary className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.13em]">
+                {dict.product.returns}<span className="text-lg font-light group-open:rotate-45" aria-hidden="true">+</span>
+              </summary>
+              <p className="pt-3 text-xs leading-6 text-ink/60">{dict.product.returnsCopy}</p>
+            </details>
           </div>
         </div>
       </div>
+
+      <CustomerReviews
+        reviews={productReviews}
+        locale={lang}
+        eyebrow={dict.reviews.eyebrow}
+        title={dict.reviews.title}
+        countLabel={dict.reviews.count}
+        ratingLabel={dict.reviews.rating}
+      />
 
       <section className="border-t border-ink/10 bg-stone/35 py-20 sm:py-28">
         <div className="shell">

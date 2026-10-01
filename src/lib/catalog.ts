@@ -1,3 +1,4 @@
+import type { NotePyramid, Occasion, Season, Sillage } from "@/lib/catalog/scent";
 import { formatMoney as formatCurrency, isCurrency } from "@/lib/currency";
 import type { Locale } from "@/lib/i18n/config";
 
@@ -31,6 +32,10 @@ export type StoreProduct = {
   /** ISO timestamp used to auto-expire the NEW badge after 30 days. */
   createdAt?: string;
   notes?: string[];
+  pyramid?: NotePyramid;
+  occasion?: Occasion;
+  season?: Season;
+  sillage?: Sillage;
   images: string[];
   variants: StoreVariant[];
 };

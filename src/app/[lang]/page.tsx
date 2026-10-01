@@ -1,11 +1,16 @@
 import { CinematicBand } from "@/components/home/cinematic-band";
 import { EditorialTrio } from "@/components/home/editorial-trio";
 import { FeaturedStory } from "@/components/home/featured-story";
+import { HomeFaq } from "@/components/home/home-faq";
 import { HomeHero } from "@/components/home/home-hero";
 import { HomeTrust } from "@/components/home/home-trust";
 import { ProductCarousel } from "@/components/home/product-carousel";
 import { Reveal } from "@/components/home/reveal";
+import { CustomerReviews } from "@/components/reviews/customer-reviews";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { resolveScent } from "@/lib/catalog/scent";
+import { publishedReviews } from "@/lib/content/reviews";
 import { listStoreProducts } from "@/lib/db/products";
 import { isNewProduct } from "@/lib/catalog/new-arrival";
 import type { StoreProduct } from "@/lib/catalog";
@@ -45,6 +50,7 @@ export async function generateMetadata({ params }: PageProps<"/[lang]">): Promis
 
 export default async function Home({ params }: PageProps<"/[lang]">) {
   const { lang } = await params;
+  if (!hasLocale(lang)) notFound();
   const dict = getDictionary(lang);
   const catalog = await listStoreProducts();
   const arrivals = catalog.filter((product) => isNewProduct(product)).slice(0, HOME_CAROUSEL_LIMIT).map(toCardProduct);
@@ -55,7 +61,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
     slug: product.slug,
     name: product.name,
     images: product.images.slice(0, 1),
-    notes: product.notes?.slice(0, 3),
+    notes: resolveScent(product).notes.slice(0, 3),
   }));
 
   return (
@@ -105,6 +111,15 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
       </Reveal>
 
       <CinematicBand />
+      <CustomerReviews
+        reviews={publishedReviews()}
+        locale={lang}
+        eyebrow={dict.reviews.eyebrow}
+        title={dict.reviews.title}
+        countLabel={dict.reviews.count}
+        ratingLabel={dict.reviews.rating}
+      />
+      <HomeFaq />
       <HomeTrust />
     </main>
   );

@@ -1,6 +1,7 @@
 import { Prisma, type InventoryMovementReason, type OrderStatus } from "@prisma/client";
 
 import { prisma } from "@/lib/db/prisma";
+import { revalidateStoreCatalog } from "@/lib/db/store-cache";
 
 export const LOW_STOCK_THRESHOLD = 5;
 export const RESERVATION_MINUTES = 30;
@@ -170,8 +171,8 @@ export async function applyInventoryChanges(
   actor: InventoryActor,
   note?: string,
 ) {
-  return prisma.$transaction(async (tx) => {
-    const updated = [];
+  const updated = await prisma.$transaction(async (tx) => {
+    const saved = [];
     for (const change of changes) {
       const before = await tx.productVariant.findUnique({
         where: { id: change.variantId },
@@ -228,10 +229,12 @@ export async function applyInventoryChanges(
           },
         });
       }
-      updated.push(variant);
+      saved.push(variant);
     }
-    return updated;
+    return saved;
   });
+  revalidateStoreCatalog();
+  return updated;
 }
 
 export async function getInventoryOverview() {

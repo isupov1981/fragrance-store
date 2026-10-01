@@ -81,11 +81,72 @@ describe("toStoreProduct", () => {
     expect(mapped?.descriptionHe).toBe("תיאור בעברית");
     expect(mapped?.variants[0]?.price).toBe(3200);
     expect(mapped?.notes).toEqual(["Incense", "Oud"]);
+    expect(mapped?.pyramid).toBeUndefined();
     expect(mapped?.manufacturer).toBe("Maison Test");
     expect(mapped?.originCountry).toBe("France");
     expect(mapped?.inci).toBe("Alcohol Denat., Parfum");
     expect(mapped?.supplyChannel).toBe("official");
     expect(mapped?.createdAt).toBeTruthy();
+  });
+
+  it("reads a note pyramid and scent labels from the notes object", () => {
+    const mapped = toStoreProduct({
+      id: "p2",
+      slug: "pyramid",
+      name: "Pyramid",
+      description: "A structured composition with a clear dry-down.",
+      descriptionHe: null,
+      excerpt: null,
+      status: "ACTIVE",
+      featured: false,
+      newArrival: false,
+      newArrivalAnnouncedAt: null,
+      concentration: "edp",
+      manufacturer: null,
+      originCountry: null,
+      inci: null,
+      supplyChannel: null,
+      notes: {
+        top: ["Bergamot"],
+        heart: ["Iris"],
+        base: ["Amber", "Musk"],
+        occasion: "evening",
+        season: "cool",
+        sillage: "intimate",
+      },
+      seoTitle: null,
+      seoDescription: null,
+      brandId: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      brand: null,
+      images: [],
+      variants: [
+        {
+          id: "v2",
+          productId: "p2",
+          name: "50 ml",
+          sku: "PY-50",
+          price: 10000,
+          compareAt: null,
+          stock: 2,
+          attributes: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+      categories: [],
+    });
+
+    expect(mapped?.pyramid).toEqual({
+      top: ["Bergamot"],
+      heart: ["Iris"],
+      base: ["Amber", "Musk"],
+    });
+    expect(mapped?.notes).toEqual(["Bergamot", "Iris", "Amber", "Musk"]);
+    expect(mapped?.occasion).toBe("evening");
+    expect(mapped?.season).toBe("cool");
+    expect(mapped?.sillage).toBe("intimate");
   });
 
   it("returns null when there are no variants", () => {

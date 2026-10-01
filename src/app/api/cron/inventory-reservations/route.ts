@@ -12,6 +12,7 @@ function authorized(request: Request) {
   return Boolean(expected && provided && safeEqualString(expected, provided));
 }
 
+/** Schedule at most once an hour. A 5-minute cron never lets Neon scale to zero. */
 export async function POST(request: Request) {
   if (!authorized(request)) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });

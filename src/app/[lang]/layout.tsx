@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { ConsentManager } from "@/components/analytics/consent-manager";
 import { CartDrawer } from "@/components/cart/cart-drawer";
+import { DocumentLocale } from "@/components/i18n/document-locale";
 import { StoreProviders } from "@/components/i18n/store-providers";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
@@ -10,7 +10,6 @@ import { WhatsAppButton } from "@/components/layout/whatsapp-button";
 import { AccessibilityWidget } from "@/components/layout/accessibility-widget";
 import { listStoreBrands } from "@/lib/catalog/brands";
 import { getOrdersEnabled } from "@/lib/commerce";
-import { defaultCurrency, isCurrency, CURRENCY_COOKIE } from "@/lib/currency";
 import { locales } from "@/lib/i18n/config";
 import { getClientDictionary, getDictionary, hasLocale } from "@/lib/i18n/get-dictionary";
 import { localizedPath } from "@/lib/i18n/path";
@@ -46,12 +45,11 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
 
   const dict = getDictionary(lang);
   const clientDict = getClientDictionary(lang);
-  const currencyValue = (await cookies()).get(CURRENCY_COOKIE)?.value;
-  const currency = isCurrency(currencyValue) ? currencyValue : defaultCurrency;
   const [ordersEnabled, brands] = await Promise.all([getOrdersEnabled(), listStoreBrands()]);
 
   return (
-    <StoreProviders locale={lang} dict={clientDict} currency={currency} ordersEnabled={ordersEnabled}>
+    <StoreProviders locale={lang} dict={clientDict} ordersEnabled={ordersEnabled}>
+      <DocumentLocale locale={lang} />
       <Header brands={brands} />
       {children}
       <Footer locale={lang} />

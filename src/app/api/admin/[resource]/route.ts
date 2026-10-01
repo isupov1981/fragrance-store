@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createDraftProduct, parseAdminProductInput } from "@/lib/agent/products";
+import { revalidateStoreCatalog } from "@/lib/db/store-cache";
 import { requireResourceMutation, type AdminResource } from "@/lib/auth/rbac";
 import { hasSameOrigin, requireAdminRequest } from "@/lib/auth/server";
 import { auditLog } from "@/lib/security/audit";
@@ -53,6 +54,9 @@ export async function POST(
 
   try {
     const data = await createResource(prisma, parsedResource.data, body);
+    if (parsedResource.data === "categories" || parsedResource.data === "brands") {
+      revalidateStoreCatalog();
+    }
     return NextResponse.json({ data }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {

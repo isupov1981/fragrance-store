@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isPooledDatabaseUrl, resolvePrismaDatabaseUrl } from "@/lib/db/connection-url";
+import { isNeonDatabaseUrl, isPooledDatabaseUrl, resolvePrismaDatabaseUrl } from "@/lib/db/connection-url";
 
 describe("resolvePrismaDatabaseUrl", () => {
   it("caps the Prisma pool and leaves local docker URLs unencrypted", () => {
@@ -30,6 +30,14 @@ describe("resolvePrismaDatabaseUrl", () => {
     const url = new URL(resolved);
     expect(url.searchParams.get("connection_limit")).toBe("3");
     expect(url.searchParams.get("pgbouncer")).toBe("true");
+  });
+});
+
+describe("isNeonDatabaseUrl", () => {
+  it("detects Neon hosts and ignores local postgres", () => {
+    expect(isNeonDatabaseUrl("postgresql://u:p@ep-x.eu-central-1.aws.neon.tech/db")).toBe(true);
+    expect(isNeonDatabaseUrl("postgresql://u:p@ep-x-pooler.neon.build/db")).toBe(true);
+    expect(isNeonDatabaseUrl("postgresql://u:p@localhost:5432/db")).toBe(false);
   });
 });
 

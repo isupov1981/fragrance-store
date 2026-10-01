@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Geist, Noto_Sans_Hebrew, Noto_Serif_Hebrew } from "next/font/google";
-import { headers } from "next/headers";
-import { isLocale, localeMeta } from "@/lib/i18n/config";
+import { defaultLocale, isLocale, localeMeta, type Locale } from "@/lib/i18n/config";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -38,10 +37,17 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const headerList = await headers();
-  const localeHeader = headerList.get("x-locale");
-  const nonce = headerList.get("x-nonce") ?? undefined;
-  const locale = isLocale(localeHeader) ? localeHeader : "en";
+  // Reading headers() opts every route out of the cache. Hostinger already
+  // sends its own CSP, so the nonce is only needed when we opt into ours.
+  let locale: Locale = defaultLocale;
+  let nonce: string | undefined;
+  if (process.env.CSP_ENABLE === "true") {
+    const { headers } = await import("next/headers");
+    const headerList = await headers();
+    const localeHeader = headerList.get("x-locale");
+    if (isLocale(localeHeader)) locale = localeHeader;
+    nonce = headerList.get("x-nonce") ?? undefined;
+  }
   const meta = localeMeta[locale];
 
   return (

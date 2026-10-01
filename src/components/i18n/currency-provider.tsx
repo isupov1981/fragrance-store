@@ -1,10 +1,18 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 import {
   convertCatalogCents,
   CURRENCY_COOKIE,
+  defaultCurrency,
   type Currency,
   formatMoney,
   isCurrency,
@@ -24,28 +32,37 @@ function persistCurrency(currency: Currency) {
   document.cookie = `${CURRENCY_COOKIE}=${currency}; path=/; max-age=31536000; samesite=lax`;
 }
 
+function readCurrencyCookie(): Currency {
+  const match = document.cookie.split("; ").find((item) => item.startsWith(`${CURRENCY_COOKIE}=`));
+  const value = match?.slice(CURRENCY_COOKIE.length + 1);
+  return isCurrency(value) ? value : defaultCurrency;
+}
+
+function subscribeToNothing() {
+  return () => {};
+}
+
+function serverCurrency(): Currency {
+  return defaultCurrency;
+}
+
 export function CurrencyProvider({
-  initialCurrency,
   locale,
   children,
 }: {
-  initialCurrency: Currency;
   locale: Locale;
   children: ReactNode;
 }) {
-  const router = useRouter();
-  const [currency, setCurrencyState] = useState<Currency>(initialCurrency);
+  const storedCurrency = useSyncExternalStore(subscribeToNothing, readCurrencyCookie, serverCurrency);
+  const [chosenCurrency, setChosenCurrency] = useState<Currency | null>(null);
+  const currency = chosenCurrency ?? storedCurrency;
   const intlLocale = localeMeta[locale].intl;
 
-  const setCurrency = useCallback(
-    (next: Currency) => {
-      if (!isCurrency(next)) return;
-      setCurrencyState(next);
-      persistCurrency(next);
-      router.refresh();
-    },
-    [router],
-  );
+  const setCurrency = useCallback((next: Currency) => {
+    if (!isCurrency(next)) return;
+    setChosenCurrency(next);
+    persistCurrency(next);
+  }, []);
 
   const value = useMemo<CurrencyValue>(
     () => ({

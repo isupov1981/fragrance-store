@@ -3,7 +3,7 @@
 import { ChevronDown } from "lucide-react";
 import { LocaleLink } from "@/components/i18n/locale-link";
 import { useI18n } from "@/components/i18n/i18n-provider";
-import { groupBrandsByLetter, type StoreBrand } from "@/lib/catalog/brands";
+import { groupBrandsByLetter, type StoreBrand } from "@/lib/catalog/brand-groups";
 import { interpolate } from "@/lib/i18n/interpolate";
 
 export function BrandsMenu({ brands, variant = "mobile" }: { brands: StoreBrand[]; variant?: "mobile" | "desktop" }) {

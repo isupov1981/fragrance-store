@@ -1,9 +1,12 @@
+import { unstable_cache } from "next/cache";
 import type { Prisma } from "@prisma/client";
 
 import type { StoreCategory, StoreProduct } from "@/lib/catalog";
 import { categories as fallbackCategories, fallbackProducts, getProduct } from "@/lib/catalog";
+import { parseNotesField } from "@/lib/catalog/scent";
 import { isMerchCategorySlug } from "@/lib/catalog/merchandising";
 import { databaseEnabled } from "@/lib/db/enabled";
+import { STORE_CATALOG_REVALIDATE_SECONDS, STORE_CATALOG_TAG } from "@/lib/db/store-cache";
 
 const publishedInclude = {
   brand: true,
@@ -23,9 +26,7 @@ export function toStoreProduct(record: PublishedProduct): StoreProduct | null {
     record.concentration === "extrait" || record.concentration === "edp"
       ? record.concentration
       : undefined;
-  const notes = Array.isArray(record.notes)
-    ? record.notes.filter((note): note is string => typeof note === "string")
-    : undefined;
+  const scent = parseNotesField(record.notes);
   return {
     id: record.id,
     slug: record.slug,
@@ -46,7 +47,11 @@ export function toStoreProduct(record: PublishedProduct): StoreProduct | null {
     featured: record.featured,
     newArrival: record.newArrival,
     createdAt: record.createdAt.toISOString(),
-    notes,
+    notes: scent.notes.length ? scent.notes : undefined,
+    pyramid: scent.pyramid,
+    occasion: scent.occasion,
+    season: scent.season,
+    sillage: scent.sillage,
     images: record.images.map((image) => image.url).filter(Boolean),
     variants: record.variants.map((variant) => ({
       id: variant.id,
@@ -69,14 +74,47 @@ async function loadPublishedProducts(where: Prisma.ProductWhereInput = {}) {
   });
 }
 
+const cachedListStoreProducts = unstable_cache(
+  async () => {
+    const records = await loadPublishedProducts();
+    return records.map(toStoreProduct).filter((item): item is StoreProduct => item != null);
+  },
+  ["store-products"],
+  { revalidate: STORE_CATALOG_REVALIDATE_SECONDS, tags: [STORE_CATALOG_TAG] },
+);
+
+const cachedGetStoreProduct = unstable_cache(
+  async (slug: string) => {
+    const { prisma } = await import("@/lib/db/prisma");
+    const record = await prisma.product.findFirst({
+      where: { slug, status: "ACTIVE" },
+      include: publishedInclude,
+    });
+    if (!record) return null;
+    return toStoreProduct(record);
+  },
+  ["store-product"],
+  { revalidate: STORE_CATALOG_REVALIDATE_SECONDS, tags: [STORE_CATALOG_TAG] },
+);
+
+const cachedListStoreCategories = unstable_cache(
+  async () => {
+    const { prisma } = await import("@/lib/db/prisma");
+    const rows = await prisma.category.findMany({ orderBy: { name: "asc" } });
+    return rows.map((row) => ({
+      slug: row.slug,
+      name: row.name,
+      description: row.description ?? "",
+    }));
+  },
+  ["store-categories"],
+  { revalidate: STORE_CATALOG_REVALIDATE_SECONDS, tags: [STORE_CATALOG_TAG] },
+);
+
 export async function listStoreProducts(): Promise<StoreProduct[]> {
   if (!databaseEnabled()) return fallbackProducts;
   try {
-    const records = await loadPublishedProducts();
-    const mapped = records
-      .map(toStoreProduct)
-      .filter((item): item is StoreProduct => item != null);
-    return mapped;
+    return await cachedListStoreProducts();
   } catch (error) {
     console.error("Failed to load catalogue from database", error);
     return [];
@@ -86,14 +124,7 @@ export async function listStoreProducts(): Promise<StoreProduct[]> {
 export async function getStoreProduct(slug: string): Promise<StoreProduct | undefined> {
   if (!databaseEnabled()) return getProduct(slug);
   try {
-    const { prisma } = await import("@/lib/db/prisma");
-    const record = await prisma.product.findFirst({
-      where: { slug, status: "ACTIVE" },
-      include: publishedInclude,
-    });
-    if (!record) return undefined;
-    const mapped = toStoreProduct(record);
-    return mapped ?? undefined;
+    return (await cachedGetStoreProduct(slug)) ?? undefined;
   } catch (error) {
     console.error("Failed to load product from database", error);
     return undefined;
@@ -103,18 +134,10 @@ export async function getStoreProduct(slug: string): Promise<StoreProduct | unde
 export async function listStoreCategories(): Promise<StoreCategory[]> {
   if (!databaseEnabled()) return fallbackCategories;
   try {
-    const { prisma } = await import("@/lib/db/prisma");
-    const rows = await prisma.category.findMany({ orderBy: { name: "asc" } });
+    const rows = await cachedListStoreCategories();
     if (!rows.length) return fallbackCategories;
     const extras = rows.filter((row) => !fallbackCategories.some((item) => item.slug === row.slug));
-    return [
-      ...fallbackCategories,
-      ...extras.map((row) => ({
-        slug: row.slug,
-        name: row.name,
-        description: row.description ?? "",
-      })),
-    ];
+    return [...fallbackCategories, ...extras];
   } catch (error) {
     console.error("Failed to load categories from database", error);
     return fallbackCategories;

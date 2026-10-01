@@ -1,6 +1,6 @@
 import type { StoreProduct } from "@/lib/catalog";
 import { fallbackProducts } from "@/lib/catalog";
-import { listStoreProducts } from "@/lib/db/products";
+import { databaseEnabled } from "@/lib/db/enabled";
 import { convertCatalogCents, type Currency } from "@/lib/currency";
 import { quoteShippingIls } from "@/lib/shipping/international";
 
@@ -102,13 +102,61 @@ export function priceCatalogItems(
   };
 }
 
+/**
+ * Prices from the live variant rows. The storefront catalogue cache can be
+ * up to 15 minutes old, so stock and price at checkout must not use it.
+ */
+async function loadCheckoutCatalog(variantIds: string[]): Promise<StoreProduct[]> {
+  const { prisma } = await import("@/lib/db/prisma");
+  const variants = await prisma.productVariant.findMany({
+    where: { id: { in: variantIds }, product: { status: "ACTIVE" } },
+    include: { product: { include: { brand: true } } },
+  });
+  return variants.map((variant) => ({
+    id: variant.product.id,
+    slug: variant.product.slug,
+    name: variant.product.name,
+    brand: variant.product.brand?.name ?? "",
+    description: variant.product.description,
+    category: "all",
+    manufacturer: variant.product.manufacturer ?? undefined,
+    originCountry: variant.product.originCountry ?? undefined,
+    inci: variant.product.inci ?? undefined,
+    supplyChannel:
+      variant.product.supplyChannel === "official" || variant.product.supplyChannel === "parallel"
+        ? variant.product.supplyChannel
+        : undefined,
+    images: [],
+    variants: [
+      {
+        id: variant.id,
+        name: variant.name,
+        sku: variant.sku,
+        price: variant.price,
+        compareAt: variant.compareAt ?? undefined,
+        stock: variant.stock,
+      },
+    ],
+  }));
+}
+
 export async function priceCheckoutItems(
   items: CheckoutInput["items"],
   shippingMethod: CheckoutInput["shippingMethod"],
   currency: Currency = "ILS",
   country = "IL",
 ) {
-  return priceCatalogItems(await listStoreProducts(), items, shippingMethod, currency, country);
+  if (!databaseEnabled()) {
+    return priceCatalogItems(fallbackProducts, items, shippingMethod, currency, country);
+  }
+  const variantIds = [...new Set(items.map((item) => item.variantId))];
+  return priceCatalogItems(
+    await loadCheckoutCatalog(variantIds),
+    items,
+    shippingMethod,
+    currency,
+    country,
+  );
 }
 
 /** Synchronous helper for tests against the fallback catalogue. */

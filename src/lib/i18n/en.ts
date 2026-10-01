@@ -187,6 +187,37 @@ export const en = {
     trust3Copy: "Considered packaging, personal service and worldwide delivery.",
     prev: "Previous fragrances",
     next: "Next fragrances",
+    faqEyebrow: "Before you order",
+    faqTitle: "A few answers",
+    faqMore: "All questions",
+    faqItems: [
+      {
+        question: "Are the fragrances authentic?",
+        answer:
+          "Yes. We work with the major official importers in Israel and, in some cases, with lawful parallel import. Parallel-import products may carry the additional labelling required in Israel.",
+      },
+      {
+        question: "How long does delivery take?",
+        answer:
+          "Orders in Israel usually arrive within 3–5 business days. Delivery is complimentary on orders over {amount}, provided the original packaging stays sealed. International delivery takes up to 5 business days, or 7 for remote areas.",
+      },
+      {
+        question: "Can I return an order?",
+        answer:
+          "Unopened fragrance may be cancelled within 14 days of delivery or of the disclosure document, whichever is later. Opened fragrance generally cannot be returned.",
+      },
+      {
+        question: "What concentration are your fragrances?",
+        answer:
+          "Each fragrance is labelled on its page as eau de parfum or extrait. How long it lasts still depends on skin, weather and the composition itself.",
+      },
+    ],
+  },
+  reviews: {
+    eyebrow: "From the room",
+    title: "What clients say",
+    count: "{count} reviews",
+    rating: "{rating} out of 5",
   },
   product: {
     view: "View {name}",
@@ -216,6 +247,30 @@ export const en = {
     soldOut: "Sold out",
     home: "Home",
     composition: "The composition",
+    notes: "Notes",
+    pyramidTop: "Top",
+    pyramidHeart: "Heart",
+    pyramidBase: "Base",
+    occasion: "Occasion",
+    season: "Season",
+    sillage: "Sillage",
+    family: "Family",
+    occasions: {
+      daily: "Daily",
+      evening: "Evening",
+      signature: "Signature",
+      gift: "Gift",
+    },
+    seasons: {
+      all: "All year",
+      warm: "Warm weather",
+      cool: "Cool weather",
+    },
+    sillages: {
+      intimate: "Close to skin",
+      moderate: "Moderate",
+      bold: "Bold",
+    },
     wear: "How to apply",
     wearCopy: "Eau de parfum · A lasting, close-to-skin concentration.",
     wearCopyExtrait: "Extrait · A dense, long-lasting concentration for intimate application.",
@@ -678,6 +733,12 @@ export const en = {
     Blueberry: "Blueberry",
     "Genmaicha tea": "Genmaicha tea",
     "Rice cookie accord": "Rice cookie accord",
+    Vanilla: "Vanilla",
+    Cardamom: "Cardamom",
+    Cashmeran: "Cashmeran",
+    Pepper: "Pepper",
+    "White amber": "White amber",
+    "Translucent woods": "Translucent woods",
   },
   studies: {
     citrusNote: "Bergamot peel, bright then smoky",

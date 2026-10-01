@@ -27,6 +27,7 @@ Hostinger runs Next.js in **standalone server mode**: it wraps `next.config` wit
    | `DATABASE_URL_UNPOOLED` | **Direct** (no `-pooler`) — Prisma migrations need this |
 
 3. Never commit these URLs.
+4. On the Free plan, set compute to a fixed **0.25 CU** (minimum and maximum). Autoscaling toward 2 CU spends the 100 CU-hour allowance several times faster. Leave scale to zero at 5 minutes.
 
 ### 2. Bootstrap the database from your PC
 
@@ -87,15 +88,19 @@ Re-run when migrations change. Skip seed on repeat if data already exists (omit 
    **Browse-only / ordering:** `NEXT_PUBLIC_ORDERS_ENABLED` is only the *default* until an admin saves the Ordering toggle under **Overview** or **Settings**. After that, the database value controls cart/checkout with no rebuild. After each `git push` to `main`, confirm hPanel shows a fresh deploy (Redeploy if the site still serves the previous build).
 
 6. **Inventory reservation cleanup:** generate a strong `CRON_SECRET`, add it to the
-   Node app environment, then create a cron job every 5 minutes. If omitted, the
-   existing `HERMES_AGENT_TOKEN` is accepted so the Hermes VPS can run the job:
+   Node app environment, then create a cron job **once an hour** (`0 * * * *`).
+   Do not run it every 5 minutes: that interval matches Neon's suspend timeout, so
+   the compute never sleeps and the free 100 CU-hours are gone in about two weeks.
+   If `CRON_SECRET` is omitted, the existing `HERMES_AGENT_TOKEN` is accepted so the
+   Hermes VPS can run the job:
 
    ```bash
    curl -fsS -X POST -H "Authorization: Bearer YOUR_CRON_SECRET" https://parfums.cloud/api/cron/inventory-reservations
    ```
 
-   Checkout also clears expired reservations before pricing, so stock remains
-   available if the scheduled job is temporarily unavailable.
+   Checkout also clears expired reservations before pricing, so a cart that reaches
+   payment releases stale holds immediately. The hourly job only covers abandoned
+   checkouts that nobody else completes.
 
 ### 4. Object storage (recommended)
 

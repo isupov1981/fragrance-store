@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { hasSameOrigin, requireAdminRequest } from "@/lib/auth/server";
 import { parseProductCsv, importProducts } from "@/lib/import/products";
+import { revalidateStoreCatalog } from "@/lib/db/store-cache";
 import { createPrismaProductRepository } from "@/lib/import/prisma-products";
 
 const MAX_CSV_BYTES = 2_000_000;
@@ -43,7 +44,9 @@ export async function POST(request: Request) {
       );
     }
     const repository = await createPrismaProductRepository();
-    return NextResponse.json(await importProducts(parsed.rows, repository));
+    const result = await importProducts(parsed.rows, repository);
+    revalidateStoreCatalog();
+    return NextResponse.json(result);
   } catch (error) {
     console.error("Product CSV import failed", error);
     return NextResponse.json(

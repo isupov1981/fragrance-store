@@ -15,6 +15,7 @@ import { merchandisingCategoryDefs, isMerchCategorySlug } from "@/lib/catalog/me
 import { inferFamilyCategory } from "@/lib/catalog/family";
 import { toSlug } from "@/lib/catalog/slug";
 import { databaseEnabled } from "@/lib/db/enabled";
+import { revalidateStoreCatalog } from "@/lib/db/store-cache";
 import { announceNewArrivalIfNeeded } from "@/lib/email/new-arrivals";
 
 export class AgentCatalogError extends Error {
@@ -212,6 +213,7 @@ export async function createDraftProduct(input: CreateProductInput) {
     return serializeProduct(full);
   }).then(async (serialized) => {
     await announceNewArrivalIfNeeded(serialized.id).catch(console.error);
+    revalidateStoreCatalog();
     return serialized;
   });
 }
@@ -316,6 +318,7 @@ export async function updateProduct(input: UpdateProductInput) {
     return serializeProduct(full);
   }).then(async (serialized) => {
     await announceNewArrivalIfNeeded(serialized.id).catch(console.error);
+    revalidateStoreCatalog();
     return serialized;
   });
 }
@@ -340,6 +343,7 @@ export async function publishProduct(input: { id?: string; slug?: string }) {
     include: productInclude,
   });
   await announceNewArrivalIfNeeded(updated.id).catch(console.error);
+  revalidateStoreCatalog();
   return serializeProduct(updated);
 }
 

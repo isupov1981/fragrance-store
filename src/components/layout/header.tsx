@@ -13,7 +13,7 @@ import { LocaleLink } from "@/components/i18n/locale-link";
 import { useCurrency } from "@/components/i18n/currency-provider";
 import { useI18n } from "@/components/i18n/i18n-provider";
 import { useCommerce } from "@/components/commerce/commerce-provider";
-import type { StoreBrand } from "@/lib/catalog/brands";
+import type { StoreBrand } from "@/lib/catalog/brand-groups";
 import { isMerchCategorySlug } from "@/lib/catalog/merchandising";
 import { interpolate } from "@/lib/i18n/interpolate";
 import { localizedPath, stripLocalePrefix } from "@/lib/i18n/path";
