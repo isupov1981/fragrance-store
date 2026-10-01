@@ -1,14 +1,20 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
+import {
+  AdminFilterableTable,
+  type AdminTableRow,
+} from "@/components/admin/admin-filterable-table";
 import type { AdminDictionary } from "@/lib/admin/i18n";
 import type { Locale } from "@/lib/i18n/config";
+import { localizedPath } from "@/lib/i18n/path";
 
 type Variant = {
   id: string;
   productId: string;
   productName: string;
+  productSlug: string;
   productStatus: string;
   brand: string;
   name: string;
@@ -46,10 +52,12 @@ type BulkMode = "add" | "subtract" | "set";
 export function InventoryPanel({
   initialData,
   labels,
+  tableLabels,
   locale,
 }: {
   initialData: InventoryData;
   labels: AdminDictionary["inventory"];
+  tableLabels: AdminDictionary["section"];
   locale: Locale;
 }) {
   const [data, setData] = useState(initialData);
@@ -65,30 +73,43 @@ export function InventoryPanel({
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string>();
 
-  const visible = useMemo(() => {
-    const needle = query.trim().toLowerCase();
-    return data.variants.filter((variant) => {
-      const stock = values[variant.id] ?? variant.stock;
-      if (filter === "low" && !(stock > 0 && stock <= 5)) return false;
-      if (filter === "out" && stock !== 0) return false;
-      return (
-        !needle ||
-        `${variant.productName} ${variant.brand} ${variant.name} ${variant.sku}`
-          .toLowerCase()
-          .includes(needle)
-      );
-    });
-  }, [data.variants, filter, query, values]);
+  const [visibleIds, setVisibleIds] = useState<string[]>([]);
 
-  const groups = useMemo(() => {
-    const grouped = new Map<string, Variant[]>();
-    for (const variant of visible) {
-      const list = grouped.get(variant.productId) ?? [];
-      list.push(variant);
-      grouped.set(variant.productId, list);
-    }
-    return [...grouped.values()];
-  }, [visible]);
+  const variantsById = useMemo(
+    () => new Map(data.variants.map((variant) => [variant.id, variant])),
+    [data.variants],
+  );
+
+  const rows = useMemo<AdminTableRow[]>(() => {
+    const needle = query.trim().toLowerCase();
+    return data.variants
+      .filter((variant) => {
+        if (filter === "low" && !(variant.stock > 0 && variant.stock <= 5)) return false;
+        if (filter === "out" && variant.stock !== 0) return false;
+        return (
+          !needle ||
+          `${variant.productName} ${variant.brand} ${variant.name} ${variant.sku}`
+            .toLowerCase()
+            .includes(needle)
+        );
+      })
+      .map((variant) => ({
+        key: variant.id,
+        href: localizedPath(locale, `/products/${variant.productSlug}`),
+        cells: [
+          variant.productName,
+          variant.brand || "—",
+          variant.productStatus,
+          variant.name,
+          variant.sku,
+          String(variant.stock),
+        ],
+      }));
+  }, [data.variants, filter, locale, query]);
+
+  const onVisibleRowsChange = useCallback((visible: AdminTableRow[]) => {
+    setVisibleIds(visible.flatMap((row) => (row.key ? [row.key] : [])));
+  }, []);
 
   const dirty = data.variants.filter(
     (variant) => values[variant.id] !== variant.stock,
@@ -211,6 +232,22 @@ export function InventoryPanel({
           <p className="self-center text-sm font-medium">
             {labels.selected.replace("{count}", String(selected.size))}
           </p>
+          <button
+            type="button"
+            disabled={!visibleIds.length}
+            onClick={() => setSelected(new Set(visibleIds))}
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm disabled:opacity-50"
+          >
+            {labels.selectVisible.replace("{count}", String(visibleIds.length))}
+          </button>
+          <button
+            type="button"
+            disabled={!selected.size}
+            onClick={() => setSelected(new Set())}
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm disabled:opacity-50"
+          >
+            {labels.clearSelection}
+          </button>
           <select
             value={bulkMode}
             onChange={(event) => setBulkMode(event.target.value as BulkMode)}
@@ -240,80 +277,82 @@ export function InventoryPanel({
           </button>
         </div>
 
-        <div className="mt-4 space-y-4">
-          {groups.map((variants) => (
-            <div key={variants[0].productId} className="overflow-hidden rounded-lg border border-slate-200">
-              <div className="bg-slate-50 px-4 py-3">
-                <p className="font-semibold">{variants[0].productName}</p>
-                <p className="text-xs text-slate-500">
-                  {[variants[0].brand, variants[0].productStatus].filter(Boolean).join(" · ")}
-                </p>
+        <AdminFilterableTable
+          caption={labels.caption}
+          columns={[
+            labels.product,
+            labels.brand,
+            labels.status,
+            labels.variant,
+            labels.sku,
+            labels.stock,
+          ]}
+          rows={rows}
+          empty={labels.empty}
+          filterColumn={tableLabels.filterColumn}
+          selectAll={tableLabels.selectAll}
+          searchValues={tableLabels.searchValues}
+          clearFilters={tableLabels.clearFilters}
+          resultsLabel={(visible, total) =>
+            tableLabels.results
+              .replace("{visible}", String(visible))
+              .replace("{total}", String(total))
+          }
+          onVisibleRowsChange={onVisibleRowsChange}
+          renderCell={({ row, cell, columnIndex }) => {
+            const variant = row.key ? variantsById.get(row.key) : undefined;
+            if (!variant) return undefined;
+            if (columnIndex === 3) {
+              return (
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={selected.has(variant.id)}
+                    onChange={() => toggleSelected(variant.id)}
+                    aria-label={`${variant.productName} ${variant.name}`}
+                  />
+                  <span className="font-medium">{cell}</span>
+                </label>
+              );
+            }
+            if (columnIndex !== 5) return undefined;
+            const stock = values[variant.id] ?? variant.stock;
+            const tone =
+              stock === 0
+                ? "border-red-300 text-red-700"
+                : stock <= 5
+                  ? "border-amber-300 text-amber-700"
+                  : "border-slate-300 text-emerald-700";
+            return (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setStock(variant.id, stock - 1)}
+                  className="grid size-8 place-items-center rounded-lg border border-slate-300"
+                  aria-label={`−1 ${variant.sku}`}
+                >
+                  −
+                </button>
+                <input
+                  type="number"
+                  min={0}
+                  value={stock}
+                  onChange={(event) => setStock(variant.id, Number(event.target.value))}
+                  className={`w-20 rounded-lg border px-2 py-1.5 text-center font-medium ${tone}`}
+                  aria-label={`${labels.stock} ${variant.sku}`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setStock(variant.id, stock + 1)}
+                  className="grid size-8 place-items-center rounded-lg border border-slate-300"
+                  aria-label={`+1 ${variant.sku}`}
+                >
+                  +
+                </button>
               </div>
-              <div className="divide-y divide-slate-200">
-                {variants.map((variant) => {
-                  const stock = values[variant.id] ?? variant.stock;
-                  return (
-                    <div
-                      key={variant.id}
-                      className="grid items-center gap-3 px-4 py-3 sm:grid-cols-[auto_1fr_1fr_auto]"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selected.has(variant.id)}
-                        onChange={() => toggleSelected(variant.id)}
-                        aria-label={`${variant.productName} ${variant.name}`}
-                      />
-                      <div>
-                        <p className="font-medium">{variant.name}</p>
-                        <p className="text-xs text-slate-500">{variant.sku}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setStock(variant.id, stock - 1)}
-                          className="grid size-9 place-items-center rounded-lg border border-slate-300"
-                          aria-label={`−1 ${variant.sku}`}
-                        >
-                          −
-                        </button>
-                        <input
-                          type="number"
-                          min={0}
-                          value={stock}
-                          onChange={(event) =>
-                            setStock(variant.id, Number(event.target.value))
-                          }
-                          className="w-20 rounded-lg border border-slate-300 px-2 py-2 text-center"
-                          aria-label={`${labels.stock} ${variant.sku}`}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setStock(variant.id, stock + 1)}
-                          className="grid size-9 place-items-center rounded-lg border border-slate-300"
-                          aria-label={`+1 ${variant.sku}`}
-                        >
-                          +
-                        </button>
-                      </div>
-                      <span
-                        className={`text-sm font-medium ${
-                          stock === 0
-                            ? "text-red-700"
-                            : stock <= 5
-                              ? "text-amber-700"
-                              : "text-emerald-700"
-                        }`}
-                      >
-                        {stock}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-          {!groups.length ? <p className="py-8 text-center text-slate-500">{labels.empty}</p> : null}
-        </div>
+            );
+          }}
+        />
 
         <div className="mt-5 grid gap-3 md:grid-cols-[1fr_auto]">
           <label className="text-sm font-medium">

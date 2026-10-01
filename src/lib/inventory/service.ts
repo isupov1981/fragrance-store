@@ -258,6 +258,7 @@ export async function getInventoryOverview() {
       id: variant.id,
       productId: product.id,
       productName: product.name,
+      productSlug: product.slug,
       productStatus: product.status,
       brand: product.brand?.name ?? "",
       name: variant.name,

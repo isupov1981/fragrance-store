@@ -22,7 +22,12 @@ export default async function InventoryPage() {
       <p className="text-sm font-medium text-slate-500">{dict.inventory.eyebrow}</p>
       <h1 className="text-3xl font-bold">{dict.inventory.title}</h1>
       <p className="mt-2 text-sm text-slate-600">{dict.inventory.copy}</p>
-      <InventoryPanel initialData={data} labels={dict.inventory} locale={locale} />
+      <InventoryPanel
+        initialData={data}
+        labels={dict.inventory}
+        tableLabels={dict.section}
+        locale={locale}
+      />
     </>
   );
 }

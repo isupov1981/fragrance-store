@@ -27,6 +27,7 @@ export function AdminFilterableTable({
   clearFilters,
   resultsLabel,
   renderCell,
+  onVisibleRowsChange,
 }: {
   caption: string;
   columns: string[];
@@ -42,6 +43,7 @@ export function AdminFilterableTable({
     cell: string;
     columnIndex: number;
   }) => ReactNode;
+  onVisibleRowsChange?: (rows: AdminTableRow[]) => void;
 }) {
   const [selections, setSelections] = useState<ColumnSelection[]>(() => columns.map(() => null));
   const [openColumn, setOpenColumn] = useState<number | null>(null);
@@ -82,6 +84,10 @@ export function AdminFilterableTable({
       }),
     );
   }, [columns, rows, selections]);
+
+  useEffect(() => {
+    onVisibleRowsChange?.(visibleRows);
+  }, [onVisibleRowsChange, visibleRows]);
 
   const hasActiveFilters = selections.some((selection) => selection !== null);
 
