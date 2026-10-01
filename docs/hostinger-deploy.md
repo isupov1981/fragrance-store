@@ -86,6 +86,17 @@ Re-run when migrations change. Skip seed on repeat if data already exists (omit 
 
    **Browse-only / ordering:** `NEXT_PUBLIC_ORDERS_ENABLED` is only the *default* until an admin saves the Ordering toggle under **Overview** or **Settings**. After that, the database value controls cart/checkout with no rebuild. After each `git push` to `main`, confirm hPanel shows a fresh deploy (Redeploy if the site still serves the previous build).
 
+6. **Inventory reservation cleanup:** generate a strong `CRON_SECRET`, add it to the
+   Node app environment, then create a cron job every 5 minutes. If omitted, the
+   existing `HERMES_AGENT_TOKEN` is accepted so the Hermes VPS can run the job:
+
+   ```bash
+   curl -fsS -X POST -H "Authorization: Bearer YOUR_CRON_SECRET" https://parfums.cloud/api/cron/inventory-reservations
+   ```
+
+   Checkout also clears expired reservations before pricing, so stock remains
+   available if the scheduled job is temporarily unavailable.
+
 ### 4. Object storage (recommended)
 
 On Business Node hosting, **local `uploads/` is wiped on redeploy**. Configure **Cloudflare R2** (or another S3 API) and all `S3_*` vars. After deploy, `/api/admin/health` should show `"storage":"s3"`.

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireAdminRole, requireResourceMutation, type AdminResource } from "@/lib/auth/rbac";
 import { hasSameOrigin, requireAdminRequest } from "@/lib/auth/server";
 import { announceNewArrivalIfNeeded } from "@/lib/email/new-arrivals";
+import { releaseOrderReservation } from "@/lib/inventory/service";
 import { auditLog } from "@/lib/security/audit";
 
 const resourceSchema = z.enum(["products", "categories", "brands", "orders", "customers", "content", "shipping"]);
@@ -64,6 +65,12 @@ export async function PATCH(
       }
       case "orders": {
         const data = z.object({ status: z.enum(["PENDING", "PAID", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED", "REFUNDED"]) }).parse(input);
+        if (data.status === "CANCELLED") {
+          await releaseOrderReservation(route.id, {
+            status: "CANCELLED",
+            note: `Cancelled by ${auth.session.name}`,
+          });
+        }
         return NextResponse.json({ data: await prisma.order.update({ where: { id: route.id }, data }) });
       }
       case "customers": {

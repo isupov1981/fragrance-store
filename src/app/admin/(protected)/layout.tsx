@@ -14,6 +14,7 @@ export default async function AdminLayout({
   const navigation = [
     [dict.nav.overview, "/admin"],
     [dict.nav.products, "/admin/products"],
+    [dict.nav.inventory, "/admin/inventory"],
     [dict.nav.categories, "/admin/categories"],
     [dict.nav.brands, "/admin/brands"],
     [dict.nav.orders, "/admin/orders"],
@@ -23,6 +24,9 @@ export default async function AdminLayout({
     [dict.nav.shipping, "/admin/shipping"],
     [dict.nav.settings, "/admin/settings"],
   ] as const;
+  const visibleNavigation = navigation.filter(
+    ([, href]) => href !== "/admin/inventory" || session.role === "ADMIN",
+  );
 
   return (
     <div className="bg-slate-100 text-slate-950">
@@ -51,7 +55,7 @@ export default async function AdminLayout({
         </div>
         <nav aria-label={dict.navAria} className="mx-auto max-w-7xl overflow-x-auto px-4">
           <ul className="flex min-w-max gap-1 pb-3">
-            {navigation.map(([label, href]) => (
+            {visibleNavigation.map(([label, href]) => (
               <li key={href}>
                 <Link href={href} className="block rounded-lg px-3 py-2 hover:bg-slate-100 focus:bg-slate-100">
                   {label}

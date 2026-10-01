@@ -4,11 +4,16 @@ import { priceCheckoutItems, CheckoutPricingError } from "@/lib/checkout/pricing
 import {
   findOrderByIdempotencyKey,
   saveOrder,
+  updateOrder,
   type Order,
 } from "@/lib/checkout/orders";
 import { checkoutSchema } from "@/lib/checkout/schema";
 import { getOrdersEnabled } from "@/lib/commerce";
 import { getOrderMailer } from "@/lib/email/mailer";
+import {
+  expireStaleReservations,
+  InsufficientStockError,
+} from "@/lib/inventory/service";
 import { GrowCheckoutError } from "@/lib/payments/grow";
 import {
   getPaymentProvider,
@@ -59,6 +64,7 @@ export async function POST(request: Request) {
       });
     }
 
+    await expireStaleReservations();
     const provider = getPaymentProvider();
     if (provider.name === "demo" && process.env.NODE_ENV === "production") {
       auditLog({
@@ -87,13 +93,24 @@ export async function POST(request: Request) {
       createdAt: new Date().toISOString(),
       locale: parsed.data.locale,
     };
+    await saveOrder(order);
     const configuredOrigin = process.env.APP_URL?.replace(/\/$/, "");
     const origin = configuredOrigin ?? new URL(request.url).origin;
-    const payment = await provider.createSession(order, origin);
+    let payment;
+    try {
+      payment = await provider.createSession(order, origin);
+    } catch (error) {
+      await updateOrder(order.id, { status: "payment_failed" });
+      throw error;
+    }
     order.paymentReference = payment.reference;
     order.paymentUrl = payment.redirectUrl;
     order.status = payment.paid ? "paid" : "pending";
-    await saveOrder(order);
+    await updateOrder(order.id, {
+      status: order.status,
+      paymentReference: order.paymentReference,
+      paymentUrl: order.paymentUrl,
+    });
 
     if (payment.paid) {
       await getOrderMailer().sendConfirmation(order).catch(console.error);
@@ -112,7 +129,10 @@ export async function POST(request: Request) {
     if (error instanceof GrowCheckoutError) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
-    if (error instanceof CheckoutPricingError) {
+    if (
+      error instanceof CheckoutPricingError ||
+      error instanceof InsufficientStockError
+    ) {
       return NextResponse.json({ error: error.message }, { status: 409 });
     }
     if (error instanceof SyntaxError) {

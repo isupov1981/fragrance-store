@@ -1,6 +1,10 @@
 import type { CheckoutInput } from "@/lib/checkout/schema";
 import type { PricedCart } from "@/lib/checkout/pricing";
 import type { Locale } from "@/lib/i18n/config";
+import {
+  releaseOrderReservation,
+  reserveInventory,
+} from "@/lib/inventory/service";
 
 export type OrderStatus = "pending" | "paid" | "payment_failed";
 
@@ -62,55 +66,70 @@ export async function findOrderByIdempotencyKey(key: string) {
 export async function saveOrder(order: Order) {
   if (databaseEnabled()) {
     const { prisma } = await import("@/lib/db/prisma");
-    const customer = await prisma.customer.upsert({
-      where: { email: order.customer.email },
-      update: {
-        name: order.customer.name,
-        phone: order.customer.phone,
-      },
-      create: {
-        email: order.customer.email,
-        name: order.customer.name,
-        phone: order.customer.phone,
-      },
-    });
-    const shipping = await prisma.shippingMethod.findUnique({
-      where: { code: order.cart.shippingMethod },
-    });
-    await prisma.order.create({
-      data: {
-        id: order.id,
-        idempotencyKey: order.idempotencyKey,
-        status: toDatabaseStatus(order.status),
-        customerId: customer.id,
-        email: order.customer.email,
-        fullName: order.customer.name,
-        phone: order.customer.phone,
-        address: {
-          line1: order.customer.addressLine1,
-          line2: order.customer.addressLine2,
-          city: order.customer.city,
-          postalCode: order.customer.postalCode,
-          country: order.customer.country,
+    await prisma.$transaction(async (tx) => {
+      const customer = await tx.customer.upsert({
+        where: { email: order.customer.email },
+        update: {
+          name: order.customer.name,
+          phone: order.customer.phone,
         },
-        currency: order.cart.currency.toUpperCase(),
-        subtotal: order.cart.subtotal,
-        shippingTotal: order.cart.shippingTotal,
-        total: order.cart.total,
-        shippingMethodId: shipping?.id,
-        paymentProvider: order.paymentProvider,
-        paymentReference: order.paymentReference,
-        items: {
-          create: order.cart.lines.map((line) => ({
-            productId: line.productId || undefined,
-            sku: line.sku,
-            name: `${line.productName} — ${line.variantName}`,
-            quantity: line.quantity,
-            unitPrice: line.unitPrice,
-            total: line.unitPrice * line.quantity,
-          })),
+        create: {
+          email: order.customer.email,
+          name: order.customer.name,
+          phone: order.customer.phone,
         },
-      },
+      });
+      const shipping = await tx.shippingMethod.findUnique({
+        where: { code: order.cart.shippingMethod },
+      });
+      await tx.order.create({
+        data: {
+          id: order.id,
+          idempotencyKey: order.idempotencyKey,
+          status: toDatabaseStatus(order.status),
+          customerId: customer.id,
+          email: order.customer.email,
+          fullName: order.customer.name,
+          phone: order.customer.phone,
+          address: {
+            line1: order.customer.addressLine1,
+            line2: order.customer.addressLine2,
+            city: order.customer.city,
+            postalCode: order.customer.postalCode,
+            country: order.customer.country,
+          },
+          currency: order.cart.currency.toUpperCase(),
+          subtotal: order.cart.subtotal,
+          shippingTotal: order.cart.shippingTotal,
+          total: order.cart.total,
+          shippingMethodId: shipping?.id,
+          paymentProvider: order.paymentProvider,
+          paymentReference: order.paymentReference,
+          paymentUrl: order.paymentUrl,
+          items: {
+            create: order.cart.lines.map((line) => ({
+              productId: line.productId || undefined,
+              variantId: line.variantId || undefined,
+              sku: line.sku,
+              name: `${line.productName} — ${line.variantName}`,
+              quantity: line.quantity,
+              unitPrice: line.unitPrice,
+              total: line.unitPrice * line.quantity,
+            })),
+          },
+        },
+      });
+      await reserveInventory(
+        tx,
+        order.id,
+        order.cart.lines.map((line) => ({
+          variantId: line.variantId,
+          sku: line.sku,
+          productName: line.productName,
+          variantName: line.variantName,
+          quantity: line.quantity,
+        })),
+      );
     });
   }
   registry.byId.set(order.id, order);
@@ -124,11 +143,18 @@ export async function updateOrder(
 ) {
   if (databaseEnabled()) {
     const { prisma } = await import("@/lib/db/prisma");
+    if (update.status === "payment_failed") {
+      await releaseOrderReservation(id, {
+        status: "CANCELLED",
+        note: "Payment failed or order was cancelled",
+      });
+    }
     await prisma.order.update({
       where: { id },
       data: {
         status: update.status ? toDatabaseStatus(update.status) : undefined,
         paymentReference: update.paymentReference,
+        paymentUrl: update.paymentUrl,
       },
     });
   }
@@ -174,6 +200,7 @@ type DatabaseOrder = {
   total: number;
   paymentProvider: string | null;
   paymentReference: string | null;
+  paymentUrl: string | null;
   createdAt: Date;
   items: Array<{
     productId: string | null;
@@ -226,6 +253,7 @@ function fromDatabase(record: DatabaseOrder): Order {
         ? record.paymentProvider
         : "demo",
     paymentReference: record.paymentReference ?? undefined,
+    paymentUrl: record.paymentUrl ?? undefined,
     createdAt: record.createdAt.toISOString(),
   };
 }

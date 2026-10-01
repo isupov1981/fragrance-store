@@ -29,6 +29,13 @@ enum AdminRole {
   EDITOR
 }
 
+enum InventoryMovementReason {
+  RESERVATION
+  RELEASE
+  RESTOCK
+  CORRECTION
+}
+
 model Brand {
   id          String    @id @default(cuid())
   name        String
@@ -174,12 +181,35 @@ model Order {
   shippingMethod   ShippingMethod? @relation(fields: [shippingMethodId], references: [id])
   paymentProvider  String?
   paymentReference String?         @unique
+  paymentUrl       String?
   idempotencyKey   String          @unique
+  inventoryReservedAt DateTime?
+  inventoryReleasedAt DateTime?
   items            OrderItem[]
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
 
   @@index([status, createdAt])
+}
+
+model InventoryMovement {
+  id          String                  @id @default(cuid())
+  variantId   String?
+  sku         String
+  productName String
+  variantName String
+  delta       Int
+  reason      InventoryMovementReason
+  orderId     String?
+  actorId     String?
+  actorName   String?
+  note        String?
+  reference   String?                 @unique
+  createdAt   DateTime                @default(now())
+
+  @@index([createdAt])
+  @@index([sku, createdAt])
+  @@index([orderId])
 }
 
 model OrderItem {
