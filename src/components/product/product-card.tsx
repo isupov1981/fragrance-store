@@ -21,8 +21,8 @@ export function ProductCard({ product, priority = false }: { product: StoreProdu
     product.concentration === "extrait" ? dict.product.extrait : dict.product.edp;
 
   return (
-    <article className="product-card group relative">
-      <div className="absolute end-2 top-2 z-10">
+    <article className="product-card group relative h-full overflow-hidden rounded-2xl border border-ink/[0.07] bg-[#fbfaf7] shadow-[0_1px_10px_rgba(32,29,25,.05)] transition duration-300 hover:border-bronze/40 hover:shadow-[0_10px_30px_rgba(32,29,25,.10)] focus-within:border-bronze/40">
+      <div className="absolute end-3 top-3 z-10">
         <FavoriteButton
           productId={product.id}
           productName={product.name}
@@ -53,16 +53,16 @@ export function ProductCard({ product, priority = false }: { product: StoreProdu
             />
           ) : null}
           <div className="absolute start-3 top-3 flex flex-col items-start gap-1.5">
-            {showNew ? <span className="badge">{dict.product.new}</span> : null}
+            {showNew ? <span className="badge rounded-md">{dict.product.new}</span> : null}
             {!available && !showNew ? (
-              <span className="badge bg-ink text-ivory">{dict.product.soldOut}</span>
+              <span className="badge rounded-md bg-ink text-ivory">{dict.product.soldOut}</span>
             ) : null}
           </div>
-          <span className="absolute inset-x-4 bottom-4 translate-y-3 bg-ivory/95 px-5 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.18em] opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100">
+          <span className="absolute inset-x-4 bottom-4 translate-y-3 rounded-full bg-ivory/95 px-5 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.18em] opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100">
             {dict.product.discover}
           </span>
         </div>
-        <div className="pt-5">
+        <div className="px-4 pb-5 pt-4">
           <p className="text-[10px] uppercase tracking-[0.2em] text-ink/55">{product.brand}</p>
           <div className="mt-2 flex items-start justify-between gap-4">
             <h3 className="font-display text-xl leading-tight">{product.name}</h3>
