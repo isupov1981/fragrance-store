@@ -28,4 +28,11 @@ describe("rate limit", () => {
     expect(b.allowed).toBe(true);
     expect(rateLimitPolicies.adminLogin.limit).toBe(8);
   });
+
+  it("keeps agent counters out of the database", async () => {
+    expect(rateLimitPolicies.agent.storage).toBe("memory");
+    const config = { name: "memory-bucket", limit: 1, windowMs: 60_000, storage: "memory" as const };
+    expect((await consumeRateLimit("vps", config)).allowed).toBe(true);
+    expect((await consumeRateLimit("vps", config)).allowed).toBe(false);
+  });
 });

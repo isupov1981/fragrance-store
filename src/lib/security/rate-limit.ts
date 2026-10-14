@@ -10,6 +10,11 @@ export type RateLimitConfig = {
   limit: number;
   /** Window length in milliseconds */
   windowMs: number;
+  /**
+   * "memory" keeps counters in this process. Use it for frequent, token-authenticated
+   * callers: a database write per request keeps Neon from scaling to zero.
+   */
+  storage?: "database" | "memory";
 };
 
 export type RateLimitResult = {
@@ -42,7 +47,7 @@ export async function consumeRateLimit(
   config: RateLimitConfig,
 ): Promise<RateLimitResult> {
   const now = Date.now();
-  if (databaseEnabled()) {
+  if (config.storage !== "memory" && databaseEnabled()) {
     try {
       return await consumeDatabase(key, config, now);
     } catch {
@@ -122,7 +127,7 @@ export const rateLimitPolicies = {
   newsletter: { name: "newsletter", limit: 12, windowMs: 60 * 60 * 1000 },
   checkout: { name: "checkout", limit: 20, windowMs: 15 * 60 * 1000 },
   orderLookup: { name: "order-lookup", limit: 20, windowMs: 15 * 60 * 1000 },
-  agent: { name: "agent", limit: 120, windowMs: 15 * 60 * 1000 },
+  agent: { name: "agent", limit: 120, windowMs: 15 * 60 * 1000, storage: "memory" },
 } as const satisfies Record<string, RateLimitConfig>;
 
 export function rateLimitResponse(result: RateLimitResult, message = "Too many requests") {

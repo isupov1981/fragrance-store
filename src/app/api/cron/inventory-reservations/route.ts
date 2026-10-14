@@ -3,6 +3,11 @@ import { safeEqualString } from "@/lib/security/timing-safe";
 
 export const runtime = "nodejs";
 
+/** Checkout releases expired holds itself; this job only sweeps abandoned ones. */
+const MIN_INTERVAL_MS = 55 * 60_000;
+
+let lastRunAt = 0;
+
 function authorized(request: Request) {
   const expected =
     process.env.CRON_SECRET?.trim() ||
@@ -12,11 +17,19 @@ function authorized(request: Request) {
   return Boolean(expected && provided && safeEqualString(expected, provided));
 }
 
-/** Schedule at most once an hour. A 5-minute cron never lets Neon scale to zero. */
+/**
+ * Calls closer than MIN_INTERVAL_MS are skipped without a query, because
+ * a 5-minute cron never lets Neon scale to zero.
+ */
 export async function POST(request: Request) {
   if (!authorized(request)) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const now = Date.now();
+  if (now - lastRunAt < MIN_INTERVAL_MS) {
+    return Response.json({ released: 0, skipped: true });
+  }
+  lastRunAt = now;
   const released = await expireStaleReservations();
   return Response.json({ released });
 }
