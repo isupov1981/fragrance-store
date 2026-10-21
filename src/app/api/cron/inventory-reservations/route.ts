@@ -3,8 +3,12 @@ import { safeEqualString } from "@/lib/security/timing-safe";
 
 export const runtime = "nodejs";
 
-/** Checkout releases expired holds itself; this job only sweeps abandoned ones. */
-const MIN_INTERVAL_MS = 55 * 60_000;
+/**
+ * Checkout releases expired holds itself; this job only sweeps abandoned ones.
+ * Every real run wakes Neon, so sweeps are spaced hours apart — a hold left by
+ * an abandoned checkout is freed by the next checkout or the next sweep.
+ */
+const MIN_INTERVAL_MS = 6 * 60 * 60_000;
 
 let lastRunAt = 0;
 

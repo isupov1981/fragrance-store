@@ -5,7 +5,7 @@ import { getDictionary, hasLocale } from "@/lib/i18n/get-dictionary";
 import { localizedPath } from "@/lib/i18n/path";
 import { notFound } from "next/navigation";
 
-export const revalidate = 60;
+export const revalidate = 86400;
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/saved">): Promise<Metadata> {
   const { lang } = await params;

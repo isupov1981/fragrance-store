@@ -19,7 +19,7 @@ import { interpolate } from "@/lib/i18n/interpolate";
 import { localizedPath } from "@/lib/i18n/path";
 import { productJsonLd, breadcrumbJsonLd } from "@/lib/seo/product-json-ld";
 
-export const revalidate = 60;
+export const revalidate = 86400;
 
 export async function generateStaticParams() {
   const catalog = await listStoreProducts();

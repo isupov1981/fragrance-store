@@ -5,8 +5,12 @@ export const STORE_CATALOG_TAG = "store-catalog";
 /** Admin ordering toggle read by the storefront layout. */
 export const STORE_ORDERS_TAG = "store-orders";
 
-/** Background refresh interval for catalogue reads. Checkout stock does not use this. */
-export const STORE_CATALOG_REVALIDATE_SECONDS = 900;
+/**
+ * Background refresh interval for catalogue reads. Admin edits invalidate the tag
+ * immediately, so this is only a fallback — keep it long, because every refresh
+ * wakes Neon and burns free-plan compute. Checkout stock does not use this.
+ */
+export const STORE_CATALOG_REVALIDATE_SECONDS = 86_400;
 
 function revalidateStorefront(tag: string) {
   try {

@@ -41,7 +41,8 @@ const cachedOrdersEnabledFlag = unstable_cache(
     return parseOrdersEnabled(row.value);
   },
   ["store-orders-enabled"],
-  { revalidate: 900, tags: [STORE_ORDERS_TAG] },
+  // The admin toggle invalidates this tag; a long fallback keeps Neon asleep.
+  { revalidate: 86_400, tags: [STORE_ORDERS_TAG] },
 );
 
 async function readOrdersEnabledFlag() {
