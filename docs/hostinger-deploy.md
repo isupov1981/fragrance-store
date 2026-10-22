@@ -10,7 +10,7 @@ Hostinger runs Next.js in **standalone server mode**: it wraps `next.config` wit
 | Domain | **https://parfums.cloud** |
 | GitHub | `https://github.com/isupov1981/fragrance-store` (branch `main`) |
 | Env template | [`.env.hostinger.example`](../.env.hostinger.example) |
-| Node | **20** or **22** (see `.node-version`) |
+| Node | **24** (≥ 24.22.1; Node 20 is EOL and unpatched — see `.node-version`) |
 
 ---
 
@@ -67,7 +67,7 @@ Re-run when migrations change. Skip seed on repeat if data already exists (omit 
    | Start | leave blank, or `npm run start -- -p $PORT` |
    | Output directory | `.next` |
    | Entry file | leave blank (Hostinger starts the standalone server) |
-   | Node version | **20** or **22** |
+   | Node version | **24** (latest patched 24.x, ≥ 24.22.1) |
 
    `npm run build` already runs `prisma generate`, `next build --webpack`, and copies Prisma into `.next/standalone`.  
    Webpack is required: Hostinger’s shared glibc is older than Next 16’s native SWC (`GLIBC_2.29`), and Turbopack cannot fall back to WASM.  
