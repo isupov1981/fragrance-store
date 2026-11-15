@@ -429,6 +429,15 @@ export const en = {
     image1: "A fragrance bottle in the room",
     image2: "Fragrance details and natural materials",
   },
+  pricing: {
+    title: "Fragrance prices",
+    eyebrow: "Catalogue prices",
+    heading: "Prices without the guesswork.",
+    intro:
+      "Current starting prices for fragrances in The Perfume Room. Open any product for sizes, stock and full details. Israeli VAT is included where applicable.",
+    catalogueLink: "Browse the full catalogue",
+    homeLink: "View fragrance prices",
+  },
   contact: {
     title: "Contact",
     eyebrow: "Personal assistance",

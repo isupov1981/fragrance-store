@@ -29,6 +29,7 @@ export function buildLlmsTxt(products: StoreProduct[] = []) {
     "",
     `- [Home](${base}/en): Store homepage`,
     `- [All fragrances](${base}/en/collections/all): Full catalogue`,
+    `- [Pricing](${base}/en/pricing): Product prices with Offer markup`,
     `- [Brands](${base}/en/brands): Houses in the collection`,
     `- [About](${base}/en/about): About The Perfume Room`,
     `- [Contact](${base}/en/contact): Customer care`,

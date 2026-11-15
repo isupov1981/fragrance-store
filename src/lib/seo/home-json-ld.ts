@@ -8,6 +8,7 @@ import {
   SITE_LEGAL_NAME,
   SITE_NAME,
   SITE_PHONE_E164,
+  siteAddress,
   siteBaseUrl,
   siteSameAs,
 } from "@/lib/seo/site";
@@ -24,9 +25,9 @@ function offerPrice(centsIls: number, currency: Currency) {
 export function organizationJsonLd() {
   const baseUrl = siteBaseUrl();
   const sameAs = siteSameAs();
+  const address = siteAddress();
   return {
-    "@context": "https://schema.org",
-    "@type": "Organization",
+    "@type": ["Organization", "OnlineStore"],
     "@id": `${baseUrl}/#organization`,
     name: SITE_NAME,
     legalName: SITE_LEGAL_NAME,
@@ -35,12 +36,21 @@ export function organizationJsonLd() {
     telephone: SITE_PHONE_E164,
     description: organizationDescription(),
     logo: `${baseUrl}/favicon.ico`,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: address.streetAddress,
+      addressLocality: address.addressLocality,
+      postalCode: address.postalCode,
+      addressCountry: address.addressCountry,
+    },
+    areaServed: ["IL", "Worldwide"],
     contactPoint: [
       {
         "@type": "ContactPoint",
         contactType: "customer service",
         email: SITE_EMAIL,
         telephone: SITE_PHONE_E164,
+        areaServed: "IL",
         availableLanguage: ["en", "he", "ru"],
       },
     ],
@@ -51,7 +61,6 @@ export function organizationJsonLd() {
 export function websiteJsonLd(locale: Locale) {
   const baseUrl = siteBaseUrl();
   return {
-    "@context": "https://schema.org",
     "@type": "WebSite",
     "@id": `${baseUrl}/#website`,
     name: SITE_NAME,
@@ -66,50 +75,63 @@ export function websiteJsonLd(locale: Locale) {
   };
 }
 
-export function homeItemListJsonLd(locale: Locale, products: StoreProduct[]) {
+export function productOfferJsonLd(locale: Locale, product: StoreProduct) {
   const baseUrl = siteBaseUrl();
   const currency = storeCurrency();
+  const variant = product.variants[0];
+  const url = `${baseUrl}${localizedPath(locale, `/products/${product.slug}`)}`;
   return {
-    "@context": "https://schema.org",
+    "@type": "Product",
+    "@id": `${url}#product`,
+    name: product.name,
+    description: product.description || `${product.brand} — ${product.name}`,
+    brand: { "@type": "Brand", name: product.brand },
+    sku: variant?.sku,
+    url,
+    image: product.images.slice(0, 3),
+    ...(variant
+      ? {
+          offers: {
+            "@type": "Offer",
+            url,
+            priceCurrency: currency,
+            price: offerPrice(variant.price, currency),
+            availability:
+              variant.stock > 0
+                ? "https://schema.org/InStock"
+                : "https://schema.org/OutOfStock",
+            seller: { "@id": `${baseUrl}/#organization` },
+          },
+        }
+      : {}),
+  };
+}
+
+export function homeItemListJsonLd(locale: Locale, products: StoreProduct[]) {
+  const baseUrl = siteBaseUrl();
+  return {
     "@type": "ItemList",
     "@id": `${baseUrl}${localizedPath(locale, "/")}#featured`,
     name: "Featured fragrances",
     numberOfItems: products.length,
-    itemListElement: products.map((product, index) => {
-      const variant = product.variants[0];
-      return {
-        "@type": "ListItem",
-        position: index + 1,
-        url: `${baseUrl}${localizedPath(locale, `/products/${product.slug}`)}`,
-        item: {
-          "@type": "Product",
-          name: product.name,
-          brand: { "@type": "Brand", name: product.brand },
-          url: `${baseUrl}${localizedPath(locale, `/products/${product.slug}`)}`,
-          image: product.images.slice(0, 1),
-          ...(variant
-            ? {
-                offers: {
-                  "@type": "Offer",
-                  priceCurrency: currency,
-                  price: offerPrice(variant.price, currency),
-                  url: `${baseUrl}${localizedPath(locale, `/products/${product.slug}`)}`,
-                  availability:
-                    variant.stock > 0
-                      ? "https://schema.org/InStock"
-                      : "https://schema.org/OutOfStock",
-                },
-              }
-            : {}),
-        },
-      };
-    }),
+    itemListOrder: "https://schema.org/ItemListOrderAscending",
+    itemListElement: products.map((product, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      url: `${baseUrl}${localizedPath(locale, `/products/${product.slug}`)}`,
+      item: { "@id": `${baseUrl}${localizedPath(locale, `/products/${product.slug}`)}#product` },
+    })),
   };
 }
 
 export function homeJsonLdGraph(locale: Locale, products: StoreProduct[]) {
   return {
     "@context": "https://schema.org",
-    "@graph": [organizationJsonLd(), websiteJsonLd(locale), homeItemListJsonLd(locale, products)],
+    "@graph": [
+      organizationJsonLd(),
+      websiteJsonLd(locale),
+      ...products.map((product) => productOfferJsonLd(locale, product)),
+      homeItemListJsonLd(locale, products),
+    ],
   };
 }

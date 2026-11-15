@@ -16,7 +16,7 @@ import { publishedReviews } from "@/lib/content/reviews";
 import { listStoreProducts } from "@/lib/db/products";
 import { isNewProduct } from "@/lib/catalog/new-arrival";
 import type { StoreProduct } from "@/lib/catalog";
-import { formatMoney, defaultCurrency, isCurrency } from "@/lib/currency";
+import { convertCatalogCents, formatMoney, defaultCurrency, isCurrency } from "@/lib/currency";
 import { getDictionary, hasLocale } from "@/lib/i18n/get-dictionary";
 import { interpolate } from "@/lib/i18n/interpolate";
 import { localizedPath } from "@/lib/i18n/path";
@@ -91,19 +91,42 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
       <WebMcpTools locale={lang} products={webmcpProducts} />
       <HomeHero />
 
-      <section className="shell border-b border-ink/10 py-8" aria-label={dict.home.newTitle}>
-        <h2 className="font-display text-2xl">{dict.home.newTitle}</h2>
-        <p className="mt-2 max-w-2xl text-sm text-ink/65">{dict.home.newCopy}</p>
+      <section className="shell border-b border-ink/10 py-8" aria-label={dict.pricing.title}>
+        <h2 className="font-display text-2xl">{dict.pricing.heading}</h2>
+        <p className="mt-2 max-w-2xl text-sm text-ink/65">{dict.pricing.intro}</p>
         <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {pricedProducts.map((product) => {
             const variant = product.variants[0];
+            const href = localizedPath(lang, `/products/${product.slug}`);
+            const metaPrice = variant
+              ? (convertCatalogCents(variant.price, currency) / 100).toFixed(currency === "ILS" ? 2 : 0)
+              : "";
             return (
-              <li key={product.id} className="text-sm">
-                <a className="font-medium underline-offset-2 hover:underline" href={localizedPath(lang, `/products/${product.slug}`)}>
-                  {product.brand} — {product.name}
+              <li key={product.id} className="text-sm" itemScope itemType="https://schema.org/Product">
+                <meta itemProp="brand" content={product.brand} />
+                <a className="font-medium underline-offset-2 hover:underline" href={href} itemProp="url">
+                  <span itemProp="name">
+                    {product.brand} — {product.name}
+                  </span>
                 </a>
                 {variant ? (
-                  <p className="mt-1 text-ink/70">
+                  <p
+                    className="mt-1 text-ink/70"
+                    itemProp="offers"
+                    itemScope
+                    itemType="https://schema.org/Offer"
+                  >
+                    <meta itemProp="priceCurrency" content={currency} />
+                    <meta itemProp="price" content={metaPrice} />
+                    <link itemProp="url" href={`${baseUrl}${href}`} />
+                    <link
+                      itemProp="availability"
+                      href={
+                        variant.stock > 0
+                          ? "https://schema.org/InStock"
+                          : "https://schema.org/OutOfStock"
+                      }
+                    />
                     {interpolate(dict.product.from, { price: formatMoney(variant.price, currency) })}
                   </p>
                 ) : null}
@@ -111,7 +134,10 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
             );
           })}
         </ul>
-        <p className="mt-6 text-sm">
+        <p className="mt-6 flex flex-wrap gap-4 text-sm">
+          <a className="underline-offset-2 hover:underline" href={localizedPath(lang, "/pricing")}>
+            {dict.pricing.homeLink}
+          </a>
           <a className="underline-offset-2 hover:underline" href={localizedPath(lang, "/collections/all")}>
             {dict.home.viewCollection}
           </a>

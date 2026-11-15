@@ -15,6 +15,7 @@ export function Footer({ locale }: { locale: Locale }) {
       title: dict.footer.explore,
       links: [
         ["/collections/all", dict.nav.all],
+        ["/pricing", dict.pricing.homeLink],
         ["/brands", dict.nav.brands],
         ["/collections/all?edit=new", dict.nav.arrivals],
         ["/about", dict.nav.atelier],
