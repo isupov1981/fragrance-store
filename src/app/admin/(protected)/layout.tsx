@@ -13,6 +13,7 @@ export default async function AdminLayout({
   const dict = getAdminDictionary(locale);
   const navigation = [
     [dict.nav.overview, "/admin"],
+    [dict.nav.traffic, "/admin/traffic"],
     [dict.nav.products, "/admin/products"],
     [dict.nav.inventory, "/admin/inventory"],
     [dict.nav.categories, "/admin/categories"],

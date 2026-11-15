@@ -6,6 +6,7 @@ import type { Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { interpolate } from "@/lib/i18n/interpolate";
 import { localizedPath } from "@/lib/i18n/path";
+import { SITE_EMAIL, SITE_PHONE_DISPLAY, SITE_PHONE_E164 } from "@/lib/seo/site";
 
 export function Footer({ locale }: { locale: Locale }) {
   const dict = getDictionary(locale);
@@ -47,6 +48,15 @@ export function Footer({ locale }: { locale: Locale }) {
           <h2 className="mt-5 font-display text-3xl leading-tight sm:text-4xl">{dict.footer.notesTitle}</h2>
           <p className="mt-4 max-w-md text-sm leading-6 text-ivory/65">{dict.footer.notesCopy}</p>
           <NewsletterForm />
+          <p className="mt-6 text-sm text-ivory/75">
+            <a className="transition hover:text-white" href={`mailto:${SITE_EMAIL}`}>
+              {SITE_EMAIL}
+            </a>
+            <span aria-hidden="true"> · </span>
+            <a className="transition hover:text-white" href={`tel:${SITE_PHONE_E164}`}>
+              {SITE_PHONE_DISPLAY}
+            </a>
+          </p>
           <SocialLinks className="mt-8" />
         </div>
         {footerGroups.map((group) => (

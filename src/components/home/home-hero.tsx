@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type SyntheticEvent } from "react";
 import { LocaleLink } from "@/components/i18n/locale-link";
 import { useI18n } from "@/components/i18n/i18n-provider";
+import { SITE_EMAIL, SITE_PHONE_DISPLAY, SITE_PHONE_E164 } from "@/lib/seo/site";
 import { usePrefersReducedMotion } from "./reveal";
 
 const HERO_CLIPS = [
@@ -137,19 +138,37 @@ export function HomeHero() {
       </div>
       <div className="home-hero-veil home-hero-veil--video pointer-events-none absolute inset-0 z-[1]" />
       <div className="relative z-[2] flex min-h-svh items-end justify-center px-6 pb-16 text-center sm:pb-20 lg:pb-24">
-        <div className="flex flex-wrap justify-center gap-3">
-          <LocaleLink
-            className="inline-flex h-13 items-center bg-ivory px-7 text-[11px] font-semibold uppercase tracking-[0.17em] text-ink transition hover:bg-sand"
-            href="/collections/all"
-          >
-            {dict.home.explore}
-          </LocaleLink>
-          <LocaleLink
-            className="inline-flex h-13 items-center border border-ivory/50 px-7 text-[11px] font-semibold uppercase tracking-[0.17em] transition hover:bg-ivory hover:text-ink"
-            href="/about"
-          >
-            {dict.home.findYours}
-          </LocaleLink>
+        <div className="max-w-3xl">
+          <p className="eyebrow mb-4 text-ivory/70">{dict.home.heroEyebrow}</p>
+          <h1 className="font-display text-4xl leading-[1.05] text-ivory sm:text-5xl lg:text-6xl">
+            The Perfume Room
+          </h1>
+          <p className="mx-auto mt-5 max-w-xl text-sm leading-6 text-ivory/80 sm:text-base">
+            {dict.home.heroTitle} {dict.home.heroEm} {dict.home.heroRest} {dict.home.heroCopy}
+          </p>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <LocaleLink
+              className="inline-flex h-13 items-center bg-ivory px-7 text-[11px] font-semibold uppercase tracking-[0.17em] text-ink transition hover:bg-sand"
+              href="/collections/all"
+            >
+              {dict.home.explore}
+            </LocaleLink>
+            <LocaleLink
+              className="inline-flex h-13 items-center border border-ivory/50 px-7 text-[11px] font-semibold uppercase tracking-[0.17em] transition hover:bg-ivory hover:text-ink"
+              href="/about"
+            >
+              {dict.home.findYours}
+            </LocaleLink>
+          </div>
+          <p className="mt-6 text-xs tracking-[0.04em] text-ivory/70">
+            <a className="underline-offset-2 hover:underline" href={`mailto:${SITE_EMAIL}`}>
+              {SITE_EMAIL}
+            </a>
+            <span aria-hidden="true"> · </span>
+            <a className="underline-offset-2 hover:underline" href={`tel:${SITE_PHONE_E164}`}>
+              {SITE_PHONE_DISPLAY}
+            </a>
+          </p>
         </div>
       </div>
     </section>

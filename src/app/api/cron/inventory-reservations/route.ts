@@ -1,4 +1,5 @@
 import { expireStaleReservations } from "@/lib/inventory/service";
+import { recordApiTraffic } from "@/lib/security/traffic-server";
 import { safeEqualString } from "@/lib/security/timing-safe";
 
 export const runtime = "nodejs";
@@ -26,6 +27,10 @@ function authorized(request: Request) {
  * a 5-minute cron never lets Neon scale to zero.
  */
 export async function POST(request: Request) {
+  recordApiTraffic(request, {
+    pathname: "/api/cron/inventory-reservations",
+    forcedClass: "infra",
+  });
   if (!authorized(request)) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }

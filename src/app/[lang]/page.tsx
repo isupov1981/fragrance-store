@@ -1,3 +1,4 @@
+import { WebMcpTools } from "@/components/agent/webmcp-tools";
 import { CinematicBand } from "@/components/home/cinematic-band";
 import { EditorialTrio } from "@/components/home/editorial-trio";
 import { FeaturedStory } from "@/components/home/featured-story";
@@ -7,6 +8,7 @@ import { HomeTrust } from "@/components/home/home-trust";
 import { ProductCarousel } from "@/components/home/product-carousel";
 import { Reveal } from "@/components/home/reveal";
 import { CustomerReviews } from "@/components/reviews/customer-reviews";
+import { JsonLd } from "@/components/seo/json-ld";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { resolveScent } from "@/lib/catalog/scent";
@@ -14,8 +16,12 @@ import { publishedReviews } from "@/lib/content/reviews";
 import { listStoreProducts } from "@/lib/db/products";
 import { isNewProduct } from "@/lib/catalog/new-arrival";
 import type { StoreProduct } from "@/lib/catalog";
+import { formatMoney, defaultCurrency, isCurrency } from "@/lib/currency";
 import { getDictionary, hasLocale } from "@/lib/i18n/get-dictionary";
+import { interpolate } from "@/lib/i18n/interpolate";
 import { localizedPath } from "@/lib/i18n/path";
+import { homeJsonLdGraph } from "@/lib/seo/home-json-ld";
+import { siteBaseUrl } from "@/lib/seo/site";
 
 const HOME_CAROUSEL_LIMIT = 12;
 
@@ -63,10 +69,54 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
     images: product.images.slice(0, 1),
     notes: resolveScent(product).notes.slice(0, 3),
   }));
+  const pricedProducts = (cabinet.length ? cabinet : arrivals).slice(0, 8);
+  const currency = isCurrency(process.env.NEXT_PUBLIC_STORE_CURRENCY)
+    ? process.env.NEXT_PUBLIC_STORE_CURRENCY
+    : defaultCurrency;
+  const baseUrl = siteBaseUrl();
+  const webmcpProducts = pricedProducts.map((product) => {
+    const variant = product.variants[0];
+    return {
+      name: product.name,
+      brand: product.brand,
+      slug: product.slug,
+      priceLabel: variant ? formatMoney(variant.price, currency) : "",
+      url: `${baseUrl}${localizedPath(lang, `/products/${product.slug}`)}`,
+    };
+  });
 
   return (
     <main id="main-content">
+      <JsonLd data={homeJsonLdGraph(lang, pricedProducts)} />
+      <WebMcpTools locale={lang} products={webmcpProducts} />
       <HomeHero />
+
+      <section className="shell border-b border-ink/10 py-8" aria-label={dict.home.newTitle}>
+        <h2 className="font-display text-2xl">{dict.home.newTitle}</h2>
+        <p className="mt-2 max-w-2xl text-sm text-ink/65">{dict.home.newCopy}</p>
+        <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {pricedProducts.map((product) => {
+            const variant = product.variants[0];
+            return (
+              <li key={product.id} className="text-sm">
+                <a className="font-medium underline-offset-2 hover:underline" href={localizedPath(lang, `/products/${product.slug}`)}>
+                  {product.brand} — {product.name}
+                </a>
+                {variant ? (
+                  <p className="mt-1 text-ink/70">
+                    {interpolate(dict.product.from, { price: formatMoney(variant.price, currency) })}
+                  </p>
+                ) : null}
+              </li>
+            );
+          })}
+        </ul>
+        <p className="mt-6 text-sm">
+          <a className="underline-offset-2 hover:underline" href={localizedPath(lang, "/collections/all")}>
+            {dict.home.viewCollection}
+          </a>
+        </p>
+      </section>
 
       <Reveal>
         <ProductCarousel

@@ -8,6 +8,7 @@ import {
   rateLimitPolicies,
   rateLimitResponse,
 } from "@/lib/security/rate-limit";
+import { recordApiTraffic } from "@/lib/security/traffic-server";
 
 export const runtime = "nodejs";
 
@@ -27,6 +28,7 @@ function rpcError(id: JsonRpc["id"], code: number, message: string, status = 200
 }
 
 export async function POST(request: Request) {
+  recordApiTraffic(request, { pathname: "/api/agent/mcp", forcedClass: "infra" });
   let id: JsonRpc["id"] = null;
   try {
     assertAgentRequest(request);

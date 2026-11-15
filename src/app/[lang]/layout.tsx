@@ -13,6 +13,7 @@ import { getOrdersEnabled } from "@/lib/commerce";
 import { locales } from "@/lib/i18n/config";
 import { getClientDictionary, getDictionary, hasLocale } from "@/lib/i18n/get-dictionary";
 import { localizedPath } from "@/lib/i18n/path";
+import { recordStorefrontTraffic } from "@/lib/security/traffic-server";
 
 export function generateStaticParams() {
   return locales.map((lang) => ({ lang }));
@@ -42,6 +43,8 @@ export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Prom
 export default async function LocaleLayout({ children, params }: LayoutProps<"/[lang]">) {
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
+
+  await recordStorefrontTraffic(`/${lang}`);
 
   const dict = getDictionary(lang);
   const clientDict = getClientDictionary(lang);
