@@ -99,9 +99,9 @@ export function ProductCarousel({ eyebrow, title, description, href, linkLabel, 
             className="flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             ref={scrollerRef}
           >
-            {products.map((product, index) => (
+            {products.map((product) => (
               <div className="w-[78%] shrink-0 snap-start sm:w-[48%] lg:w-[calc((100%-2.5rem)/3)]" data-carousel-item key={product.id}>
-                <ProductCard product={product} priority={index === 0} />
+                <ProductCard product={product} />
               </div>
             ))}
           </div>

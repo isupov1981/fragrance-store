@@ -48,9 +48,13 @@ if (process.env.NODE_ENV === "production") {
 
 const nextConfig = {
   output: "standalone",
-  serverExternalPackages: ["@aws-sdk/client-s3", "@prisma/client", "sharp", "@google/genai"],
+  serverExternalPackages: ["@aws-sdk/client-s3", "@prisma/client", "sharp", "@google/genai", "geoip-lite"],
   outputFileTracingIncludes: {
-    "/*": ["./node_modules/.prisma/client/**/*", "./node_modules/@prisma/client/**/*"],
+    "/*": [
+      "./node_modules/.prisma/client/**/*",
+      "./node_modules/@prisma/client/**/*",
+      "./node_modules/geoip-lite/data/**/*",
+    ],
   },
   images: {
     // Hostinger's /_next/image rejects most remote CDNs (jsDelivr/GitHub) with 400.
@@ -67,6 +71,24 @@ const nextConfig = {
       {
         source: "/(.*)",
         headers: securityHeaders,
+      },
+      {
+        source: "/videos/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
+        source: "/products/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=2592000, stale-while-revalidate=86400",
+          },
+        ],
       },
     ];
   },

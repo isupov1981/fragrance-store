@@ -1,3 +1,5 @@
+import { resolveTrafficCountry } from "@/lib/security/geo-country";
+
 export type TrafficClass = "infra" | "bot" | "scanner" | "human" | "other";
 
 export type TrafficSample = {
@@ -50,14 +52,7 @@ export function clientIpFromHeaders(headers: Headers) {
   return "unknown";
 }
 
-export function countryFromHeaders(headers: Headers) {
-  return (
-    headers.get("x-country-code")?.trim().toUpperCase() ||
-    headers.get("cf-ipcountry")?.trim().toUpperCase() ||
-    headers.get("x-vercel-ip-country")?.trim().toUpperCase() ||
-    "??"
-  );
-}
+export { countryFromHeaders } from "@/lib/security/geo-country";
 
 /** Non-cryptographic stable hash — avoids storing raw IPs in the admin UI. */
 export function hashIp(ip: string) {
@@ -194,7 +189,7 @@ export function recordRequestTraffic(
   });
   recordTrafficSample({
     class: trafficClass,
-    country: countryFromHeaders(headers),
+    country: resolveTrafficCountry(headers, ip),
     path: pathname,
     method: request.method,
     uaFamily: uaFamily(userAgent),
@@ -263,6 +258,6 @@ export function getTrafficSummary(windowMs = DEFAULT_WINDOW_MS): TrafficSummary 
     byCountry,
     topPaths,
     topUaFamilies,
-    note: "Process-local samples (no raw IPs). Resets on redeploy. Infra/cron and CMS probes are classified automatically.",
+    note: "Process-local samples (no raw IPs). Country from CDN headers or local GeoIP. Resets on redeploy.",
   };
 }

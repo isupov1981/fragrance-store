@@ -45,9 +45,9 @@ export function Footer({ locale }: { locale: Locale }) {
     <footer className="mt-auto bg-ink text-ivory">
       <div className="shell grid gap-12 py-16 md:grid-cols-2 lg:grid-cols-[1.3fr_.7fr_.7fr_.7fr] lg:gap-16 lg:py-24">
         <div className="max-w-lg">
-          <p className="eyebrow text-ivory/60">{dict.footer.correspondence}</p>
+          <p className="eyebrow text-ivory/80">{dict.footer.correspondence}</p>
           <h2 className="mt-5 font-display text-3xl leading-tight sm:text-4xl">{dict.footer.notesTitle}</h2>
-          <p className="mt-4 max-w-md text-sm leading-6 text-ivory/65">{dict.footer.notesCopy}</p>
+          <p className="mt-4 max-w-md text-sm leading-6 text-ivory/85">{dict.footer.notesCopy}</p>
           <NewsletterForm />
           <p className="mt-6 text-sm text-ivory/75">
             <a className="transition hover:text-white" href={`mailto:${SITE_EMAIL}`}>
@@ -62,8 +62,8 @@ export function Footer({ locale }: { locale: Locale }) {
         </div>
         {footerGroups.map((group) => (
           <nav key={group.title} aria-label={group.title}>
-            <p className="eyebrow text-ivory/45">{group.title}</p>
-            <ul className="mt-5 space-y-3 text-sm text-ivory/75">
+            <p className="eyebrow text-ivory/80">{group.title}</p>
+            <ul className="mt-5 space-y-3 text-sm text-ivory/85">
               {group.links.map(([href, label]) => (
                 <li key={href}>
                   <Link className="transition hover:text-white" href={localizedPath(locale, href)}>{label}</Link>
@@ -73,7 +73,7 @@ export function Footer({ locale }: { locale: Locale }) {
           </nav>
         ))}
       </div>
-      <div className="shell flex flex-col gap-5 border-t border-ivory/15 py-7 text-[11px] text-ivory/50 sm:flex-row sm:items-center sm:justify-between">
+      <div className="shell flex flex-col gap-5 border-t border-ivory/15 py-7 text-[11px] text-ivory/75 sm:flex-row sm:items-center sm:justify-between">
         <p>{interpolate(dict.footer.rights, { year: new Date().getFullYear() })}</p>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <span>{dict.footer.cities}</span>

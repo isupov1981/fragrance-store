@@ -1,10 +1,12 @@
 import { afterEach, describe, expect, it } from "vitest";
 
+import { countryFromIp, resetGeoCountryCache } from "@/lib/security/geo-country";
 import { isCmsProbePath } from "@/lib/security/probe-paths";
 import {
   classifyTraffic,
   getTrafficSummary,
   hashIp,
+  recordRequestTraffic,
   recordTrafficSample,
   resetTrafficSamples,
   uaFamily,
@@ -12,6 +14,7 @@ import {
 
 afterEach(() => {
   resetTrafficSamples();
+  resetGeoCountryCache();
 });
 
 describe("isCmsProbePath", () => {
@@ -102,5 +105,22 @@ describe("traffic classification", () => {
     expect(summary.byCountry[0]?.country).toBeTruthy();
     expect(JSON.stringify(summary)).not.toContain("176.230.158.200");
     expect(JSON.stringify(summary)).not.toContain("2a02:4780");
+  });
+
+  it("resolves country from public IPs via local GeoIP", () => {
+    expect(countryFromIp("8.8.8.8")).toBe("US");
+    expect(countryFromIp("127.0.0.1")).toBe("??");
+
+    const request = new Request("https://parfums.cloud/en", {
+      headers: {
+        "user-agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "x-forwarded-for": "8.8.8.8",
+      },
+    });
+    recordRequestTraffic(request, { pathname: "/en" });
+    const summary = getTrafficSummary(6 * 3_600_000);
+    expect(summary.byCountry.some((row) => row.country === "US")).toBe(true);
+    expect(JSON.stringify(summary)).not.toContain("8.8.8.8");
   });
 });

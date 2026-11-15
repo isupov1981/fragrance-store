@@ -27,6 +27,8 @@ const copies = [
   // catalogue photos 404 on Hostinger until a manual static sync.
   ["public", join(standalone, "public")],
   [".next/static", join(standalone, ".next", "static")],
+  // Country DB for traffic summary GeoIP fallback (Hostinger has no cf-ipcountry).
+  ["node_modules/geoip-lite", join(standalone, "node_modules", "geoip-lite")],
 ];
 
 let copied = 0;

@@ -25,7 +25,7 @@ const en = {
   traffic: {
     eyebrow: "Request classification",
     title: "Traffic summary",
-    copy: "Lightweight view of recent hits on this app process: humans vs bots vs your own cron/agent vs CMS scanners. Hostinger country charts count every HTTP request, including infra.",
+    copy: "Lightweight view of recent hits on this app process: humans vs bots vs your own cron/agent vs CMS scanners. Countries come from CDN headers when present, otherwise a local GeoIP lookup (IP is hashed, never stored).",
     metricsAria: "Traffic metrics",
     samples: "Samples",
     windowNote: "last {hours}h in this process",
@@ -328,7 +328,7 @@ const he: typeof en = {
   traffic: {
     eyebrow: "סיווג בקשות",
     title: "סיכום תעבורה",
-    copy: "תצוגה קלה של פגיעות אחרונות בתהליך האפליקציה: אנשים מול בוטים מול cron/agent שלכם מול סורקי CMS. תרשימי המדינות ב־Hostinger סופרים כל בקשת HTTP, כולל תשתיות.",
+    copy: "תצוגה קלה של פגיעות אחרונות בתהליך האפליקציה: אנשים מול בוטים מול cron/agent שלכם מול סורקי CMS. מדינות לפי כותרות CDN או GeoIP מקומי (IP מגובב, לא נשמר).",
     metricsAria: "מדדי תעבורה",
     samples: "דגימות",
     windowNote: "{hours} השעות האחרונות בתהליך זה",
